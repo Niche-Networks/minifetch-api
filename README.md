@@ -15,6 +15,9 @@ This is an example client that demonstrates how to use the `x402-fetch` package 
 - A running x402 server (you can use the example express server at `examples/typescript/servers/express`)
 - A valid Ethereum private key for making payments
 
+- Bug: there was also a bug when importing the privateKey in index.ts
+  had to prepend the `0x`
+
 ## Setup
 
 <skip>
