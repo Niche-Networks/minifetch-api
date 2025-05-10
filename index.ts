@@ -6,14 +6,12 @@ import { decodeXPaymentResponse, wrapFetchWithPayment } from "x402-fetch";
 // Determine which env file to use
 const args = process.argv.slice(2);
 const envArg = args.find(arg => arg.startsWith("--env="));
-const env = envArg ? envArg.split("=")[1] : "default";
+const env = envArg ? envArg.split("=")[1] : "local";
 console.log("env: " + env);
 
-let envPath = ".env";
-if (env === "base-testnet") {
-  envPath = ".env-base-testnet";
-} else if (env === "local") {
-  envPath = ".env-local";
+let envPath = ".env-local";
+if (env !== "default") {
+  envPath = `.env-${env}`;
 }
 console.log("using env file: " + envPath);
 
