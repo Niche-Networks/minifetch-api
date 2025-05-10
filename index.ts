@@ -27,9 +27,10 @@ const account = privateKeyToAccount(privateKey);
 // Set url to query from env
 const baseURL = process.env.RESOURCE_SERVER_URL as string; // e.g. https://example.com
 const endpointPath = process.env.ENDPOINT_PATH as string; // e.g. /weather
-const url = `${baseURL}${endpointPath}`; // e.g. https://example.com/weather
+const metadataUrl = process.env.METADATA_URL as string; // url to scrape metadata from
+const url = `${baseURL}${endpointPath}?url=${metadataUrl}`; // e.g. https://example.com/weather
 
-if (!baseURL || !privateKey || !endpointPath) {
+if (!privateKey || !baseURL || !endpointPath || !metadataUrl) {
   console.error("Missing required environment variables");
   process.exit(1);
 }
