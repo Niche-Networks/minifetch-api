@@ -24,13 +24,13 @@ const privateKey = `0x${process.env.PRIVATE_KEY}` as Hex;
 const explorerBaseUrl = process.env.EXPLORER_BASE_URL as string;
 const account = privateKeyToAccount(privateKey);
 
-// Set url to query from env
-const baseURL = process.env.RESOURCE_SERVER_URL as string; // e.g. https://example.com
-const endpointPath = process.env.ENDPOINT_PATH as string; // e.g. /weather
-const metadataUrl = process.env.METADATA_URL as string; // url to scrape metadata from
-const boolInclRespBody = process.env.ENDPOINT_PARAM_INCLUDE_RESPONSE_BODY as string;
+// Set API url to query from env
+const baseURL = process.env.API_SERVER_URL as string;
+const endpointPath = process.env.METADATA_API_PATH as string;
+const metadataUrl = process.env.METADATA_URL as string; // url to fetch metadata from
+const boolInclRespBody = process.env.METADATA_API_PARAM_INCLUDE_RESPONSE_BODY as string;
 const paramInclRespBody = boolInclRespBody === 'true' ? `&includeResponseBody=true` : '';
-const url = `${baseURL}${endpointPath}?url=${metadataUrl}${paramInclRespBody}`; // e.g. https://example.com/weather
+const url = `${baseURL}${endpointPath}?url=${metadataUrl}${paramInclRespBody}`;
 
 
 if (!privateKey || !baseURL || !endpointPath || !metadataUrl) {

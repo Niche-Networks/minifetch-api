@@ -8,7 +8,7 @@ https://github.com/coinbase/x402/blob/main/examples/typescript/clients/fetch
 - Node.js v20+ (install via [nvm](https://github.com/nvm-sh/nvm))
 - pnpm v10 (install via [pnpm.io/installation](https://pnpm.io/installation))
 - A running x402 server to query
-- A valid Ethereum private key for making payments
+- A valid Ethereum private key for making USDC payments
 
 ## Setup
 
