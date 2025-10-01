@@ -20,6 +20,7 @@ cp .env-local .env-base-testnet
 2. Start the example client:
 ```bash
 pnpm install
+pnpm dev:testnet:check
 pnpm dev:testnet
 ```
 
