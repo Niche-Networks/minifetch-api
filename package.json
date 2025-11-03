@@ -1,7 +1,15 @@
 {
-  "name": "fetch-client-example",
-  "private": true,
+  "name": "minifetch-api",
+  "version": "0.0.1",
   "type": "module",
+  "bugs": {
+    "url": ""
+  },
+  "homepage": "",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
   "scripts": {
     "dev:testnet": "tsx index.ts --env=base-testnet",
     "dev:testnet:check": "tsx index.ts --env=base-testnet --endpoint=check",
