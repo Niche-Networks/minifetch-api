@@ -3,12 +3,12 @@
   "version": "0.0.1",
   "type": "module",
   "bugs": {
-    "url": ""
+    "url": "https://github.com/Niche-Networks/minifetch-api/issues"
   },
-  "homepage": "",
+  "homepage": "https://minifetch.com/ ",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "git@github.com:Niche-Networks/minifetch-api.git"
   },
   "scripts": {
     "dev:testnet": "tsx index.ts --env=base-testnet",

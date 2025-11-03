@@ -1,9 +1,8 @@
-# Minifetch.com API with x402 payments by Coinbase
+# Minifetch.com API
 
-Works with Base Sepolia Testnet (only) so far. Testnet API endpoints are not exposed. Check back again later!
+Works with x402 payments on Base Sepolia Testnet (only) so far. Testnet API endpoints are not exposed. Check back again later!
 
-x402 payments example client code:
-https://github.com/coinbase/x402/blob/main/examples/typescript/clients/fetch
+This client based on x402 payments [example client code](https://github.com/coinbase/x402/blob/main/examples/typescript/clients/fetch).
 
 ## Prerequisites
 
