@@ -27,6 +27,7 @@ console.log("using network: " + network);
 // Set x402 & API URL constants from .env file
 const privateKey = process.env[`${networkPrefix}_PRIVATE_KEY`] as string;
 const signer = privateKeyToAccount(privateKey) as string;
+console.log("signer account: " + signer);
 const explorerBaseUrl = process.env[`EXPLORER_${networkPrefix}_URL`] as string;
 const baseURL = process.env.API_SERVER_URL as string;
 
@@ -72,9 +73,13 @@ if (endpoint === "check") {
   const url = `${baseURL}${endpointPath}?url=${metadataUrl}${paramInclRespBody}`;
   console.log("querying url via fetchWithPayment: " + url);
 
+  // Init client
+  const client = new x402Client();
+  registerExactEvmScheme(client, { signer });
+
   // Fetch metadata url endpoint with payment
-  const fetchWithPayment = wrapFetchWithPayment(fetch, account);
-  fetchWithPayment(url, {
+  const fetchWithPayment = wrapFetchWithPayment(fetch, client);
+  const response = await fetchWithPayment(url, {
     method: "GET",
   })
     .then(async response => {
@@ -82,7 +87,11 @@ if (endpoint === "check") {
       console.log("response body:");
       console.log(body);
 
-      const paymentResponse = decodeXPaymentResponse(response.headers.get("x-payment-response")!);
+      // Get payment receipt
+      const httpClient = new x402HTTPClient(client);
+      const paymentResponse = httpClient.getPaymentSettleResponse(
+        (name) => response.headers.get(name)
+      );
       console.log("payment response:");
       console.log(paymentResponse);
       console.log(`View transaction: ${explorerBaseUrl}/tx/${paymentResponse.transaction}`);
