@@ -19,13 +19,12 @@ console.log("using env file: " + envPath);
 config({ path: envPath });
 console.log("using network: " + process.env.NETWORK);
 
-// Set x402 constants from .env file
+// Set x402 & API URL constants from .env file
 const privateKey = `0x${process.env.PRIVATE_KEY}` as Hex;
 const explorerBaseUrl = process.env.EXPLORER_BASE_URL as string;
 const account = privateKeyToAccount(privateKey);
-
-// Set API url to query from .env file
 const baseURL = process.env.API_SERVER_URL as string;
+
 // Parse endpoint flag (if any)
 const endpointArg = args.find(arg => arg.startsWith("--endpoint="));
 const endpoint = endpointArg ? endpointArg.split("=")[1] : "metadata";

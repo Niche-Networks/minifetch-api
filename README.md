@@ -12,15 +12,19 @@ This client based on x402 payments [example client code](https://github.com/coin
 
 ## Setup
 
-1. Copy `.env-local` to `.env-base-testnet` and add your Ethereum private key:
+1. Copy `.env-local` to `.env-base-testnet` and add your private key(s), then install:
 ```bash
 cp .env-local .env-base-testnet
+pnpm install
+
 ```
 
-2. Start the example client:
+2. Run the example client:
 ```bash
-pnpm install
-pnpm dev:testnet:check
-pnpm dev:testnet
+pnpm dev:basedev:check
+pnpm dev:basedev:metadata
+
+pnpm dev:svmdev:check
+pnpm dev:svmdev:metadata
 ```
 
