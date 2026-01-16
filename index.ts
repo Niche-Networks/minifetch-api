@@ -1,7 +1,7 @@
 import { config } from "dotenv";
-import { Hex } from "viem";
+import { x402Client, wrapFetchWithPayment, x402HTTPClient } from "@x402/fetch";
+import { registerExactEvmScheme } from "@x402/evm/exact/client";
 import { privateKeyToAccount } from "viem/accounts";
-import { decodeXPaymentResponse, wrapFetchWithPayment } from "x402-fetch";
 
 // Determine which env file to use
 const args = process.argv.slice(2);
@@ -9,29 +9,37 @@ const envArg = args.find(arg => arg.startsWith("--env="));
 const env = envArg ? envArg.split("=")[1] : "default";
 console.log("env: " + env);
 
+// Set dotenv config to use correct .env file
 let envPath = ".env";
 if (env !== "default") {
   envPath = `.env-${env}`;
 }
 console.log("using env file: " + envPath);
-
-// Set dotenv config to use correct .env file
 config({ path: envPath });
-console.log("using network: " + process.env.NETWORK);
+
+// Set network
+const networkPrefixArg = args.find(arg => arg.startsWith("--network=")) as string;
+const networkPrefix = networkPrefixArg.split("=")[1].toUpperCase() as string;
+console.log(networkPrefix);
+const network = process.env[`${networkPrefix}_NETWORK`] as string;
+console.log("using network: " + network);
 
 // Set x402 & API URL constants from .env file
-const privateKey = `0x${process.env.PRIVATE_KEY}` as Hex;
-const explorerBaseUrl = process.env.EXPLORER_BASE_URL as string;
-const account = privateKeyToAccount(privateKey);
+const privateKey = process.env[`${networkPrefix}_PRIVATE_KEY`] as string;
+const signer = privateKeyToAccount(privateKey) as string;
+const explorerBaseUrl = process.env[`EXPLORER_${networkPrefix}_URL`] as string;
 const baseURL = process.env.API_SERVER_URL as string;
 
 // Parse endpoint flag (if any)
-const endpointArg = args.find(arg => arg.startsWith("--endpoint="));
-const endpoint = endpointArg ? endpointArg.split("=")[1] : "metadata";
+const endpointArg = args.find(arg => arg.startsWith("--endpoint=")) as string;
+const endpoint = endpointArg.split("=")[1] as string;
+console.log("endpoint: " + endpoint);
+
 // Pick the right endpoint path based on flag
 const endpointPath = endpoint === "check"
   ? process.env.CHECK_ROBOTS_API_PATH as string
   : process.env.METADATA_API_PATH as string;
+
 // Rest of the querystring params
 const metadataUrl = process.env.METADATA_URL as string; // url to fetch metadata from
 const boolInclRespBody = process.env.METADATA_API_PARAM_INCLUDE_RESPONSE_BODY as string;
@@ -43,7 +51,7 @@ if (endpoint === "check") {
     process.exit(1);
   }
   const url = `${baseURL}${endpointPath}?url=${metadataUrl}`;
-  console.log("querying url via checkURL: " + url);
+  console.log("querying url via free check endpoint: " + url);
   const checkURL = fetch(url, { method: "GET"})
     .then(async response => {
       const body = await response.json();

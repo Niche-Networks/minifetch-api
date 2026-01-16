@@ -11,10 +11,10 @@
     "url": "git@github.com:Niche-Networks/minifetch-api.git"
   },
   "scripts": {
-    "dev:basedev:check": "tsx index.ts --env=dev --endpoint=check",
-    "dev:basedev:metadata": "tsx index.ts --env=dev --endpoint=metadata",
-    "dev:svmdev:check": "tsx index.ts --env=dev --endpoint=check",
-    "dev:svmdev:metadata": "tsx index.ts --env=dev --endpoint=metadata",
+    "dev:basedev:check": "tsx index.ts --env=dev --network=base --endpoint=check",
+    "dev:basedev:metadata": "tsx index.ts --env=dev --network=base --endpoint=metadata",
+    "dev:svmdev:check": "tsx index.ts --env=dev --network=svm --endpoint=check",
+    "dev:svmdev:metadata": "tsx index.ts --env=dev --network=svm --endpoint=metadata",
     "format": "prettier -c .prettierrc --write \"**/*.{ts,js,cjs,json,md}\"",
     "format:check": "prettier -c .prettierrc --check \"**/*.{ts,js,cjs,json,md}\"",
     "lint": "eslint . --ext .ts --fix",
