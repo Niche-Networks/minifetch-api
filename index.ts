@@ -1,7 +1,10 @@
 import { config } from "dotenv";
 import { x402Client, wrapFetchWithPayment, x402HTTPClient } from "@x402/fetch";
 import { registerExactEvmScheme } from "@x402/evm/exact/client";
+import { registerExactSvmScheme } from "@x402/svm/exact/client";
 import { privateKeyToAccount } from "viem/accounts";
+import { createKeyPairSignerFromBytes } from "@solana/kit";
+import bs58 from "bs58";
 
 // Determine which env file to use
 const args = process.argv.slice(2);
@@ -24,10 +27,28 @@ console.log(networkPrefix);
 const network = process.env[`${networkPrefix}_NETWORK`] as string;
 console.log("using network: " + network);
 
-// Set x402 & API URL constants from .env file
-const privateKey = process.env[`${networkPrefix}_PRIVATE_KEY`] as string;
-const signer = privateKeyToAccount(privateKey) as string;
-console.log("signer account: " + signer);
+// Derive x402 signer account from private key
+let privateKey;
+let signer;
+if (network.startsWith("solana")) {
+  privateKey = process.env[`${networkPrefix}_PRIVATE_KEY`] as string;
+  // signer = Keypair.fromSecretKey(bs58.decode(privateKey));
+  const privateKeyBytes = bs58.decode(privateKey);
+  signer = await createKeyPairSignerFromBytes(privateKeyBytes);
+  console.log("Solana signer account: " + signer.address);
+  // console.log("solana signer account: " + signer.publicKey.toBase58());
+  // console.log("secretKey length:", signer.secretKey.length); // Should be 64
+  // console.log("secretKey type:", signer.secretKey.constructor.name); // Should be Uint8Array
+} else if (network.startsWith("eip155")) {
+  privateKey = process.env[`${networkPrefix}_PRIVATE_KEY`] as string;
+  signer = privateKeyToAccount(privateKey);
+  console.log("evm signer account: " + signer.address);
+} else {
+  console.error("network not supported: " + network);
+  process.exit(1);
+}
+
+// Set API URL constants from .env file
 const explorerBaseUrl = process.env[`EXPLORER_${networkPrefix}_URL`] as string;
 const baseURL = process.env.API_SERVER_URL as string;
 
@@ -66,7 +87,7 @@ if (endpoint === "check") {
     });
 
 } else {
-  if (!privateKey || !baseURL || !endpointPath || !metadataUrl) {
+  if (!baseURL || !endpointPath || !metadataUrl) {
     console.error("Missing required environment variables");
     process.exit(1);
   }
@@ -75,14 +96,33 @@ if (endpoint === "check") {
 
   // Init client
   const client = new x402Client();
-  registerExactEvmScheme(client, { signer });
+
+  if (network.startsWith("solana")) {
+    console.log("registerExactSvmScheme()")
+    registerExactSvmScheme(client, { signer });
+  } else if (network.startsWith("eip155")) {
+    console.log("registerExactEvmScheme()")
+    registerExactEvmScheme(client, { signer });
+  } else {
+    console.error("network not supported: " + network);
+    process.exit(1);
+  }
 
   // Fetch metadata url endpoint with payment
   const fetchWithPayment = wrapFetchWithPayment(fetch, client);
+  console.log("Attempting fetch to:", url);
   const response = await fetchWithPayment(url, {
     method: "GET",
   })
     .then(async response => {
+
+      // Debug - Log ALL headers
+      // console.log("=== ALL RESPONSE HEADERS ===");
+      // for (const [key, value] of response.headers.entries()) {
+      //   console.log(`${key}: ${value}`);
+      // }
+      // console.log("=========================");
+
       const body = await response.json();
       console.log("response body:");
       console.log(body);
@@ -98,7 +138,9 @@ if (endpoint === "check") {
     })
     .catch(error => {
       console.log("ERROR!");
-      console.dir(error);
+      console.error("Error message:", error.message);
+      console.error("Full error object:", error);
+      console.error("Error stack:", error.stack);
       console.error(error.response?.data?.error);
     });
 }
