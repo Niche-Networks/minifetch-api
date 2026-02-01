@@ -111,36 +111,36 @@ if (endpoint === "check") {
   // Fetch metadata url endpoint with payment
   const fetchWithPayment = wrapFetchWithPayment(fetch, client);
   console.log("Attempting fetch to:", url);
+
   const response = await fetchWithPayment(url, {
     method: "GET",
   })
-    .then(async response => {
+  .then(async response => {
+    // Debug - Log ALL headers
+    // console.log("=== ALL RESPONSE HEADERS ===");
+    // for (const [key, value] of response.headers.entries()) {
+    //   console.log(`${key}: ${value}`);
+    // }
+    // console.log("=========================");
 
-      // Debug - Log ALL headers
-      // console.log("=== ALL RESPONSE HEADERS ===");
-      // for (const [key, value] of response.headers.entries()) {
-      //   console.log(`${key}: ${value}`);
-      // }
-      // console.log("=========================");
+  const body = await response.json();
+    console.log("response body:");
+    console.log(body);
 
-      const body = await response.json();
-      console.log("response body:");
-      console.log(body);
-
-      // Get payment receipt
-      const httpClient = new x402HTTPClient(client);
-      const paymentResponse = httpClient.getPaymentSettleResponse(
-        (name) => response.headers.get(name)
-      );
-      console.log("payment response:");
-      console.log(paymentResponse);
-      console.log(`View transaction: ${explorerBaseUrl}/tx/${paymentResponse.transaction}`);
-    })
-    .catch(error => {
-      console.log("ERROR!");
-      console.error("Error message:", error.message);
-      console.error("Full error object:", error);
-      console.error("Error stack:", error.stack);
-      console.error(error.response?.data?.error);
-    });
+  // Get payment receipt
+    const httpClient = new x402HTTPClient(client);
+    const paymentResponse = httpClient.getPaymentSettleResponse(
+      (name) => response.headers.get(name)
+    );
+    console.log("payment response:");
+    console.log(paymentResponse);
+    console.log(`View transaction: ${explorerBaseUrl}/tx/${paymentResponse.transaction}`);
+  })
+  .catch(error => {
+    console.log("ERROR!");
+    console.error("Error message:", error.message);
+    console.error("Full error object:", error);
+    console.error("Error stack:", error.stack);
+    console.error(error.response?.data?.error);
+  });
 }
