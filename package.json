@@ -3,14 +3,12 @@
   "version": "1.0.0",
   "description": "JavaScript client for Minifetch metadata extraction API with x402 micropayments",
   "type": "module",
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/esm/index.js",
+  "main": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js",
-      "types": "./dist/types/index.d.ts"
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js"
     }
   },
   "files": [
@@ -37,11 +35,9 @@
     "url": "git@github.com:Niche-Networks/minifetch-api.git"
   },
   "scripts": {
-    "build": "pnpm run build:clean && pnpm run build:esm && pnpm run build:cjs && pnpm run build:fix-cjs",
-    "build:clean": "rm -rf dist",
-    "build:esm": "tsc",
-    "build:cjs": "tsc -p tsconfig.cjs.json",
-    "build:fix-cjs": "echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
+    "dist:clean": "rm -rf dist",
+    "build": "pnpm run dist:clean && pnpm run build:esm",
+    "build:esm": "tsc -p tsconfig.json",
     "dev:basedev:check": "tsx src/index.ts --env=dev --network=base --endpoint=check",
     "dev:basedev:metadata": "tsx src/index.ts --env=dev --network=base --endpoint=metadata",
     "dev:svmdev:check": "tsx src/index.ts --env=dev --network=svm --endpoint=check",
