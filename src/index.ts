@@ -3,7 +3,7 @@ import { x402Client, wrapFetchWithPayment, x402HTTPClient } from "@x402/fetch";
 import { registerExactEvmScheme } from "@x402/evm/exact/client";
 import { registerExactSvmScheme } from "@x402/svm/exact/client";
 import { privateKeyToAccount } from "viem/accounts";
-import { createKeyPairSignerFromBytes } from "@solana/kit";
+import { createKeyPairSignerFromBytes, type KeyPairSigner } from "@solana/kit";
 import bs58 from "bs58";
 
 // Determine which env file to use
@@ -41,7 +41,7 @@ if (network.startsWith("solana")) {
   // console.log("secretKey type:", signer.secretKey.constructor.name); // Should be Uint8Array
 } else if (network.startsWith("eip155")) {
   privateKey = process.env[`${networkPrefix}_PRIVATE_KEY`] as string;
-  signer = privateKeyToAccount(privateKey);
+  signer = privateKeyToAccount(privateKey as `0x${string}`);
   console.log("evm signer account: " + signer.address);
 } else {
   console.error("network not supported: " + network);
@@ -98,11 +98,13 @@ if (endpoint === "check") {
   const client = new x402Client();
 
   if (network.startsWith("solana")) {
-    console.log("registerExactSvmScheme()")
-    registerExactSvmScheme(client, { signer });
+    console.log("registerExactSvmScheme()");
+    const svmSigner = signer as KeyPairSigner<string>; // Type assertion for Solana
+    registerExactSvmScheme(client, { signer: svmSigner });
   } else if (network.startsWith("eip155")) {
-    console.log("registerExactEvmScheme()")
-    registerExactEvmScheme(client, { signer });
+    console.log("registerExactEvmScheme()");
+    const evmSigner = signer as ReturnType<typeof privateKeyToAccount>; // Type assertion for EVM
+    registerExactEvmScheme(client, { signer: evmSigner });
   } else {
     console.error("network not supported: " + network);
     process.exit(1);

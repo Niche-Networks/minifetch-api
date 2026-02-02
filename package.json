@@ -1,24 +1,56 @@
 {
   "name": "minifetch-api",
-  "version": "0.0.1",
+  "version": "1.0.0",
+  "description": "JavaScript client for Minifetch metadata extraction API with x402 micropayments",
   "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "metadata",
+    "scraping",
+    "x402",
+    "micropayments",
+    "web-scraping",
+    "ai-agents",
+    "llm",
+    "seo"
+  ],
   "bugs": {
     "url": "https://github.com/Niche-Networks/minifetch-api/issues"
   },
-  "homepage": "https://minifetch.com/ ",
+  "homepage": "https://minifetch.com/",
   "repository": {
     "type": "git",
     "url": "git@github.com:Niche-Networks/minifetch-api.git"
   },
   "scripts": {
-    "dev:basedev:check": "tsx index.ts --env=dev --network=base --endpoint=check",
-    "dev:basedev:metadata": "tsx index.ts --env=dev --network=base --endpoint=metadata",
-    "dev:svmdev:check": "tsx index.ts --env=dev --network=svm --endpoint=check",
-    "dev:svmdev:metadata": "tsx index.ts --env=dev --network=svm --endpoint=metadata",
+    "build": "pnpm run build:clean && pnpm run build:esm && pnpm run build:cjs && pnpm run build:fix-cjs",
+    "build:clean": "rm -rf dist",
+    "build:esm": "tsc",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:fix-cjs": "echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
+    "dev:basedev:check": "tsx src/index.ts --env=dev --network=base --endpoint=check",
+    "dev:basedev:metadata": "tsx src/index.ts --env=dev --network=base --endpoint=metadata",
+    "dev:svmdev:check": "tsx src/index.ts --env=dev --network=svm --endpoint=check",
+    "dev:svmdev:metadata": "tsx src/index.ts --env=dev --network=svm --endpoint=metadata",
     "format": "prettier -c .prettierrc --write \"**/*.{ts,js,cjs,json,md}\"",
     "format:check": "prettier -c .prettierrc --check \"**/*.{ts,js,cjs,json,md}\"",
     "lint": "eslint . --ext .ts --fix",
-    "lint:check": "eslint . --ext .ts"
+    "lint:check": "eslint . --ext .ts",
+    "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
     "@solana/kit": "^5.4.0",
@@ -26,13 +58,14 @@
     "@x402/fetch": "^2.2.0",
     "@x402/svm": "^2.2.0",
     "bs58": "^6.0.0",
-    "dotenv": "^16.4.7",
     "viem": "^2.23.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",
+    "@types/node": "^25.2.0",
     "@typescript-eslint/eslint-plugin": "^8.29.1",
     "@typescript-eslint/parser": "^8.29.1",
+    "dotenv": "^16.4.7",
     "eslint": "^9.24.0",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jsdoc": "^50.6.9",
@@ -40,5 +73,8 @@
     "prettier": "3.5.2",
     "tsx": "^4.7.0",
     "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

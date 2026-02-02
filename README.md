@@ -8,14 +8,18 @@ This client based on x402 payments [example client code](https://github.com/coin
 
 - Node.js v20+ (install via [nvm](https://github.com/nvm-sh/nvm))
 - pnpm v10 (install via [pnpm.io/installation](https://pnpm.io/installation))
-- A valid Ethereum private key for making USDC payments on Base Sepolia Testnet or Solana -- live production client coming soon!
+- A valid Ethereum private key for making USDC payments on Base Sepolia Testnet or Solana devnet -- live production client coming soon!
+
+### Notes
+tsconfig.json => ESM build
+tsconfig.cjs.json => CJS build
 
 ## Setup
 
 1. Copy `.env-local` to `.env-base-testnet` and add your private key(s), then pnpm install:
 ```bash
 cp .env-local .env-base-testnet
-pnpm install
+npm install
 ```
 
 2. Run the example client:
@@ -26,4 +30,5 @@ pnpm dev:basedev:metadata
 pnpm dev:svmdev:check
 pnpm dev:svmdev:metadata
 ```
+
 
