@@ -81,7 +81,7 @@ export interface ContentResult extends BaseResult {
     content?: {
       requestUrl: string; // the url the user passed in
       url: string; // final destination url in request chain
-      summary: string; // markdown
+      summary: string; // markdown (or other format in future?)
       mediaUrls?: Array<{
         url: string;
         alt: string;
@@ -136,7 +136,7 @@ export interface LinksResult extends BaseResult {
     metadata: {
       requestUrl: string; // the url the user passed in
       url: string; // final destination url in request chain
-      links: any;
+      links: Record<string, any>;
       minifetchCache?: Record<string, string>;
       [key: string]: any;
     };
