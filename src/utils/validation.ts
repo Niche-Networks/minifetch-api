@@ -11,84 +11,74 @@ const MAX_URL_LENGTH = 2048;
 const ALLOWED_PROTOCOLS = ['http:', 'https:'];
 
 /**
- * Validate a URL string
+ * Unsupported file extensions
+ */
+const UNSUPPORTED_EXTENSIONS = [
+  '.pdf', '.txt', '.md', '.doc', '.docx',
+  '.xls', '.xlsx', '.zip', '.tar', '.gz'
+];
+
+/**
+ * Validate and normalize a URL string
+ * Auto-normalizes by adding https:// if no protocol is present
  * @throws {InvalidUrlError} if URL is invalid
  */
-export function validateUrl(url: string): void {
+export function validateUrl(url: string): string {
   // Check if URL is provided
   if (!url || typeof url !== 'string') {
     throw new InvalidUrlError(url, 'URL must be a non-empty string');
   }
 
+  // Normalize: add https:// if no protocol
+  let normalized = url.trim();
+  if (!normalized.match(/^https?:\/\//i)) {
+    normalized = `https://${normalized}`;
+  }
+
   // Check URL length
-  if (url.length > MAX_URL_LENGTH) {
-    throw new InvalidUrlError(url, `URL exceeds maximum length of ${MAX_URL_LENGTH} characters`);
+  if (normalized.length > MAX_URL_LENGTH) {
+    throw new InvalidUrlError(normalized, `URL exceeds maximum length of ${MAX_URL_LENGTH} characters`);
   }
 
   // Try to parse URL
   let parsed: URL;
   try {
-    parsed = new URL(url);
+    parsed = new URL(normalized);
   } catch (error) {
-    throw new InvalidUrlError(url, 'Invalid URL format');
+    throw new InvalidUrlError(normalized, 'Invalid URL format');
   }
 
   // Validate protocol
   if (!ALLOWED_PROTOCOLS.includes(parsed.protocol)) {
     throw new InvalidUrlError(
-      url,
+      normalized,
       `Protocol must be http: or https:, got: ${parsed.protocol}`
     );
   }
 
   // Validate hostname exists
   if (!parsed.hostname) {
-    throw new InvalidUrlError(url, 'URL must have a valid hostname');
+    throw new InvalidUrlError(normalized, 'URL must have a valid hostname');
   }
 
-  // Check for localhost/private IPs in production URLs
-  // (This is a basic check - your server will do the real SSRF protection)
+  // Check for unsupported file extensions
+  const pathname = parsed.pathname.toLowerCase();
+  for (const ext of UNSUPPORTED_EXTENSIONS) {
+    if (pathname.endsWith(ext)) {
+      throw new InvalidUrlError(
+        normalized,
+        `Unsupported file format: ${ext}. Only HTML pages are supported.`
+      );
+    }
+  }
+
+  // Check for localhost/private IPs
   if (isPrivateOrLocalhost(parsed.hostname)) {
     throw new InvalidUrlError(
-      url,
+      normalized,
       'Cannot fetch from localhost or private IP addresses'
     );
   }
-}
-
-/**
- * Validate an array of URLs
- * @throws {InvalidUrlError} if any URL is invalid
- */
-export function validateUrls(urls: string[]): void {
-  if (!Array.isArray(urls)) {
-    throw new InvalidUrlError('', 'URLs must be provided as an array');
-  }
-
-  if (urls.length === 0) {
-    throw new InvalidUrlError('', 'At least one URL must be provided');
-  }
-
-  // Validate each URL
-  for (const url of urls) {
-    validateUrl(url);
-  }
-}
-
-/**
- * Normalize a URL (add https:// if no protocol)
- * Returns the normalized URL or throws if invalid
- */
-export function normalizeUrl(url: string): string {
-  let normalized = url.trim();
-
-  // Add https:// if no protocol
-  if (!normalized.match(/^https?:\/\//i)) {
-    normalized = `https://${normalized}`;
-  }
-
-  // Validate the normalized URL
-  validateUrl(normalized);
 
   return normalized;
 }
