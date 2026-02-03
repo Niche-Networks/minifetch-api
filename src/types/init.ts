@@ -1,48 +1,74 @@
-export type Network = 'base' | 'base-sepolia' | 'solana' | 'solana-devnet';
+import type { ClientConfig, ProcessedConfig, Network } from './types/config.js';
+import { ConfigurationError } from './types/errors.js';
 
-export interface ClientConfig {
-  /**
-   * Blockchain network to use for payments
-   * @default 'base'
-   */
-  network?: Network;
-  /**
-   * Private key for signing transactions (hex string for EVM, base58 for Solana)
-   */
-  privateKey: string;
-  /**
-   * Custom block explorer URL for transaction links
-   */
-  explorerUrl?: string;
+/**
+ * Default configuration values
+ */
+const DEFAULTS = {
+  network: 'base' as Network,
+  apiBaseUrls: {
+    'base-sepolia': 'http://localhost:4021/api/v1/x402',
+    'solana-devnet': 'https://localhost:4021/api/v1/x402',
+    'base': 'https://minifetch.com/api/v1/x402',
+    'solana': 'https://minifetch.com/api/v1/x402'
+  },
+  explorerUrls: {
+    'base-sepolia': 'https://sepolia.basescan.org/tx',
+    'solana-devnet': 'https://explorer.solana.com/tx?cluster=devnet',
+    'base': 'https://basescan.org/tx',
+    'solana': 'https://explorer.solana.com/tx',
+  },
+} as const;
+
+/**
+ * Process and validate client configuration
+ */
+export function initConfig(config: ClientConfig): ProcessedConfig {
+  // Validate private key is provided
+  if (!config.privateKey || config.privateKey.trim() === '') {
+    throw new ConfigurationError('Private key is required');
+  }
+
+  // Validate private key format based on network
+  const network = config.network || DEFAULTS.network;
+  validatePrivateKey(config.privateKey, network);
+
+  // Build processed config
+  const apiBaseUrl = DEFAULTS.apiBaseUrls[network];
+  const explorerUrl = config.explorerUrl || DEFAULTS.explorerUrls[network];
+
+  return {
+    network,
+    apiBaseUrl,
+    explorerUrl,
+  };
 }
 
-export interface ProcessedConfig {
-  network: Network;
-  apiBaseUrl: string;
-  explorerUrl: string;
+/**
+ * Validate private key format for the given network
+ */
+function validatePrivateKey(privateKey: string, network: Network): void {
+  if (network === 'solana' || network === 'solana-devnet') {
+    // Solana: base58 encoded, typically 88 characters
+    if (!/^[1-9A-HJ-NP-Za-km-z]{87,88}$/.test(privateKey)) {
+      throw new ConfigurationError(
+        'Invalid Solana private key format (expected base58 string)'
+      );
+    }
+  } else {
+    // EVM: hex string, 64 characters (with or without 0x prefix)
+    const cleanKey = privateKey.startsWith('0x') ? privateKey.slice(2) : privateKey;
+    if (!/^[0-9a-fA-F]{64}$/.test(cleanKey)) {
+      throw new ConfigurationError(
+        'Invalid EVM private key format (expected 64-character hex string)'
+      );
+    }
+  }
 }
 
-// Extract options - shared across all endpoints
-export interface BaseExtractOptions {
-  // Future: retries, etc.
-
-  /**
-   * Maximum time to wait for the request in milliseconds
-   * @default 30000
-   */
-  timeout?: number;
+/**
+ * Get the default timeout value
+ */
+export function getDefaultTimeout(): number {
+  return 30000; // 30 seconds
 }
-
-// Metadata-specific options
-export interface MetadataExtractOptions extends BaseExtractOptions {
-  /**
-   * Include raw HTML response body in the result
-   * @default false
-   */
-  includeResponseBody?: boolean;
-}
-
-// Content, Preview, Links, Redirects use BaseExtractOptions (no special options yet)
-export type ContentExtractOptions = BaseExtractOptions;
-export type PreviewExtractOptions = BaseExtractOptions;
-export type LinksExtractOptions = BaseExtractOptions;
