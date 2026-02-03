@@ -3,12 +3,13 @@ import { ConfigurationError } from './types/errors.js';
 
 /**
  * Default configuration values
+ * Exported for testing purposes
  */
-const DEFAULTS = {
+export const DEFAULTS = {
   network: 'base' as Network,
   apiBaseUrls: {
     'base-sepolia': 'http://localhost:4021/api/v1/x402',
-    'solana-devnet': 'https://localhost:4021/api/v1/x402',
+    'solana-devnet': 'http://localhost:4021/api/v1/x402', // Changed https -> http
     'base': 'https://minifetch.com/api/v1/x402',
     'solana': 'https://minifetch.com/api/v1/x402'
   },
