@@ -29,7 +29,8 @@ export interface PaymentResult {
  * Request options for payment flow
  */
 export interface PaymentRequestOptions {
-  method?: 'GET' | 'POST';
+  //method?: 'GET' | 'POST'; // LATER
+  method?: "GET",
   body?: string | FormData | URLSearchParams;
   headers?: Record<string, string>;
 }
@@ -57,7 +58,7 @@ export async function handlePayment(
   const paymentReq = await parsePaymentRequirements(initialResponse);
 
   if (!paymentReq) {
-    throw new PaymentFailedError('No payment requirements found in 402 response');
+    throw new PaymentFailedError("No payment requirements found in 402 response");
   }
 
   // Validate network matches config
@@ -75,30 +76,32 @@ export async function handlePayment(
 
   // Build request options with payment header
   const fetchOptions: RequestInit = {
-    method: options?.method || 'GET',
+    // method: options?.method || 'GET', // <-- LATER
+    method: "GET",
     headers: {
-      'X-Payment': paymentHeader,
+      "X-Payment": paymentHeader,
       ...(options?.headers || {}),
     },
   };
 
+  // LATER:
   // Add body for POST requests
-  if (options?.method === 'POST' && options?.body) {
-    fetchOptions.body = options.body;
+  // if (options?.method === 'POST' && options?.body) {
+  //   fetchOptions.body = options.body;
 
-    // Set Content-Type if not already set and body is JSON
-    if (!options.headers?.['Content-Type'] && typeof options.body === 'string') {
-      try {
-        JSON.parse(options.body);
-        fetchOptions.headers = {
-          ...fetchOptions.headers,
-          'Content-Type': 'application/json',
-        };
-      } catch {
-        // Not JSON, leave Content-Type unset
-      }
-    }
-  }
+  //   // Set Content-Type if not already set and body is JSON
+  //   if (!options.headers?.['Content-Type'] && typeof options.body === 'string') {
+  //     try {
+  //       JSON.parse(options.body);
+  //       fetchOptions.headers = {
+  //         ...fetchOptions.headers,
+  //         'Content-Type': 'application/json',
+  //       };
+  //     } catch {
+  //       // Not JSON, leave Content-Type unset
+  //     }
+  //   }
+  // }
 
   // Retry request with payment
   const paidResponse = await fetch(url, fetchOptions);
@@ -145,10 +148,11 @@ async function parsePaymentRequirements(
       return requirements[0]; // Use first payment option
     }
 
+    // Deprecated:
     // x402 v1 format: single payment requirement
-    if (requirements.scheme && requirements.network) {
-      return requirements;
-    }
+    // if (requirements.scheme && requirements.network) {
+    //   return requirements;
+    // }
 
     return null;
   } catch (error) {
@@ -188,15 +192,15 @@ function createEvmPayment(
 ): string {
 
   if (!config.privateKey) {
-    throw new PaymentFailedError('Private key required for EVM payments');
+    throw new PaymentFailedError("Private key required for EVM payments");
   }
 
   try {
     // Encode payment data using viem
     const encoded = encodeAbiParameters(
       [
-        { name: 'to', type: 'address' },
-        { name: 'amount', type: 'uint256' },
+        { name: "to", type: "address" },
+        { name: "amount", type: "uint256" },
       ],
       [paymentReq.to as Hex, BigInt(paymentReq.amount)]
     );
@@ -216,7 +220,7 @@ function createEvmPayment(
 
   } catch (error) {
     throw new PaymentFailedError(
-      `Failed to create EVM payment: ${error instanceof Error ? error.message : 'Unknown error'}`
+      `Failed to create EVM payment: ${error instanceof Error ? error.message : "Unknown error"}`
     );
   }
 }
@@ -231,7 +235,7 @@ async function createSolanaPayment(
 ): Promise<string> {
 
   if (!config.privateKey) {
-    throw new PaymentFailedError('Private key required for Solana payments');
+    throw new PaymentFailedError("Private key required for Solana payments");
   }
 
   try {
@@ -254,7 +258,7 @@ async function createSolanaPayment(
 
   } catch (error) {
     throw new PaymentFailedError(
-      `Failed to create Solana payment: ${error instanceof Error ? error.message : 'Unknown error'}`
+      `Failed to create Solana payment: ${error instanceof Error ? error.message : "Unknown error"}`
     );
   }
 }
