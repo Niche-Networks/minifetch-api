@@ -72,7 +72,8 @@ export function validateUrl(url: string): string {
     }
   }
 
-  // Check for localhost/private IPs
+  // Basic check for localhost/private IPs
+  // API server will do deeper SSRF validation
   if (isPrivateOrLocalhost(parsed.hostname)) {
     throw new InvalidUrlError(
       normalized,
@@ -94,10 +95,10 @@ function isPrivateOrLocalhost(hostname: string): boolean {
 
   // Private IP ranges (basic check)
   const privateIpPatterns = [
-    /^10\./,                    // 10.0.0.0/8
+    /^10\./,                          // 10.0.0.0/8
     /^172\.(1[6-9]|2[0-9]|3[0-1])\./, // 172.16.0.0/12
-    /^192\.168\./,              // 192.168.0.0/16
-    /^169\.254\./,              // 169.254.0.0/16 (link-local)
+    /^192\.168\./,                    // 192.168.0.0/16
+    /^169\.254\./,                    // 169.254.0.0/16 (link-local)
   ];
 
   return privateIpPatterns.some(pattern => pattern.test(hostname));
