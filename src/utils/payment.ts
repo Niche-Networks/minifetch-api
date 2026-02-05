@@ -2,6 +2,7 @@ import { encodeAbiParameters, type Hex } from 'viem';
 import { generateKeyPairSigner } from '@solana/kit';
 import bs58 from 'bs58';
 import type { ProcessedConfig } from '../types/config.js';
+import type { PaymentInfo } from '../types/results.js';
 import { PaymentFailedError, NetworkError } from '../types/errors.js';
 
 /**
@@ -13,16 +14,6 @@ interface PaymentRequirement {
   to: string;
   amount: string;
   data?: string;
-}
-
-/**
- * Payment result containing transaction details
- */
-export interface PaymentResult {
-  amount: string;
-  network: string;
-  txHash?: string;
-  explorerUrl?: string;
 }
 
 /**
@@ -47,7 +38,7 @@ export async function handlePayment(
   initialResponse: Response,
   config: ProcessedConfig,
   options?: PaymentRequestOptions
-): Promise<{ response: Response; payment?: PaymentResult }> {
+): Promise<{ response: Response; payment?: PaymentInfo }> {
 
   // Check if payment is required
   if (initialResponse.status !== 402) {
@@ -72,7 +63,7 @@ export async function handlePayment(
   }
 
   // Create signed payment based on network type
-  const paymentHeader = await createSignedPayment(paymentReq, config);
+  const { paymentHeader, payer } = await createSignedPayment(paymentReq, config);
 
   // Build request options with payment header
   const fetchOptions: RequestInit = {
@@ -84,7 +75,7 @@ export async function handlePayment(
     },
   };
 
-  // LATER:
+  // LATER...
   // Add body for POST requests
   // if (options?.method === 'POST' && options?.body) {
   //   fetchOptions.body = options.body;
@@ -112,18 +103,15 @@ export async function handlePayment(
     );
   }
 
-  // Build payment result for user
-  const payment: PaymentResult = {
+  // Build payment info for user
+  const payment: PaymentInfo = {
+    success: paidResponse.ok,
+    payer,
     amount: paymentReq.amount,
-    network: paymentReq.network,
+    network: config.network as PaymentInfo["network"],
+    txHash: '', // Facilitator handles settlement, we don't have the hash yet
+    explorerLink: config.explorerUrl || '',
   };
-
-  // Add explorer URL if available
-  if (config.explorerUrl) {
-    // Note: txHash would come from on-chain transaction
-    // For now we don't have it since facilitator handles settlement
-    payment.explorerUrl = config.explorerUrl;
-  }
 
   return { response: paidResponse, payment };
 }
@@ -134,7 +122,7 @@ export async function handlePayment(
 async function parsePaymentRequirements(
   response: Response
 ): Promise<PaymentRequirement | null> {
-  const paymentHeader = response.headers.get('X-Payment-Required');
+  const paymentHeader = response.headers.get("X-Payment-Required");
 
   if (!paymentHeader) {
     return null;
@@ -148,7 +136,7 @@ async function parsePaymentRequirements(
       return requirements[0]; // Use first payment option
     }
 
-    // Deprecated:
+    // Deprecated - minifetch server returns x402 v2 only now
     // x402 v1 format: single payment requirement
     // if (requirements.scheme && requirements.network) {
     //   return requirements;
@@ -164,14 +152,15 @@ async function parsePaymentRequirements(
 
 /**
  * Create signed payment for EVM (Base) or Solana
+ * Returns payment header and payer address
  */
 async function createSignedPayment(
   paymentReq: PaymentRequirement,
   config: ProcessedConfig
-): Promise<string> {
+): Promise<{ paymentHeader: string; payer: string }> {
 
-  const isEvm = config.network.startsWith('base');
-  const isSolana = config.network.startsWith('solana');
+  const isEvm = config.network.startsWith("base");
+  const isSolana = config.network.startsWith("solana");
 
   if (isEvm) {
     return createEvmPayment(paymentReq, config);
@@ -189,21 +178,25 @@ async function createSignedPayment(
 function createEvmPayment(
   paymentReq: PaymentRequirement,
   config: ProcessedConfig
-): string {
+): { paymentHeader: string; payer: string } {
 
   if (!config.privateKey) {
-    throw new PaymentFailedError("Private key required for EVM payments");
+    throw new PaymentFailedError('Private key required for EVM payments');
   }
 
   try {
     // Encode payment data using viem
     const encoded = encodeAbiParameters(
       [
-        { name: "to", type: "address" },
-        { name: "amount", type: "uint256" },
+        { name: 'to', type: 'address' },
+        { name: 'amount', type: 'uint256' },
       ],
       [paymentReq.to as Hex, BigInt(paymentReq.amount)]
     );
+
+    // Get payer address from private key (would use viem's privateKeyToAccount)
+    // For now, placeholder - would extract from account
+    const payer = "0x..."; // TODO: Extract from account
 
     // Create payment authorization
     // Note: In production, this would include proper signature
@@ -216,7 +209,10 @@ function createEvmPayment(
       // Signature would be added here by facilitator client
     };
 
-    return JSON.stringify(payment);
+    return {
+      paymentHeader: JSON.stringify(payment),
+      payer,
+    };
 
   } catch (error) {
     throw new PaymentFailedError(
@@ -232,7 +228,7 @@ function createEvmPayment(
 async function createSolanaPayment(
   paymentReq: PaymentRequirement,
   config: ProcessedConfig
-): Promise<string> {
+): Promise<{ paymentHeader: string; payer: string }> {
 
   if (!config.privateKey) {
     throw new PaymentFailedError("Private key required for Solana payments");
@@ -254,7 +250,10 @@ async function createSolanaPayment(
       // Signature would be added here
     };
 
-    return JSON.stringify(payment);
+    return {
+      paymentHeader: JSON.stringify(payment),
+      payer: signer.address,
+    };
 
   } catch (error) {
     throw new PaymentFailedError(
