@@ -13,7 +13,7 @@ export interface ClientConfig {
   privateKey: string;
 }
 
-export interface ProcessedConfig {
+export interface InitConfig {
   network: Network;
   privateKey: string;
   apiBaseUrl: string;

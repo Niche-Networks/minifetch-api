@@ -1,4 +1,4 @@
-import type { ClientConfig, ProcessedConfig, Network } from './types/config.js';
+import type { ClientConfig, InitConfig, Network } from './types/config.js';
 import { ConfigurationError } from './types/errors.js';
 
 /**
@@ -24,7 +24,7 @@ export const DEFAULTS = {
 /**
  * Process and validate client configuration
  */
-export function initConfig(config: ClientConfig): ProcessedConfig {
+export function initConfig(config: ClientConfig): InitConfig {
   // Validate private key is provided
   if (!config.privateKey || config.privateKey.trim() === '') {
     throw new ConfigurationError('Private key is required');

@@ -1,4 +1,4 @@
-import { processConfig } from './init.js';
+import { initConfig } from './init.js';
 import { validateAndNormalizeUrl } from './utils/validation.js';
 import { handlePayment } from './utils/payment.js';
 import type { ClientConfig, ProcessedConfig } from './types/config.js';
@@ -25,7 +25,7 @@ export class MinifetchClient {
   private baseUrl: string;
 
   constructor(config: ClientConfig) {
-    this.config = processConfig(config);
+    this.config = initConfig(config);
     this.baseUrl = this.config.apiUrl;
   }
 
