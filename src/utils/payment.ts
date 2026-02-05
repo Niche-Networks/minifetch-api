@@ -1,20 +1,12 @@
-import { encodeAbiParameters, type Hex } from 'viem';
-import { generateKeyPairSigner } from '@solana/kit';
+import { x402Client, wrapFetchWithPayment, x402HTTPClient } from '@x402/fetch';
+import { registerExactEvmScheme } from '@x402/evm/exact/client';
+import { registerExactSvmScheme } from '@x402/svm/exact/client';
+import { privateKeyToAccount } from 'viem/accounts';
+import { createKeyPairSignerFromBytes, type KeyPairSigner } from '@solana/kit';
 import bs58 from 'bs58';
 import type { ProcessedConfig } from '../types/config.js';
 import type { PaymentInfo } from '../types/results.js';
 import { PaymentFailedError, NetworkError } from '../types/errors.js';
-
-/**
- * x402 payment requirement from server
- */
-interface PaymentRequirement {
-  scheme: string;
-  network: string;
-  to: string;
-  amount: string;
-  data?: string;
-}
 
 /**
  * Request options for payment flow
@@ -27,237 +19,87 @@ export interface PaymentRequestOptions {
 }
 
 /**
- * Handle x402 payment flow
- * 1. Detect 402 response
- * 2. Parse payment requirements
- * 3. Sign payment (EVM or Solana)
- * 4. Retry with payment header
+ * Handle x402 payment flow using Coinbase x402 client pattern
+ * 1. Initialize x402Client and register payment scheme
+ * 2. Wrap fetch with payment capabilities
+ * 3. Make request (client handles 402 detection and payment)
+ * 4. Extract payment receipt from response headers
  */
 export async function handlePayment(
   url: string,
-  initialResponse: Response,
   config: ProcessedConfig,
   options?: PaymentRequestOptions
 ): Promise<{ response: Response; payment?: PaymentInfo }> {
 
-  // Check if payment is required
-  if (initialResponse.status !== 402) {
-    return { response: initialResponse };
-  }
-
-  // Parse payment requirements
-  const paymentReq = await parsePaymentRequirements(initialResponse);
-
-  if (!paymentReq) {
-    throw new PaymentFailedError("No payment requirements found in 402 response");
-  }
-
-  // Validate network matches config
-  const configNetwork = config.network.split(':')[0]; // 'base' or 'solana'
-  const reqNetwork = paymentReq.network.split(':')[0];
-
-  if (configNetwork !== reqNetwork) {
-    throw new PaymentFailedError(
-      `Network mismatch: config has ${configNetwork}, server requires ${reqNetwork}`
-    );
-  }
-
-  // Create signed payment based on network type
-  const { paymentHeader, payer } = await createSignedPayment(paymentReq, config);
-
-  // Build request options with payment header
-  const fetchOptions: RequestInit = {
-    // method: options?.method || 'GET', // <-- LATER
-    method: "GET",
-    headers: {
-      "X-Payment": paymentHeader,
-      ...(options?.headers || {}),
-    },
-  };
-
-  // LATER...
-  // Add body for POST requests
-  // if (options?.method === 'POST' && options?.body) {
-  //   fetchOptions.body = options.body;
-
-  //   // Set Content-Type if not already set and body is JSON
-  //   if (!options.headers?.['Content-Type'] && typeof options.body === 'string') {
-  //     try {
-  //       JSON.parse(options.body);
-  //       fetchOptions.headers = {
-  //         ...fetchOptions.headers,
-  //         'Content-Type': 'application/json',
-  //       };
-  //     } catch {
-  //       // Not JSON, leave Content-Type unset
-  //     }
-  //   }
-  // }
-
-  // Retry request with payment
-  const paidResponse = await fetch(url, fetchOptions);
-
-  if (!paidResponse.ok && paidResponse.status !== 402) {
-    throw new NetworkError(
-      `Payment request failed: ${paidResponse.status} ${paidResponse.statusText}`
-    );
-  }
-
-  // Build payment info for user
-  const payment: PaymentInfo = {
-    success: paidResponse.ok,
-    payer,
-    amount: paymentReq.amount,
-    network: config.network as PaymentInfo["network"],
-    txHash: '', // Facilitator handles settlement, we don't have the hash yet
-    explorerLink: config.explorerUrl || '',
-  };
-
-  return { response: paidResponse, payment };
-}
-
-/**
- * Parse payment requirements from 402 response headers
- */
-async function parsePaymentRequirements(
-  response: Response
-): Promise<PaymentRequirement | null> {
-  const paymentHeader = response.headers.get("X-Payment-Required");
-
-  if (!paymentHeader) {
-    return null;
+  if (!config.privateKey) {
+    throw new PaymentFailedError('Private key required for payments');
   }
 
   try {
-    const requirements = JSON.parse(paymentHeader);
+    // Create x402 client and signer based on network type
+    const client = new x402Client();
+    let payer: string;
 
-    // x402 v2 format: array of payment options
-    if (Array.isArray(requirements) && requirements.length > 0) {
-      return requirements[0]; // Use first payment option
+    const isEvm = config.network.startsWith("base");
+    const isSolana = config.network.startsWith("solana");
+
+    if (isEvm) {
+      // Initialize EVM signer and register scheme
+      const signer = privateKeyToAccount(config.privateKey as `0x${string}`);
+      registerExactEvmScheme(client, { signer });
+      payer = signer.address;
+    } else if (isSolana) {
+      // Initialize Solana signer and register scheme
+      const privateKeyBytes = bs58.decode(config.privateKey);
+      const signer = await createKeyPairSignerFromBytes(privateKeyBytes);
+      registerExactSvmScheme(client, { signer });
+      payer = signer.address;
+    } else {
+      throw new PaymentFailedError(`Unsupported network: ${config.network}`);
     }
 
-    // Deprecated - minifetch server returns x402 v2 only now
-    // x402 v1 format: single payment requirement
-    // if (requirements.scheme && requirements.network) {
-    //   return requirements;
-    // }
+    // Wrap fetch with payment capabilities
+    const fetchWithPayment = wrapFetchWithPayment(fetch, client);
 
-    return null;
-  } catch (error) {
-    throw new PaymentFailedError(
-      `Failed to parse payment requirements: ${error instanceof Error ? error.message : 'Unknown error'}`
-    );
-  }
-}
-
-/**
- * Create signed payment for EVM (Base) or Solana
- * Returns payment header and payer address
- */
-async function createSignedPayment(
-  paymentReq: PaymentRequirement,
-  config: ProcessedConfig
-): Promise<{ paymentHeader: string; payer: string }> {
-
-  const isEvm = config.network.startsWith("base");
-  const isSolana = config.network.startsWith("solana");
-
-  if (isEvm) {
-    return createEvmPayment(paymentReq, config);
-  } else if (isSolana) {
-    return createSolanaPayment(paymentReq, config);
-  } else {
-    throw new PaymentFailedError(`Unsupported network: ${config.network}`);
-  }
-}
-
-/**
- * Create EVM payment authorization (Base network)
- * Uses EIP-712 style encoding
- */
-function createEvmPayment(
-  paymentReq: PaymentRequirement,
-  config: ProcessedConfig
-): { paymentHeader: string; payer: string } {
-
-  if (!config.privateKey) {
-    throw new PaymentFailedError('Private key required for EVM payments');
-  }
-
-  try {
-    // Encode payment data using viem
-    const encoded = encodeAbiParameters(
-      [
-        { name: 'to', type: 'address' },
-        { name: 'amount', type: 'uint256' },
-      ],
-      [paymentReq.to as Hex, BigInt(paymentReq.amount)]
-    );
-
-    // Get payer address from private key (would use viem's privateKeyToAccount)
-    // For now, placeholder - would extract from account
-    const payer = "0x..."; // TODO: Extract from account
-
-    // Create payment authorization
-    // Note: In production, this would include proper signature
-    const payment = {
-      scheme: paymentReq.scheme,
-      network: paymentReq.network,
-      to: paymentReq.to,
-      amount: paymentReq.amount,
-      data: encoded,
-      // Signature would be added here by facilitator client
+    // Build request options
+    const fetchOptions: RequestInit = {
+      method: options?.method || "GET",
+      headers: options?.headers || {},
     };
 
-    return {
-      paymentHeader: JSON.stringify(payment),
+    // Make request with payment handling
+    const response = await fetchWithPayment(url, fetchOptions);
+
+    if (!response.ok) {
+      throw new NetworkError(
+        `Request failed: ${response.status} ${response.statusText}`
+      );
+    }
+
+    // Extract payment receipt from response headers
+    const httpClient = new x402HTTPClient(client);
+    const paymentResponse = httpClient.getPaymentSettleResponse(
+      (name) => response.headers.get(name)
+    );
+
+    // Build payment info for user
+    const payment: PaymentInfo = {
+      success: true,
       payer,
+      amount: paymentResponse.amount || '0',
+      network: config.network as PaymentInfo["network"],
+      txHash: paymentResponse.transaction || '',
+      explorerLink: paymentResponse.transaction
+        ? `${config.explorerUrl}/tx/${paymentResponse.transaction}`
+        : '',
     };
+
+    return { response, payment };
 
   } catch (error) {
     throw new PaymentFailedError(
-      `Failed to create EVM payment: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Payment flow failed: ${error instanceof Error ? error.message : "Unknown error"}`
     );
   }
 }
 
-/**
- * Create Solana payment authorization
- * Uses Solana transaction format
- */
-async function createSolanaPayment(
-  paymentReq: PaymentRequirement,
-  config: ProcessedConfig
-): Promise<{ paymentHeader: string; payer: string }> {
-
-  if (!config.privateKey) {
-    throw new PaymentFailedError("Private key required for Solana payments");
-  }
-
-  try {
-    // Decode base58 private key to create signer
-    const secretKey = bs58.decode(config.privateKey);
-    const signer = await generateKeyPairSigner(secretKey);
-
-    // Create payment authorization
-    // Note: Actual transaction signing would happen here
-    const payment = {
-      scheme: paymentReq.scheme,
-      network: paymentReq.network,
-      to: paymentReq.to,
-      amount: paymentReq.amount,
-      publicKey: signer.address,
-      // Signature would be added here
-    };
-
-    return {
-      paymentHeader: JSON.stringify(payment),
-      payer: signer.address,
-    };
-
-  } catch (error) {
-    throw new PaymentFailedError(
-      `Failed to create Solana payment: ${error instanceof Error ? error.message : "Unknown error"}`
-    );
-  }
-}

@@ -1,6 +1,6 @@
 import { processConfig } from './init.js';
 import { validateAndNormalizeUrl } from './utils/validation.js';
-import { handlePayment, type PaymentResult } from './utils/payment.js';
+import { handlePayment } from './utils/payment.js';
 import type { ClientConfig, ProcessedConfig } from './types/config.js';
 import type {
   PreflightCheckResult,
@@ -92,13 +92,9 @@ export class MinifetchClient {
     const requestUrl = `${this.baseUrl}${endpoint}`;
 
     try {
-      // Initial request (may return 402)
-      const initialResponse = await fetch(requestUrl);
-
-      // Handle payment if required
+      // Make request with x402 payment handling
       const { response, payment } = await handlePayment(
         requestUrl,
-        initialResponse,
         this.config
       );
 
@@ -150,11 +146,9 @@ export class MinifetchClient {
     const requestUrl = `${this.baseUrl}${endpoint}`;
 
     try {
-      const initialResponse = await fetch(requestUrl);
-
+      // Make request with x402 payment handling
       const { response, payment } = await handlePayment(
         requestUrl,
-        initialResponse,
         this.config
       );
 
@@ -206,13 +200,9 @@ export class MinifetchClient {
     const requestUrl = `${this.baseUrl}${endpoint}`;
 
     try {
-      // Initial request (may return 402)
-      const initialResponse = await fetch(requestUrl);
-
-      // Handle payment if required
+      // Make request with x402 payment handling
       const { response, payment } = await handlePayment(
         requestUrl,
-        initialResponse,
         this.config
       );
 
@@ -274,13 +264,9 @@ export class MinifetchClient {
     const requestUrl = `${this.baseUrl}${endpoint}`;
 
     try {
-      // Initial request (may return 402)
-      const initialResponse = await fetch(requestUrl);
-
-      // Handle payment if required
+      // Make request with x402 payment handling
       const { response, payment } = await handlePayment(
         requestUrl,
-        initialResponse,
         this.config
       );
 
