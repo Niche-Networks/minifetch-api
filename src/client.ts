@@ -3,7 +3,7 @@ import { validateAndNormalizeUrl } from './utils/validation.js';
 import { handlePayment, type PaymentResult } from './utils/payment.js';
 import type { ClientConfig, ProcessedConfig } from './types/config.js';
 import type {
-  CheckResult,
+  PreflightCheckResult,
   MetadataResult,
   ContentResult,
   PreviewResult,
@@ -33,7 +33,7 @@ export class MinifetchClient {
    * @throws {InvalidUrlError} if URL is invalid
    * @throws {NetworkError} if request fails
    */
-  async preflightCheckUrl(url: string): Promise<CheckResult> {
+  async preflightCheckUrl(url: string): Promise<PreflightCheckResult> {
     // Validate and normalize URL
     const normalizedUrl = validateAndNormalizeUrl(url);
 
