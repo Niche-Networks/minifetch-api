@@ -323,7 +323,10 @@ export class MinifetchClient {
    * Check URL and extract metadata in one call
    * Throws RobotsBlockedError if robots.txt blocks the URL
    */
-  async checkAndExtractMetadata(url: string): Promise<MetadataResult> {
+  async checkAndExtractMetadata(
+    url: string,
+    options?: { includeResponseBody?: boolean }
+): Promise<MetadataResult> {
     const checkResult = await this.preflightCheckUrl(url);
 
     if (!checkResult.results[0]?.allowed) {
@@ -332,7 +335,7 @@ export class MinifetchClient {
       );
     }
 
-    return this.extractUrlMetadata(url);
+    return this.extractUrlMetadata(url, options);
   }
 
   /**
