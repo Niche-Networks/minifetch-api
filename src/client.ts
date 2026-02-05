@@ -17,7 +17,7 @@ import {
 
 /**
  * Main Minifetch API client
- * Provides methods to check URLs and extract metadata/content
+ * Provides methods to check URLs and extract metadata/links/preview/content
  */
 export class MinifetchClient {
   private config: ProcessedConfig;
@@ -25,7 +25,7 @@ export class MinifetchClient {
 
   constructor(config: ClientConfig) {
     this.config = processConfig(config);
-    this.baseUrl = this.config.apiUrl || 'https://api.minifetch.com';
+    this.baseUrl = this.config.apiUrl || 'https://minifetch.com';
   }
 
   /**
@@ -53,17 +53,16 @@ export class MinifetchClient {
       const data = await response.json();
 
       return {
-        success: data.allowed === true,
-        url: normalizedUrl,
-        allowed: data.allowed,
-        reason: data.reason,
+        success: data.success,
+        queryParameters: data.queryParameters,
+        results: data.results,
       };
     } catch (error) {
       if (error instanceof NetworkError) {
         throw error;
       }
       throw new NetworkError(
-        `Preflight check failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Preflight check failed: ${error instanceof Error ? error.message : "Unknown error"}`
       );
     }
   }
@@ -74,12 +73,21 @@ export class MinifetchClient {
    * @throws {PaymentFailedError} if payment fails
    * @throws {ExtractionFailedError} if extraction fails
    */
-  async extractUrlMetadata(url: string): Promise<MetadataResult> {
+  async extractUrlMetadata(
+    url: string,
+    options?: { includeResponseBody?: boolean }
+  ): Promise<MetadataResult> {
     // Validate and normalize URL
     const normalizedUrl = validateAndNormalizeUrl(url);
 
-    // Build request URL
-    const endpoint = `/api/v1/x402/extract/url-metadata?url=${encodeURIComponent(normalizedUrl)}`;
+    // Build request URL with optional params
+    const params = new URLSearchParams({ url: normalizedUrl });
+    if (options?.includeResponseBody) {
+      params.set("includeResponseBody", "true");
+    }
+
+    // Build request URL - convert params to string
+    const endpoint = `/api/v1/x402/extract/url-metadata?${params.toString()}`;
     const requestUrl = `${this.baseUrl}${endpoint}`;
 
     try {
@@ -105,13 +113,14 @@ export class MinifetchClient {
       // Check for server-side errors in response
       if (!data.success) {
         throw new ExtractionFailedError(
-          data.error?.message || 'Metadata extraction failed'
+          data.results?.[0]?.metadata?.error || "Metadata extraction failed"
         );
       }
 
       return {
         success: true,
-        metadata: data.results?.[0]?.metadata || data.metadata,
+        queryParameters: data.queryParameters,
+        results: data.results,
         payment,
       };
     } catch (error) {
@@ -122,7 +131,7 @@ export class MinifetchClient {
         throw error;
       }
       throw new ExtractionFailedError(
-        `Metadata extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Metadata extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`
       );
     }
   }
@@ -143,10 +152,10 @@ export class MinifetchClient {
     // Build request URL with optional params
     const params = new URLSearchParams({ url: normalizedUrl });
     if (options?.includeMediaUrls) {
-      params.set('includeMediaUrls', 'true');
+      params.set("includeMediaUrls", "true");
     }
 
-    const endpoint = `/api/v1/x402/extract/url-content?${params}`;
+    const endpoint = `/api/v1/x402/extract/url-content?${params.toString()}`;
     const requestUrl = `${this.baseUrl}${endpoint}`;
 
     try {
@@ -172,13 +181,14 @@ export class MinifetchClient {
       // Check for server-side errors in response
       if (!data.success) {
         throw new ExtractionFailedError(
-          data.error?.message || 'Content extraction failed'
+          data.results?.[0]?.content?.error?.message || "Content extraction failed"
         );
       }
 
       return {
         success: true,
-        content: data.results?.[0]?.content || data.content,
+        queryParameters: data.queryParameters,
+        results: data.results,
         payment,
       };
     } catch (error) {
@@ -189,7 +199,7 @@ export class MinifetchClient {
         throw error;
       }
       throw new ExtractionFailedError(
-        `Content extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Content extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`
       );
     }
   }
@@ -231,13 +241,14 @@ export class MinifetchClient {
       // Check for server-side errors in response
       if (!data.success) {
         throw new ExtractionFailedError(
-          data.error?.message || 'Preview extraction failed'
+          data.results?.[0]?.metadata?.error?.message || "Preview extraction failed"
         );
       }
 
       return {
         success: true,
-        preview: data.results?.[0]?.preview || data.preview,
+        queryParameters: data.queryParameters,
+        results: data.results,
         payment,
       };
     } catch (error) {
@@ -260,9 +271,9 @@ export class MinifetchClient {
   async checkAndExtractMetadata(url: string): Promise<MetadataResult> {
     const checkResult = await this.preflightCheckUrl(url);
 
-    if (!checkResult.allowed) {
+    if (!checkResult.results[0]?.allowed) {
       throw new RobotsBlockedError(
-        checkResult.reason || 'URL blocked by robots.txt'
+        checkResult.results[0]?.message || "URL blocked by robots.txt"
       );
     }
 
@@ -279,9 +290,9 @@ export class MinifetchClient {
   ): Promise<ContentResult> {
     const checkResult = await this.preflightCheckUrl(url);
 
-    if (!checkResult.allowed) {
+    if (!checkResult.results[0]?.allowed) {
       throw new RobotsBlockedError(
-        checkResult.reason || 'URL blocked by robots.txt'
+        checkResult.results[0]?.message || "URL blocked by robots.txt"
       );
     }
 
@@ -295,9 +306,9 @@ export class MinifetchClient {
   async checkAndExtractPreview(url: string): Promise<PreviewResult> {
     const checkResult = await this.preflightCheckUrl(url);
 
-    if (!checkResult.allowed) {
+    if (!checkResult.results[0]?.allowed) {
       throw new RobotsBlockedError(
-        checkResult.reason || 'URL blocked by robots.txt'
+        checkResult.results[0]?.message || "URL blocked by robots.txt"
       );
     }
 

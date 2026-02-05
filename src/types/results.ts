@@ -30,6 +30,7 @@ export interface BaseResult {
  * Result from preflight URL check (free endpoint)
  */
 export interface FreePreflightCheckResult extends BaseResult {
+  success: boolean;
   queryParameters: {
     url: string[];
     [key: string]: any;
@@ -47,6 +48,7 @@ export interface FreePreflightCheckResult extends BaseResult {
  * Result from metadata extraction
  */
 export interface MetadataResult extends BaseResult {
+  success: boolean;
   queryParameters: {
     url: string[];
     includeResponseBody?: boolean;
