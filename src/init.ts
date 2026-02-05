@@ -8,10 +8,10 @@ import { ConfigurationError } from './types/errors.js';
 export const DEFAULTS = {
   network: 'base' as Network,
   apiBaseUrls: {
-    'base-sepolia': 'http://localhost:4021/api/v1/x402',
-    'solana-devnet': 'http://localhost:4021/api/v1/x402', // Changed https -> http
-    'base': 'https://minifetch.com/api/v1/x402',
-    'solana': 'https://minifetch.com/api/v1/x402'
+    'base-sepolia': 'http://localhost:4021',
+    'solana-devnet': 'http://localhost:4021',
+    'base': 'https://minifetch.com/api',
+    'solana': 'https://minifetch.com/api'
   },
   explorerUrls: {
     'base-sepolia': 'https://sepolia.basescan.org/tx',
