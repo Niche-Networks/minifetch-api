@@ -96,6 +96,32 @@ export interface LinksResult extends BaseResult {
 }
 
 /**
+ * Result from preview extraction
+ */
+export interface PreviewResult extends BaseResult {
+  queryParameters: {
+    url: string[];
+    [key: string]: any;
+  };
+  results: Array<{
+    metadata: {
+      requestUrl: string; // the url the user passed in
+      url: string; // final destination url in request chain
+      title: string;
+      description: string;
+      image: string;
+      minifetchCache?: Record<string, string>;
+      [key: string]: any;
+    };
+    error?: {
+      statusCode: number;
+      message: string;
+      [key: string]: any;
+    };
+  }>;
+}
+
+/**
  * Result from content extraction
  */
 export interface ContentResult extends BaseResult {
@@ -114,32 +140,6 @@ export interface ContentResult extends BaseResult {
         alt: string;
         [key: string]: any;
       }>;
-      minifetchCache?: Record<string, string>;
-      [key: string]: any;
-    };
-    error?: {
-      statusCode: number;
-      message: string;
-      [key: string]: any;
-    };
-  }>;
-}
-
-/**
- * Result from preview extraction
- */
-export interface PreviewResult extends BaseResult {
-  queryParameters: {
-    url: string[];
-    [key: string]: any;
-  };
-  results: Array<{
-    metadata: {
-      requestUrl: string; // the url the user passed in
-      url: string; // final destination url in request chain
-      title: string;
-      description: string;
-      image: string;
       minifetchCache?: Record<string, string>;
       [key: string]: any;
     };

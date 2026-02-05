@@ -192,6 +192,66 @@ export class MinifetchClient {
   }
 
   /**
+   * Extract URL preview (paid, requires x402 payment)
+   * @throws {InvalidUrlError} if URL is invalid
+   * @throws {PaymentFailedError} if payment fails
+   * @throws {ExtractionFailedError} if extraction fails
+   */
+  async extractUrlPreview(url: string): Promise<PreviewResult> {
+    // Validate and normalize URL
+    const normalizedUrl = validateAndNormalizeUrl(url);
+
+    // Build request URL
+    const endpoint = `/api/v1/x402/extract/url-preview?url=${encodeURIComponent(normalizedUrl)}`;
+    const requestUrl = `${this.baseUrl}${endpoint}`;
+
+    try {
+      // Initial request (may return 402)
+      const initialResponse = await fetch(requestUrl);
+
+      // Handle payment if required
+      const { response, payment } = await handlePayment(
+        requestUrl,
+        initialResponse,
+        this.config
+      );
+
+      // Check if extraction succeeded
+      if (!response.ok) {
+        throw new ExtractionFailedError(
+          `Preview extraction failed: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+
+      // Check for server-side errors in response
+      if (!data.success) {
+        throw new ExtractionFailedError(
+          data.results?.[0]?.metadata?.error?.message || "Preview extraction failed"
+        );
+      }
+
+      return {
+        success: true,
+        queryParameters: data.queryParameters,
+        results: data.results,
+        payment,
+      };
+    } catch (error) {
+      if (
+        error instanceof InvalidUrlError ||
+        error instanceof ExtractionFailedError
+      ) {
+        throw error;
+      }
+      throw new ExtractionFailedError(
+        `Preview extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  /**
    * Extract URL content as markdown (paid, requires x402 payment)
    * @throws {InvalidUrlError} if URL is invalid
    * @throws {PaymentFailedError} if payment fails
@@ -260,66 +320,6 @@ export class MinifetchClient {
   }
 
   /**
-   * Extract URL preview (paid, requires x402 payment)
-   * @throws {InvalidUrlError} if URL is invalid
-   * @throws {PaymentFailedError} if payment fails
-   * @throws {ExtractionFailedError} if extraction fails
-   */
-  async extractUrlPreview(url: string): Promise<PreviewResult> {
-    // Validate and normalize URL
-    const normalizedUrl = validateAndNormalizeUrl(url);
-
-    // Build request URL
-    const endpoint = `/api/v1/x402/extract/url-preview?url=${encodeURIComponent(normalizedUrl)}`;
-    const requestUrl = `${this.baseUrl}${endpoint}`;
-
-    try {
-      // Initial request (may return 402)
-      const initialResponse = await fetch(requestUrl);
-
-      // Handle payment if required
-      const { response, payment } = await handlePayment(
-        requestUrl,
-        initialResponse,
-        this.config
-      );
-
-      // Check if extraction succeeded
-      if (!response.ok) {
-        throw new ExtractionFailedError(
-          `Preview extraction failed: ${response.status} ${response.statusText}`
-        );
-      }
-
-      const data = await response.json();
-
-      // Check for server-side errors in response
-      if (!data.success) {
-        throw new ExtractionFailedError(
-          data.results?.[0]?.metadata?.error?.message || "Preview extraction failed"
-        );
-      }
-
-      return {
-        success: true,
-        queryParameters: data.queryParameters,
-        results: data.results,
-        payment,
-      };
-    } catch (error) {
-      if (
-        error instanceof InvalidUrlError ||
-        error instanceof ExtractionFailedError
-      ) {
-        throw error;
-      }
-      throw new ExtractionFailedError(
-        `Preview extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
-    }
-  }
-
-  /**
    * Check URL and extract metadata in one call
    * Throws RobotsBlockedError if robots.txt blocks the URL
    */
@@ -355,6 +355,22 @@ export class MinifetchClient {
   }
 
   /**
+   * Check URL and extract preview in one call
+   * Throws RobotsBlockedError if robots.txt blocks the URL
+   */
+  async checkAndExtractPreview(url: string): Promise<PreviewResult> {
+    const checkResult = await this.preflightCheckUrl(url);
+
+    if (!checkResult.results[0]?.allowed) {
+      throw new RobotsBlockedError(
+        checkResult.results[0]?.message || "URL blocked by robots.txt"
+      );
+    }
+
+    return this.extractUrlPreview(url);
+  }
+
+  /**
    * Check URL and extract content in one call
    * Throws RobotsBlockedError if robots.txt blocks the URL
    */
@@ -371,21 +387,5 @@ export class MinifetchClient {
     }
 
     return this.extractUrlContent(url, options);
-  }
-
-  /**
-   * Check URL and extract preview in one call
-   * Throws RobotsBlockedError if robots.txt blocks the URL
-   */
-  async checkAndExtractPreview(url: string): Promise<PreviewResult> {
-    const checkResult = await this.preflightCheckUrl(url);
-
-    if (!checkResult.results[0]?.allowed) {
-      throw new RobotsBlockedError(
-        checkResult.results[0]?.message || "URL blocked by robots.txt"
-      );
-    }
-
-    return this.extractUrlPreview(url);
   }
 }
