@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { MinifetchClient } from '../client.js';
+import { MinifetchClient } from '../src/client.js';
 
 describe("MinifetchClient", () => {
   it("should throw error when EVM key is invalid on base network", () => {
