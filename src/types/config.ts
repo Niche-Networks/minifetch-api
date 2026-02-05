@@ -7,7 +7,8 @@ export interface ClientConfig {
    */
   network?: Network;
   /**
-   * Private key for signing transactions (hex string for EVM, base58 for Solana)
+   * Private key for signing transactions -
+   * hex string for EVM, base58 for Solana
    */
   privateKey: string;
   /**

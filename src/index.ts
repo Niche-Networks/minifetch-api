@@ -1,7 +1,7 @@
 import { config } from "dotenv";
 import { x402Client, wrapFetchWithPayment, x402HTTPClient } from "@x402/fetch";
 import { registerExactEvmScheme } from "@x402/evm/exact/client";
-import { registerExactSvmScheme } from "@x402/svm/exact/client";
+import { registerExactSvmScheme } from "@x402/svm/exact/client"
 import { privateKeyToAccount } from "viem/accounts";
 import { createKeyPairSignerFromBytes, type KeyPairSigner } from "@solana/kit";
 import bs58 from "bs58";

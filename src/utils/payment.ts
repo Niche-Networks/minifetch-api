@@ -1,22 +1,12 @@
 import { x402Client, wrapFetchWithPayment, x402HTTPClient } from '@x402/fetch';
 import { registerExactEvmScheme } from '@x402/evm/exact/client';
-import { registerExactSvmScheme } from '@x402/svm/exact/client';
+import { registerExactSvmScheme } from "@x402/svm/exact/client"
 import { privateKeyToAccount } from 'viem/accounts';
 import { createKeyPairSignerFromBytes, type KeyPairSigner } from '@solana/kit';
 import bs58 from 'bs58';
 import type { ProcessedConfig } from '../types/config.js';
 import type { PaymentInfo } from '../types/results.js';
 import { PaymentFailedError, NetworkError } from '../types/errors.js';
-
-/**
- * Request options for payment flow
- */
-export interface PaymentRequestOptions {
-  //method?: 'GET' | 'POST'; // LATER
-  method?: "GET",
-  body?: string | FormData | URLSearchParams;
-  headers?: Record<string, string>;
-}
 
 /**
  * Handle x402 payment flow using Coinbase x402 client pattern
@@ -28,7 +18,6 @@ export interface PaymentRequestOptions {
 export async function handlePayment(
   url: string,
   config: ProcessedConfig,
-  options?: PaymentRequestOptions
 ): Promise<{ response: Response; payment?: PaymentInfo }> {
 
   if (!config.privateKey) {
@@ -46,13 +35,15 @@ export async function handlePayment(
     if (isEvm) {
       // Initialize EVM signer and register scheme
       const signer = privateKeyToAccount(config.privateKey as `0x${string}`);
-      registerExactEvmScheme(client, { signer });
+      const evmSigner = signer as ReturnType<typeof privateKeyToAccount>; // Type assertion for EVM
+      registerExactEvmScheme(client, { signer: evmSigner });
       payer = signer.address;
     } else if (isSolana) {
       // Initialize Solana signer and register scheme
       const privateKeyBytes = bs58.decode(config.privateKey);
       const signer = await createKeyPairSignerFromBytes(privateKeyBytes);
-      registerExactSvmScheme(client, { signer });
+      const svmSigner = signer as KeyPairSigner<string>; // Type assertion for Solana
+      registerExactSvmScheme(client, { signer: svmSigner });
       payer = signer.address;
     } else {
       throw new PaymentFailedError(`Unsupported network: ${config.network}`);
@@ -61,14 +52,11 @@ export async function handlePayment(
     // Wrap fetch with payment capabilities
     const fetchWithPayment = wrapFetchWithPayment(fetch, client);
 
-    // Build request options
-    const fetchOptions: RequestInit = {
-      method: options?.method || "GET",
-      headers: options?.headers || {},
-    };
-
     // Make request with payment handling
-    const response = await fetchWithPayment(url, fetchOptions);
+    console.log("Attempting fetch to:", url);
+    const response = await fetchWithPayment(url, {
+      method: "GET"
+    });
 
     if (!response.ok) {
       throw new NetworkError(
@@ -81,6 +69,9 @@ export async function handlePayment(
     const paymentResponse = httpClient.getPaymentSettleResponse(
       (name) => response.headers.get(name)
     );
+    console.log("Payment response:");
+    console.log(paymentResponse);
+    console.log(`View transaction: ${explorerUrl}/tx/${paymentResponse.transaction}`);
 
     // Build payment info for user
     const payment: PaymentInfo = {
@@ -98,7 +89,7 @@ export async function handlePayment(
 
   } catch (error) {
     throw new PaymentFailedError(
-      `Payment flow failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Payment failed: ${error instanceof Error ? error.message : "Unknown error"}`
     );
   }
 }
