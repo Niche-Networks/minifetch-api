@@ -5,20 +5,17 @@ export interface ClientConfig {
    * Blockchain network to use for payments
    * @default 'base'
    */
-  network?: Network;
+  network: Network;
   /**
    * Private key for signing transactions -
    * hex string for EVM, base58 for Solana
    */
   privateKey: string;
-  /**
-   * Custom block explorer URL for transaction links
-   */
-  explorerUrl?: string;
 }
 
 export interface ProcessedConfig {
   network: Network;
+  privateKey: string;
   apiBaseUrl: string;
   explorerUrl: string;
 }

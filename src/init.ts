@@ -40,6 +40,7 @@ export function initConfig(config: ClientConfig): ProcessedConfig {
 
   return {
     network,
+    privateKey,
     apiBaseUrl,
     explorerUrl,
   };
