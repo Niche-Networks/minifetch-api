@@ -5,8 +5,9 @@ import type { ClientConfig, ProcessedConfig } from './types/config.js';
 import type {
   PreflightCheckResult,
   MetadataResult,
-  ContentResult,
+  LinksResult,
   PreviewResult,
+  ContentResult,
 } from './types/results.js';
 import {
   InvalidUrlError,
@@ -132,6 +133,60 @@ export class MinifetchClient {
       }
       throw new ExtractionFailedError(
         `Metadata extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  }
+
+  /**
+   * Extract URL links (paid, requires x402 payment)
+   * @throws {InvalidUrlError} if URL is invalid
+   * @throws {PaymentFailedError} if payment fails
+   * @throws {ExtractionFailedError} if extraction fails
+   */
+  async extractUrlLinks(url: string): Promise<LinksResult> {
+    const normalizedUrl = validateAndNormalizeUrl(url);
+
+    const endpoint = `/api/v1/x402/extract/url-links?url=${encodeURIComponent(normalizedUrl)}`;
+    const requestUrl = `${this.baseUrl}${endpoint}`;
+
+    try {
+      const initialResponse = await fetch(requestUrl);
+
+      const { response, payment } = await handlePayment(
+        requestUrl,
+        initialResponse,
+        this.config
+      );
+
+      if (!response.ok) {
+        throw new ExtractionFailedError(
+          `Links extraction failed: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new ExtractionFailedError(
+          data.results?.[0]?.error?.message || "Links extraction failed"
+        );
+      }
+
+      return {
+        success: true,
+        queryParameters: data.queryParameters,
+        results: data.results,
+        payment,
+      };
+    } catch (error) {
+      if (
+        error instanceof InvalidUrlError ||
+        error instanceof ExtractionFailedError
+      ) {
+        throw error;
+      }
+      throw new ExtractionFailedError(
+        `Links extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`
       );
     }
   }
@@ -278,6 +333,22 @@ export class MinifetchClient {
     }
 
     return this.extractUrlMetadata(url);
+  }
+
+  /**
+   * Check URL and extract links in one call
+   * Throws RobotsBlockedError if robots.txt blocks the URL
+   */
+  async checkAndExtractLinks(url: string): Promise<LinksResult> {
+    const checkResult = await this.preflightCheckUrl(url);
+
+    if (!checkResult.results[0]?.allowed) {
+      throw new RobotsBlockedError(
+        checkResult.results[0]?.message || "URL blocked by robots.txt"
+      );
+    }
+
+    return this.extractUrlLinks(url);
   }
 
   /**
