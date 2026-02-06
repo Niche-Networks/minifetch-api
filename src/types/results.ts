@@ -26,8 +26,6 @@ export interface PaymentInfo {
   success: boolean;
   /** Account that paid for tx **/
   payer: string;
-  /** Amount paid in USDC */
-  amount: string;
   /** Network the payment was made on */
   network: 'base' | 'base-sepolia' | 'solana' | 'solana-devnet';
   /** Transaction hash */

@@ -38,4 +38,22 @@ describe("MinifetchClient", () => {
     expect(response.results[0].crawlDelay).toBe(1);
   });
 
+  it("extractUrlMetadata() on base-sepolia testnet", async () => {
+    const client = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: process.env.BASE_PRIVATE_KEY as any,
+    })
+    const response = await client.extractUrlMetadata('https://minifetch.com');
+
+    expect(response.success).toBe(true);
+    expect(response.results[0].metadata.url).toContain("minifetch.com");
+    expect(response.results[0].metadata.title).toContain("Minifetch.com");
+    expect(response.results[0].metadata["og:title"]).toContain("Minifetch.com");
+    expect(response.payment.success).toBe(true);
+    expect(response.payment.payer).toContain("0x");
+    expect(response.payment.network).toBe("base-sepolia");
+    expect(response.payment.txHash).toContain("0x");
+    expect(response.payment.explorerLink).toContain("sepolia");
+  });
+
 });

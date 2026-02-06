@@ -71,17 +71,16 @@ export async function handlePayment(
     );
     console.log("Payment response:");
     console.log(paymentResponse);
-    console.log(`View transaction: ${explorerUrl}/tx/${paymentResponse.transaction}`);
+    console.log(`View transaction: ${config.explorerUrl}/${paymentResponse.transaction}`);
 
     // Build payment info for user
     const payment: PaymentInfo = {
       success: true,
       payer,
-      amount: paymentResponse.amount || '0',
       network: config.network as PaymentInfo["network"],
       txHash: paymentResponse.transaction || '',
       explorerLink: paymentResponse.transaction
-        ? `${config.explorerUrl}/tx/${paymentResponse.transaction}`
+        ? `${config.explorerUrl}/${paymentResponse.transaction}`
         : '',
     };
 
