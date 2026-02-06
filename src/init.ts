@@ -56,7 +56,7 @@ function validatePrivateKey(privateKey: string, network: Network): void {
     // Solana: base58 encoded, typically 88 characters
     if (!/^[1-9A-HJ-NP-Za-km-z]{87,88}$/.test(privateKey)) {
       throw new ConfigurationError(
-        'Invalid Solana private key format (expected base58 string)'
+        "Invalid Solana private key format (expected base58 string)"
       );
     }
   } else {
