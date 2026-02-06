@@ -69,9 +69,9 @@ export async function handlePayment(
     const paymentResponse = httpClient.getPaymentSettleResponse(
       (name) => response.headers.get(name)
     );
-    console.log("Payment response:");
-    console.log(paymentResponse);
-    console.log(`View transaction: ${config.explorerUrl}/${paymentResponse.transaction}`);
+    // console.log("Payment response:");
+    // console.log(paymentResponse);
+    // console.log(`View transaction: ${config.explorerUrl}/${paymentResponse.transaction}`);
 
     // Build payment info for user
     const payment: PaymentInfo = {
