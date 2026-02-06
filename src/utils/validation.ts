@@ -23,7 +23,7 @@ const UNSUPPORTED_EXTENSIONS = [
  * Auto-normalizes by adding https:// if no protocol is present
  * @throws {InvalidUrlError} if URL is invalid
  */
-export function validateUrl(url: string): string {
+export function validateAndNormalizeUrl(url: string): string {
   // Check if URL is provided
   if (!url || typeof url !== 'string') {
     throw new InvalidUrlError(url, 'URL must be a non-empty string');

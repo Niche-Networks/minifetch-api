@@ -26,7 +26,7 @@ export class MinifetchClient {
 
   constructor(config: ClientConfig) {
     this.config = initConfig(config);
-    this.baseUrl = this.config.apiUrl;
+    this.baseUrl = this.config.apiBaseUrl;
   }
 
   /**

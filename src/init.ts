@@ -10,8 +10,8 @@ export const DEFAULTS = {
   apiBaseUrls: {
     'base-sepolia': 'http://localhost:4021',
     'solana-devnet': 'http://localhost:4021',
-    'base': 'https://minifetch.com/api',
-    'solana': 'https://minifetch.com/api'
+    'base': 'https://minifetch.com',
+    'solana': 'https://minifetch.com'
   },
   explorerUrls: {
     'base-sepolia': 'https://sepolia.basescan.org/tx',
@@ -37,6 +37,8 @@ export function initConfig(config: ClientConfig): InitConfig {
   // Build processed config
   const apiBaseUrl = DEFAULTS.apiBaseUrls[network];
   const explorerUrl = config.explorerUrl || DEFAULTS.explorerUrls[network];
+
+  console.log(`config.ts: network: ${network} apiBaseUrl: ${apiBaseUrl}`)
 
   return {
     network,
