@@ -40,7 +40,7 @@ export function initConfig(config: ClientConfig): InitConfig {
 
   return {
     network,
-    privateKey,
+    privateKey: config.privateKey,
     apiBaseUrl,
     explorerUrl,
   };
