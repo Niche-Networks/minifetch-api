@@ -13,7 +13,7 @@ describe("MinifetchClient", () => {
         network: "base-sepolia",
         privateKey: "123...notaprivatekey!" as any,
       })
-    }).toThrow("Invalid EVM private key format (expected 64-character hex string)");
+    }).toThrow("Invalid EVM private key format (expected hex string that starts with 0x)");
   });
 
   it("client should init instanceof MinifetchClient", () => {
@@ -30,7 +30,7 @@ describe("MinifetchClient", () => {
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     })
     const response = await client.preflightCheckUrl('https://minifetch.com');
-    console.log(response);
+
     expect(response.success).toBe(true);
     expect(response.results[0].url).toBe("https://minifetch.com");
     expect(response.results[0].allowed).toBe(true);

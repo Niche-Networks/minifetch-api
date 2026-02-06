@@ -64,7 +64,7 @@ function validatePrivateKey(privateKey: string, network: Network): void {
     const cleanKey = privateKey.startsWith('0x') ? privateKey.slice(2) : privateKey;
     if (!/^[0-9a-fA-F]{64}$/.test(cleanKey)) {
       throw new ConfigurationError(
-        'Invalid EVM private key format (expected 64-character hex string)'
+        "Invalid EVM private key format (expected hex string that starts with 0x)"
       );
     }
   }
