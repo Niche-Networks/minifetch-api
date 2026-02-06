@@ -5,7 +5,7 @@ config({ path: '.env-dev' });
 import { describe, it, expect } from 'vitest';
 import { MinifetchClient } from '../src/client.js';
 
-describe("MinifetchClient End-to-End Tests", () => {
+describe("MinifetchClient E2E Tests", { timeout: 30000 }, () => {
 
   it("client should init instanceof MinifetchClient", () => {
     const client = new MinifetchClient({
@@ -30,7 +30,7 @@ describe("MinifetchClient End-to-End Tests", () => {
         network: "solana-devnet",
         privateKey: "123...notaprivatekey!" as any,
       });
-    }).toThrow("Invalid EVM private key format (expected hex string that starts with 0x)");
+    }).toThrow("Invalid Solana private key format (expected base58 string)");
   });
 
   it("preflightCheckUrl()", async () => {
