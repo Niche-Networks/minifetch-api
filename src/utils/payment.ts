@@ -80,7 +80,7 @@ export async function handlePayment(
       network: config.network as PaymentInfo["network"],
       txHash: paymentResponse.transaction || '',
       explorerLink: paymentResponse.transaction
-        ? `${config.explorerUrl}/${paymentResponse.transaction}`
+        ? getExplorerLink(config, paymentResponse.transaction)
         : '',
     };
 
@@ -93,3 +93,14 @@ export async function handlePayment(
   }
 }
 
+function getExplorerLink(config: ProcessedConfig, txHash: string): string {
+  if (config.network === "solana-devnet") {
+    const strArray = config.explorerUrl.split("?");
+    return `${strArray[0]}/${txHash}?${strArray[1]}`;
+  } else if (txHash) {
+    return `${config.explorerUrl}/${txHash}`;
+  } else {
+    return '';
+  }
+
+}

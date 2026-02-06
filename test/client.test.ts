@@ -62,9 +62,7 @@ describe("MinifetchClient E2E Tests", { timeout: 30000 }, () => {
     expect(response.payment.payer).toContain("0x");
     expect(response.payment.network).toBe("base-sepolia");
     expect(response.payment.txHash).toContain("0x");
-    expect(response.payment.explorerLink).toContain("sepolia");
-    expect(response.payment.explorerLink).toContain(response.payment.txHash);
-
+    expect(response.payment.explorerLink).toBe(`https://sepolia.basescan.org/tx/${response.payment.txHash}`);
   });
 
   it("extractUrlMetadata() on solana-devnet", async () => {
@@ -82,9 +80,7 @@ describe("MinifetchClient E2E Tests", { timeout: 30000 }, () => {
     expect(typeof response.payment.payer).toBe("string");
     expect(response.payment.network).toBe("solana-devnet");
     expect(typeof response.payment.txHash).toBe("string");
-    expect(response.payment.explorerLink).toContain("?cluster=devnet");
-    expect(response.payment.explorerLink).toContain(response.payment.txHash);
-
+    expect(response.payment.explorerLink).toBe(`https://explorer.solana.com/tx/${response.payment.txHash}?cluster=devnet`);
   });
 
 });
