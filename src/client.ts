@@ -34,7 +34,7 @@ export class MinifetchClient {
    * @throws {InvalidUrlError} if URL is invalid
    * @throws {NetworkError} if request fails
    */
-  async preflightCheckUrl(url: string): Promise<PreflightCheckResult> {
+  async preflightUrlCheck(url: string): Promise<PreflightCheckResult> {
     // Validate and normalize URL
     const normalizedUrl = validateAndNormalizeUrl(url);
 
@@ -313,7 +313,7 @@ export class MinifetchClient {
     url: string,
     options?: { includeResponseBody?: boolean }
 ): Promise<MetadataResult> {
-    const checkResult = await this.preflightCheckUrl(url);
+    const checkResult = await this.preflightUrlCheck(url);
 
     if (!checkResult.results[0]?.allowed) {
       throw new RobotsBlockedError(
@@ -329,7 +329,7 @@ export class MinifetchClient {
    * Throws RobotsBlockedError if robots.txt blocks the URL
    */
   async checkAndExtractLinks(url: string): Promise<LinksResult> {
-    const checkResult = await this.preflightCheckUrl(url);
+    const checkResult = await this.preflightUrlCheck(url);
 
     if (!checkResult.results[0]?.allowed) {
       throw new RobotsBlockedError(
@@ -345,7 +345,7 @@ export class MinifetchClient {
    * Throws RobotsBlockedError if robots.txt blocks the URL
    */
   async checkAndExtractPreview(url: string): Promise<PreviewResult> {
-    const checkResult = await this.preflightCheckUrl(url);
+    const checkResult = await this.preflightUrlCheck(url);
 
     if (!checkResult.results[0]?.allowed) {
       throw new RobotsBlockedError(
@@ -364,7 +364,7 @@ export class MinifetchClient {
     url: string,
     options?: { includeMediaUrls?: boolean }
   ): Promise<ContentResult> {
-    const checkResult = await this.preflightCheckUrl(url);
+    const checkResult = await this.preflightUrlCheck(url);
 
     if (!checkResult.results[0]?.allowed) {
       throw new RobotsBlockedError(
