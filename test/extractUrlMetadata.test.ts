@@ -4,10 +4,11 @@ config({ path: '.env-dev' });
 
 import { describe, it, expect } from 'vitest';
 import { MinifetchClient } from '../src/client.js';
+import { InvalidUrlError } from '../src/types/errors.js';
 
 describe("extractUrlMetadata() e2e", { timeout: 30000 }, () => {
 
-  it("checkAndExtractMetadata() on base-sepolia testnet success with includeResponseBody true", async () => {
+  it("checkAndExtractMetadata() on base-sepolia success w includeResponseBody true", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
@@ -26,7 +27,17 @@ describe("extractUrlMetadata() e2e", { timeout: 30000 }, () => {
     expect(response.payment.explorerLink).toBe(`https://sepolia.basescan.org/tx/${response.payment.txHash}`);
   });
 
-  it("extractUrlMetadata() on base-sepolia testnet success", async () => {
+  it("checkAndExtractMetadata() throws on URL w unsupported extension", async () => {
+    const client = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: process.env.BASE_PRIVATE_KEY as any,
+    });
+
+    await expect(client.checkAndExtractMetadata('http://foo.bar/baz.pdf'))
+      .rejects.toThrow(InvalidUrlError);
+  });
+
+  it("base-sepolia testnet success", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
@@ -44,7 +55,7 @@ describe("extractUrlMetadata() e2e", { timeout: 30000 }, () => {
     expect(response.payment.explorerLink).toBe(`https://sepolia.basescan.org/tx/${response.payment.txHash}`);
   });
 
-  it("extractUrlMetadata() on solana-devnet success", async () => {
+  it("solana-devnet success", async () => {
     const client = new MinifetchClient({
       network: "solana-devnet",
       privateKey: process.env.SVM_PRIVATE_KEY as any,
@@ -60,6 +71,26 @@ describe("extractUrlMetadata() e2e", { timeout: 30000 }, () => {
     expect(response.payment.network).toBe("solana-devnet");
     expect(typeof response.payment.txHash).toBe("string");
     expect(response.payment.explorerLink).toBe(`https://explorer.solana.com/tx/${response.payment.txHash}?cluster=devnet`);
+  });
+
+  it("throws on malformed URL", async () => {
+    const client = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: process.env.BASE_PRIVATE_KEY as any,
+    });
+
+    await expect(client.extractUrlMetadata('vvv'))
+      .rejects.toThrow(InvalidUrlError);
+  });
+
+  it("throws on URL w unsupported extension", async () => {
+    const client = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: process.env.BASE_PRIVATE_KEY as any,
+    });
+
+    await expect(client.extractUrlMetadata('http://foo.bar/baz.pdf'))
+      .rejects.toThrow(InvalidUrlError);
   });
 
 });

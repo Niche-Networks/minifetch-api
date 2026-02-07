@@ -38,7 +38,7 @@ export function initConfig(config: ClientConfig): InitConfig {
   const apiBaseUrl = DEFAULTS.apiBaseUrls[network];
   const explorerUrl = config.explorerUrl || DEFAULTS.explorerUrls[network];
 
-  console.log(`config.ts: network: ${network} apiBaseUrl: ${apiBaseUrl}`)
+  // console.log(`config.ts: network: ${network} apiBaseUrl: ${apiBaseUrl}`)
 
   return {
     network,

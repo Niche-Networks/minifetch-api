@@ -22,7 +22,7 @@ describe("preflightUrlCheck() e2e", { timeout: 30000 }, () => {
     expect(response.results[0].crawlDelay).toBe(1);
   });
 
-  it("preflightUrlCheck() throws on URL validation error", async () => {
+  it("preflightUrlCheck() throws on malformed URL", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
@@ -32,5 +32,14 @@ describe("preflightUrlCheck() e2e", { timeout: 30000 }, () => {
       .rejects.toThrow(InvalidUrlError);
   });
 
+  it("preflightUrlCheck() throws on URL w unsupported extension", async () => {
+    const client = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: process.env.BASE_PRIVATE_KEY as any,
+    });
+
+    await expect(client.preflightUrlCheck('http://foo.bar/baz.pdf'))
+      .rejects.toThrow(InvalidUrlError);
+  });
 
 });
