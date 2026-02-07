@@ -69,10 +69,3 @@ function validatePrivateKey(privateKey: string, network: Network): void {
     }
   }
 }
-
-/**
- * Get the default timeout value
- */
-export function getDefaultTimeout(): number {
-  return 30000; // 30 seconds
-}
