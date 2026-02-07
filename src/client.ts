@@ -35,14 +35,15 @@ export class MinifetchClient {
    * @throws {NetworkError} if request fails
    */
   async preflightUrlCheck(url: string): Promise<PreflightCheckResult> {
-    // Validate and normalize URL
-    const normalizedUrl = validateAndNormalizeUrl(url);
-
-    // Build request URL (free endpoint, no payment)
-    const endpoint = `/api/v1/free/preflight/url-check?url=${encodeURIComponent(normalizedUrl)}`;
-    const requestUrl = `${this.baseUrl}${endpoint}`;
 
     try {
+      // Validate and normalize URL
+      const normalizedUrl = validateAndNormalizeUrl(url);
+
+      // Build request URL (free endpoint, no payment)
+      const endpoint = `/api/v1/free/preflight/url-check?url=${encodeURIComponent(normalizedUrl)}`;
+      const requestUrl = `${this.baseUrl}${endpoint}`;
+
       const response = await fetch(requestUrl);
 
       if (!response.ok) {
@@ -59,7 +60,7 @@ export class MinifetchClient {
         results: data.results,
       };
     } catch (error) {
-      if (error instanceof NetworkError) {
+      if (error instanceof InvalidUrlError || error instanceof NetworkError) {
         throw error;
       }
       throw new NetworkError(
@@ -78,20 +79,21 @@ export class MinifetchClient {
     url: string,
     options?: { includeResponseBody?: boolean }
   ): Promise<MetadataResult> {
-    // Validate and normalize URL
-    const normalizedUrl = validateAndNormalizeUrl(url);
-
-    // Build request URL with optional params
-    const params = new URLSearchParams({ url: normalizedUrl });
-    if (options?.includeResponseBody) {
-      params.set("includeResponseBody", "true");
-    }
-
-    // Build request URL - convert params to string
-    const endpoint = `/api/v1/x402/extract/url-metadata?${params.toString()}`;
-    const requestUrl = `${this.baseUrl}${endpoint}`;
 
     try {
+      // Validate and normalize URL
+      const normalizedUrl = validateAndNormalizeUrl(url);
+
+      // Build request URL with optional params
+      const params = new URLSearchParams({ url: normalizedUrl });
+      if (options?.includeResponseBody) {
+        params.set("includeResponseBody", "true");
+      }
+
+      // Build request URL - convert params to string
+      const endpoint = `/api/v1/x402/extract/url-metadata?${params.toString()}`;
+      const requestUrl = `${this.baseUrl}${endpoint}`;
+
       // Make request with x402 payment handling
       const { response, payment } = await handlePayment(
         requestUrl,
@@ -140,12 +142,13 @@ export class MinifetchClient {
    * @throws {ExtractionFailedError} if extraction fails
    */
   async extractUrlLinks(url: string): Promise<LinksResult> {
-    const normalizedUrl = validateAndNormalizeUrl(url);
-
-    const endpoint = `/api/v1/x402/extract/url-links?url=${encodeURIComponent(normalizedUrl)}`;
-    const requestUrl = `${this.baseUrl}${endpoint}`;
 
     try {
+      const normalizedUrl = validateAndNormalizeUrl(url);
+
+      const endpoint = `/api/v1/x402/extract/url-links?url=${encodeURIComponent(normalizedUrl)}`;
+      const requestUrl = `${this.baseUrl}${endpoint}`;
+
       // Make request with x402 payment handling
       const { response, payment } = await handlePayment(
         requestUrl,
@@ -192,14 +195,15 @@ export class MinifetchClient {
    * @throws {ExtractionFailedError} if extraction fails
    */
   async extractUrlPreview(url: string): Promise<PreviewResult> {
-    // Validate and normalize URL
-    const normalizedUrl = validateAndNormalizeUrl(url);
-
-    // Build request URL
-    const endpoint = `/api/v1/x402/extract/url-preview?url=${encodeURIComponent(normalizedUrl)}`;
-    const requestUrl = `${this.baseUrl}${endpoint}`;
 
     try {
+      // Validate and normalize URL
+      const normalizedUrl = validateAndNormalizeUrl(url);
+
+      // Build request URL
+      const endpoint = `/api/v1/x402/extract/url-preview?url=${encodeURIComponent(normalizedUrl)}`;
+      const requestUrl = `${this.baseUrl}${endpoint}`;
+
       // Make request with x402 payment handling
       const { response, payment } = await handlePayment(
         requestUrl,
@@ -251,19 +255,20 @@ export class MinifetchClient {
     url: string,
     options?: { includeMediaUrls?: boolean }
   ): Promise<ContentResult> {
-    // Validate and normalize URL
-    const normalizedUrl = validateAndNormalizeUrl(url);
-
-    // Build request URL with optional params
-    const params = new URLSearchParams({ url: normalizedUrl });
-    if (options?.includeMediaUrls) {
-      params.set("includeMediaUrls", "true");
-    }
-
-    const endpoint = `/api/v1/x402/extract/url-content?${params.toString()}`;
-    const requestUrl = `${this.baseUrl}${endpoint}`;
 
     try {
+      // Validate and normalize URL
+      const normalizedUrl = validateAndNormalizeUrl(url);
+
+      // Build request URL with optional params
+      const params = new URLSearchParams({ url: normalizedUrl });
+      if (options?.includeMediaUrls) {
+        params.set("includeMediaUrls", "true");
+      }
+
+      const endpoint = `/api/v1/x402/extract/url-content?${params.toString()}`;
+      const requestUrl = `${this.baseUrl}${endpoint}`;
+
       // Make request with x402 payment handling
       const { response, payment } = await handlePayment(
         requestUrl,

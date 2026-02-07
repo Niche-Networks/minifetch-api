@@ -61,6 +61,11 @@ export function validateAndNormalizeUrl(url: string): string {
     throw new InvalidUrlError(normalized, 'URL must have a valid hostname');
   }
 
+  // Validate hostname has at least one dot (e.g., example.com)
+  if (!parsed.hostname.includes('.')) {
+    throw new InvalidUrlError(normalized, 'URL must have a valid domain with a TLD');
+  }
+
   // Check for unsupported file extensions
   const pathname = parsed.pathname.toLowerCase();
   for (const ext of UNSUPPORTED_EXTENSIONS) {
