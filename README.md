@@ -19,8 +19,8 @@ const client = new MinifetchClient({
 });
 
 try {
-  const metadata = await client.checkAndExtractMetadata('https://example.com');
-  console.log(metadata.results);
+  const response = await client.checkAndExtractMetadata('https://example.com');
+  console.log(response.results[0].metadata);
 } catch (error) {
   // ...
 }
