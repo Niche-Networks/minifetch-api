@@ -1,48 +1,36 @@
 # Minifetch.com API
 
-Works with x402 USDC payments on Base, Base Sepolia (testnet), Solana, and Solana devnet.
+Works with [x402](https://www.x402.org/) USDC payments on Coinbase's Base & Solana networks.
 
 ## Prerequisites
 
-- Node.js v18+ (install via [nvm](https://github.com/nvm-sh/nvm))
-- npm
-- A valid Ethereum or Solana private key for making USDC payments on the network of your choice
+- Node.js v18+ & NPM
+- A valid Ethereum or Solana private key for making USDC payments on the network of your choice. Transaction fees are free on the Base network.
 
-## Quickstart
+## Install
 
-```ts
+`npm install minifetch-api --save`
+
+## Quick Start
+
+```js
 import { MinifetchClient } from 'minifetch-api';
 
+// Network options: "base", "base-sepolia", "solana", "solana-devnet"
+// Bring your own private key, best practice = pass in via environment variable
 const client = new MinifetchClient({
   network: 'base-sepolia',
   privateKey: process.env.BASE_PRIVATE_KEY,
 });
 
 try {
-  const response = await client.checkAndExtractMetadata('https://example.com');
+  const response = await client.checkAndExtractMetadata("https://example.com");
   console.log(response.results[0].metadata);
 } catch (error) {
+  console.log(error.message);
   // ...
 }
 ```
-
-## Legacy -- delete me
-
-1. Copy `.env-local` to `.env-base-testnet` and add your private key(s), then pnpm install:
-```bash
-cp .env-local .env-base-testnet
-npm install
-```
-
-2. Run the example client:
-```bash
-pnpm dev:basedev:check
-pnpm dev:basedev:metadata
-
-pnpm dev:svmdev:check
-pnpm dev:svmdev:metadata
-```
-
 
 ## Credits
 
