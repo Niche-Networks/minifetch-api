@@ -1,0 +1,106 @@
+import { x402Client, wrapFetchWithPayment, x402HTTPClient } from '@x402/fetch';
+import { registerExactEvmScheme } from '@x402/evm/exact/client';
+import { registerExactSvmScheme } from "@x402/svm/exact/client"
+import { privateKeyToAccount } from 'viem/accounts';
+import { createKeyPairSignerFromBytes, type KeyPairSigner } from '@solana/kit';
+import bs58 from 'bs58';
+import type { ProcessedConfig } from '../types/config.js';
+import type { PaymentInfo } from '../types/results.js';
+import { PaymentFailedError, NetworkError } from '../types/errors.js';
+
+/**
+ * Handle x402 payment flow using Coinbase x402 client pattern
+ * 1. Initialize x402Client and register payment scheme
+ * 2. Wrap fetch with payment capabilities
+ * 3. Make request (client handles 402 detection and payment)
+ * 4. Extract payment receipt from response headers
+ */
+export async function handlePayment(
+  url: string,
+  config: ProcessedConfig,
+): Promise<{ response: Response; payment?: PaymentInfo }> {
+
+  if (!config.privateKey) {
+    throw new PaymentFailedError('Private key required for payments');
+  }
+
+  try {
+    // Create x402 client and signer based on network type
+    const client = new x402Client();
+    let payer: string;
+
+    const isEvm = config.network.startsWith("base");
+    const isSolana = config.network.startsWith("solana");
+
+    if (isEvm) {
+      // Initialize EVM signer and register scheme
+      const signer = privateKeyToAccount(config.privateKey as `0x${string}`);
+      const evmSigner = signer as ReturnType<typeof privateKeyToAccount>; // Type assertion for EVM
+      registerExactEvmScheme(client, { signer: evmSigner });
+      payer = signer.address;
+    } else if (isSolana) {
+      // Initialize Solana signer and register scheme
+      const privateKeyBytes = bs58.decode(config.privateKey);
+      const signer = await createKeyPairSignerFromBytes(privateKeyBytes);
+      const svmSigner = signer as KeyPairSigner<string>; // Type assertion for Solana
+      registerExactSvmScheme(client, { signer: svmSigner });
+      payer = signer.address;
+    } else {
+      throw new PaymentFailedError(`Unsupported network: ${config.network}`);
+    }
+
+    // Wrap fetch with payment capabilities
+    const fetchWithPayment = wrapFetchWithPayment(fetch, client);
+
+    // Make request with payment handling
+    console.log("Attempting fetch to:", url);
+    const response = await fetchWithPayment(url, {
+      method: "GET"
+    });
+
+    if (!response.ok) {
+      throw new NetworkError(
+        `Request failed: ${response.status} ${response.statusText}`
+      );
+    }
+
+    // Extract payment receipt from response headers
+    const httpClient = new x402HTTPClient(client);
+    const paymentResponse = httpClient.getPaymentSettleResponse(
+      (name) => response.headers.get(name)
+    );
+    // console.log("Payment response:");
+    // console.log(paymentResponse);
+    // console.log(`View transaction: ${config.explorerUrl}/${paymentResponse.transaction}`);
+
+    // Build payment info for user
+    const payment: PaymentInfo = {
+      success: true,
+      payer,
+      network: config.network as PaymentInfo["network"],
+      txHash: paymentResponse.transaction || '',
+      explorerLink: paymentResponse.transaction
+        ? getExplorerLink(config, paymentResponse.transaction)
+        : '',
+    };
+
+    return { response, payment };
+
+  } catch (error) {
+    throw new PaymentFailedError(
+      `Payment failed: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
+
+function getExplorerLink(config: ProcessedConfig, txHash: string): string {
+  if (config.network === "solana-devnet") {
+    const strArray = config.explorerUrl.split("?");
+    return `${strArray[0]}/${txHash}?${strArray[1]}`;
+  } else if (txHash) {
+    return `${config.explorerUrl}/${txHash}`;
+  } else {
+    return '';
+  }
+
+}
