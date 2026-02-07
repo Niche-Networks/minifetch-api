@@ -7,17 +7,18 @@ import { MinifetchClient } from '../src/client.js';
 
 describe("extractUrlMetadata() e2e", { timeout: 30000 }, () => {
 
-  it("checkAndExtractMetadata() on base-sepolia testnet success", async () => {
+  it("checkAndExtractMetadata() on base-sepolia testnet success with includeResponseBody true", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
-    const response = await client.extractUrlMetadata('https://minifetch.com');
+    const response = await client.extractUrlMetadata('https://minifetch.com', { includeResponseBody: true});
 
     expect(response.success).toBe(true);
     expect(response.results[0].metadata.url).toContain("minifetch.com");
     expect(response.results[0].metadata.title).toContain("Minifetch.com");
     expect(response.results[0].metadata["og:title"]).toContain("Minifetch.com");
+    expect(response.results[0].metadata.responseBody).toContain("<!DOCTYPE html>");
     expect(response.payment.success).toBe(true);
     expect(response.payment.payer).toContain("0x");
     expect(response.payment.network).toBe("base-sepolia");
