@@ -22,7 +22,7 @@ describe("preflightUrlCheck() e2e", { timeout: 30000 }, () => {
     expect(response.results[0].crawlDelay).toBe(1);
   });
 
-  it("preflightUrlCheck() throws on validation error", async () => {
+  it("preflightUrlCheck() throws on URL validation error", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,

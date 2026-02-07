@@ -4,6 +4,7 @@ config({ path: '.env-dev' });
 
 import { describe, it, expect } from 'vitest';
 import { MinifetchClient } from '../src/client.js';
+import { ConfigurationError } from '../src/types/errors.js';
 
 describe("MinifetchClient", { timeout: 30000 }, () => {
 
@@ -21,7 +22,7 @@ describe("MinifetchClient", { timeout: 30000 }, () => {
         network: "base-sepolia",
         privateKey: "123...notaprivatekey!" as any,
       });
-    }).toThrow("Invalid EVM private key format (expected hex string that starts with 0x)");
+    }).toThrow(ConfigurationError);
   });
 
   it("throws error if SVM key is invalid", () => {
@@ -30,7 +31,7 @@ describe("MinifetchClient", { timeout: 30000 }, () => {
         network: "solana-devnet",
         privateKey: "123...notaprivatekey!" as any,
       });
-    }).toThrow("Invalid Solana private key format (expected base58 string)");
+    }).toThrow(ConfigurationError);
   });
 
 });
