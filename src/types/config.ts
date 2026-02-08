@@ -1,4 +1,5 @@
-export type Network = 'base' | 'base-sepolia' | 'solana' | 'solana-devnet';
+export const VALID_NETWORKS = ['base', 'base-sepolia', 'solana', 'solana-devnet'] as const;
+export type Network = (typeof VALID_NETWORKS)[number];
 
 export interface ClientConfig {
   /**

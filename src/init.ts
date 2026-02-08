@@ -1,5 +1,6 @@
-import type { ClientConfig, InitConfig, Network } from './types/config.js';
-import { ConfigurationError } from './types/errors.js';
+import type { ClientConfig, InitConfig, Network } from "./types/config.js";
+import { VALID_NETWORKS } from "./types/config.js";
+import { ConfigurationError } from "./types/errors.js";
 
 /**
  * Default configuration values
@@ -30,8 +31,15 @@ export function initConfig(config: ClientConfig): InitConfig {
     throw new ConfigurationError('Private key is required');
   }
 
-  // Validate private key format based on network
+  // Validate network
   const network = config.network || DEFAULTS.network;
+  if (!VALID_NETWORKS.includes(network as Network)) {
+    throw new ConfigurationError(
+      `Invalid network: "${network}". Must be one of: ${VALID_NETWORKS.join(', ')}`
+    );
+  }
+
+  // Validate private key format based on network
   validatePrivateKey(config.privateKey, network);
 
   // Build processed config

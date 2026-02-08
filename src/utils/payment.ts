@@ -53,7 +53,7 @@ export async function handlePayment(
     const fetchWithPayment = wrapFetchWithPayment(fetch, client);
 
     // Make request with payment handling
-    console.log("Attempting to fetch w payment:", url);
+    // console.log("Attempting to fetch w payment:", url);
     const response = await fetchWithPayment(url, {
       method: "GET"
     });

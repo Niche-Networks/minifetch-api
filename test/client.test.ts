@@ -16,6 +16,16 @@ describe("MinifetchClient", { timeout: 30000 }, () => {
     expect(client).toBeInstanceOf(MinifetchClient);
   });
 
+  it("throws error if network misconfigured", () => {
+    const fn = () => new MinifetchClient({
+      network: "XYZ" as any,
+      privateKey: process.env.BASE_PRIVATE_KEY as any,
+    });
+
+    expect(fn).toThrow(ConfigurationError);
+    expect(fn).toThrow('Invalid network: "XYZ"');
+  });
+
   it("throws error if EVM key is invalid", () => {
     expect(() => {
       const client = new MinifetchClient({
