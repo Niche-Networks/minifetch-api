@@ -20,19 +20,8 @@ export interface InitConfig {
   explorerUrl: string;
 }
 
-// Extract options - shared across all endpoints
-export interface BaseExtractOptions {
-  // Future: retries, etc.
-
-  /**
-   * Maximum time to wait for the request in milliseconds
-   * @default 30000
-   */
-  timeout?: number;
-}
-
 // Metadata-specific options
-export interface MetadataExtractOptions extends BaseExtractOptions {
+export interface MetadataExtractOptions {
   /**
    * Include raw HTML response body in the result
    * @default false
@@ -40,7 +29,5 @@ export interface MetadataExtractOptions extends BaseExtractOptions {
   includeResponseBody?: boolean;
 }
 
-// Content, Preview, Links, Redirects use BaseExtractOptions (no special options yet)
-export type ContentExtractOptions = BaseExtractOptions;
-export type PreviewExtractOptions = BaseExtractOptions;
-export type LinksExtractOptions = BaseExtractOptions;
+// TODO:
+// Links, Preview, Content ptions

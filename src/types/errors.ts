@@ -1,5 +1,3 @@
-// types/errors.ts
-
 /**
  * Base error class for all Minifetch errors
  */
@@ -70,20 +68,6 @@ export class ExtractionFailedError extends MinifetchError {
     this.statusCode = statusCode;
     this.originalError = originalError;
     Object.setPrototypeOf(this, ExtractionFailedError.prototype);
-  }
-}
-
-/**
- * Thrown when the API request times out
- */
-export class TimeoutError extends MinifetchError {
-  public readonly timeout: number;
-
-  constructor(timeout: number) {
-    super(`Request timed out after ${timeout}ms`);
-    this.name = 'TimeoutError';
-    this.timeout = timeout;
-    Object.setPrototypeOf(this, TimeoutError.prototype);
   }
 }
 

@@ -1,7 +1,7 @@
 import { initConfig } from './init.js';
 import { validateAndNormalizeUrl } from './utils/validation.js';
 import { handlePayment } from './utils/payment.js';
-import type { ClientConfig, ProcessedConfig } from './types/config.js';
+import type { ClientConfig, InitConfig } from './types/config.js';
 import type {
   PreflightCheckResult,
   MetadataResult,
@@ -12,6 +12,7 @@ import type {
 import {
   InvalidUrlError,
   RobotsBlockedError,
+  PaymentFailedError,
   ExtractionFailedError,
   NetworkError,
 } from './types/errors.js';
@@ -21,7 +22,7 @@ import {
  * Provides methods to check URLs and extract metadata/links/preview/content
  */
 export class MinifetchClient {
-  private config: ProcessedConfig;
+  private config: InitConfig;
   private baseUrl: string;
 
   constructor(config: ClientConfig) {
@@ -122,10 +123,13 @@ export class MinifetchClient {
         results: data.results,
         payment,
       };
+
     } catch (error) {
       if (
         error instanceof InvalidUrlError ||
-        error instanceof ExtractionFailedError
+        error instanceof ExtractionFailedError ||
+        error instanceof PaymentFailedError ||
+        error instanceof NetworkError
       ) {
         throw error;
       }
@@ -314,7 +318,7 @@ export class MinifetchClient {
    * Check URL and extract metadata in one call
    * Throws RobotsBlockedError if robots.txt blocks the URL
    */
-  async checkAndExtractMetadata(
+  async checkAndExtractUrlMetadata(
     url: string,
     options?: { includeResponseBody?: boolean }
 ): Promise<MetadataResult> {
@@ -333,7 +337,7 @@ export class MinifetchClient {
    * Check URL and extract links in one call
    * Throws RobotsBlockedError if robots.txt blocks the URL
    */
-  async checkAndExtractLinks(url: string): Promise<LinksResult> {
+  async checkAndExtractUrlLinks(url: string): Promise<LinksResult> {
     const checkResult = await this.preflightUrlCheck(url);
 
     if (!checkResult.results[0]?.allowed) {
@@ -349,7 +353,7 @@ export class MinifetchClient {
    * Check URL and extract preview in one call
    * Throws RobotsBlockedError if robots.txt blocks the URL
    */
-  async checkAndExtractPreview(url: string): Promise<PreviewResult> {
+  async checkAndExtractUrlPreview(url: string): Promise<PreviewResult> {
     const checkResult = await this.preflightUrlCheck(url);
 
     if (!checkResult.results[0]?.allowed) {

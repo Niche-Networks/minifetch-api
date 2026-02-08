@@ -48,6 +48,7 @@
     "lint:check": "eslint . --ext .ts",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:file": "vitest run",
     "test:coverage": "vitest run --coverage",
     "prepublishOnly": "pnpm run build"
   },

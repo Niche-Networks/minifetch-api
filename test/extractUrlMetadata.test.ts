@@ -4,11 +4,24 @@ config({ path: '.env-dev' });
 
 import { describe, it, expect } from 'vitest';
 import { MinifetchClient } from '../src/client.js';
-import { InvalidUrlError } from '../src/types/errors.js';
+import { InvalidUrlError, NetworkError } from '../src/types/errors.js';
 
 describe("extractUrlMetadata() e2e", { timeout: 30000 }, () => {
 
-  it("checkAndExtractMetadata() on base-sepolia success w includeResponseBody true", async () => {
+  it("checkAndExtractUrlMetadata() when robots check passes but page 403s anyway", async () => {
+    const client = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: process.env.BASE_PRIVATE_KEY as any,
+    });
+
+    await expect(client.checkAndExtractUrlMetadata("http://coinbase.com"))
+      .rejects.toMatchObject({
+        name: "NetworkError",
+        message: "Request failed: 502 Bad Gateway",
+      });
+  });
+
+  it("checkAndExtractUrlMetadata() on base-sepolia success w includeResponseBody true", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
@@ -33,7 +46,7 @@ describe("extractUrlMetadata() e2e", { timeout: 30000 }, () => {
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
 
-    await expect(client.checkAndExtractMetadata('http://foo.bar/baz.pdf'))
+    await expect(client.checkAndExtractUrlMetadata('http://foo.bar/baz.pdf'))
       .rejects.toThrow(InvalidUrlError);
   });
 

@@ -53,7 +53,7 @@ export async function handlePayment(
     const fetchWithPayment = wrapFetchWithPayment(fetch, client);
 
     // Make request with payment handling
-    console.log("Attempting fetch:", url);
+    console.log("Attempting to fetch w payment:", url);
     const response = await fetchWithPayment(url, {
       method: "GET"
     });
@@ -87,6 +87,9 @@ export async function handlePayment(
     return { response, payment };
 
   } catch (error) {
+    if (error instanceof PaymentFailedError || error instanceof NetworkError) {
+      throw error;
+    }
     throw new PaymentFailedError(
       `Payment failed: ${error instanceof Error ? error.message : "Unknown error"}`
     );
