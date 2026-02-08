@@ -1,4 +1,4 @@
-import type { ClientConfig, InitConfig, Network } from "./types/config.js";
+import type { ClientConfig, InitializedConfig, Network } from "./types/config.js";
 import { VALID_NETWORKS } from "./types/config.js";
 import { ConfigurationError } from "./types/errors.js";
 
@@ -23,9 +23,9 @@ export const DEFAULTS = {
 } as const;
 
 /**
- * Process and validate client configuration
+ * Initialize and validate client configuration
  */
-export function initConfig(config: ClientConfig): InitConfig {
+export function initConfig(config: ClientConfig): InitializedConfig {
   // Validate private key is provided
   if (!config.privateKey || config.privateKey.trim() === '') {
     throw new ConfigurationError('Private key is required');

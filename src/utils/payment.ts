@@ -4,7 +4,7 @@ import { registerExactSvmScheme } from "@x402/svm/exact/client"
 import { privateKeyToAccount } from 'viem/accounts';
 import { createKeyPairSignerFromBytes, type KeyPairSigner } from '@solana/kit';
 import bs58 from 'bs58';
-import type { ProcessedConfig } from '../types/config.js';
+import type { InitializedConfig } from '../types/config.js';
 import type { PaymentInfo } from '../types/results.js';
 import { PaymentFailedError, NetworkError } from '../types/errors.js';
 
@@ -17,7 +17,7 @@ import { PaymentFailedError, NetworkError } from '../types/errors.js';
  */
 export async function handlePayment(
   url: string,
-  config: ProcessedConfig,
+  config: InitializedConfig,
 ): Promise<{ response: Response; payment?: PaymentInfo }> {
 
   if (!config.privateKey) {
@@ -96,7 +96,7 @@ export async function handlePayment(
   }
 }
 
-function getExplorerLink(config: ProcessedConfig, txHash: string): string {
+function getExplorerLink(config: InitializedConfig, txHash: string): string {
   if (config.network === "solana-devnet") {
     const strArray = config.explorerUrl.split("?");
     return `${strArray[0]}/${txHash}?${strArray[1]}`;

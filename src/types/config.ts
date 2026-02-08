@@ -14,7 +14,7 @@ export interface ClientConfig {
   privateKey: string;
 }
 
-export interface InitConfig {
+export interface InitializedConfig {
   network: Network;
   privateKey: string;
   apiBaseUrl: string;

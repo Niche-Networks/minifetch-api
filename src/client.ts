@@ -1,7 +1,7 @@
 import { initConfig } from './init.js';
 import { validateAndNormalizeUrl } from './utils/validation.js';
 import { handlePayment } from './utils/payment.js';
-import type { ClientConfig, InitConfig } from './types/config.js';
+import type { ClientConfig, InitializedConfig } from './types/config.js';
 import type {
   PreflightCheckResult,
   MetadataResult,
@@ -22,7 +22,7 @@ import {
  * Provides methods to check URLs and extract metadata/links/preview/content
  */
 export class MinifetchClient {
-  private config: InitConfig;
+  private config: InitializedConfig;
   private baseUrl: string;
 
   constructor(config: ClientConfig) {
