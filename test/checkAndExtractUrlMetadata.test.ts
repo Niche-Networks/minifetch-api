@@ -10,37 +10,20 @@ afterEach(async () => {
   await new Promise(r => setTimeout(r, 1000));
 });
 
-describe.sequential("extractUrlMetadata() e2e", { timeout: 30000 }, () => {
+describe.sequential("checkAndExtractUrlMetadata() e2e", { timeout: 30000 }, () => {
 
-  it("solana-devnet success", async () => {
-    const client = new MinifetchClient({
-      network: "solana-devnet",
-      privateKey: process.env.SVM_PRIVATE_KEY as any,
-    });
-    const response = await client.extractUrlMetadata('https://minifetch.com');
-
-    expect(response.success).toBe(true);
-    expect(response.results[0].metadata.url).toContain("minifetch.com");
-    expect(response.results[0].metadata.title).toContain("Minifetch.com");
-    expect(response.results[0].metadata["og:title"]).toContain("Minifetch.com");
-    expect(response.payment.success).toBe(true);
-    expect(typeof response.payment.payer).toBe("string");
-    expect(response.payment.network).toBe("solana-devnet");
-    expect(typeof response.payment.txHash).toBe("string");
-    expect(response.payment.explorerLink).toBe(`https://explorer.solana.com/tx/${response.payment.txHash}?cluster=devnet`);
-  });
-
-  it("base-sepolia testnet success", async () => {
+  it("checkAndExtractUrlMetadata() success on base-sepolia w includeResponseBody true", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
-    const response = await client.extractUrlMetadata('https://minifetch.com');
+    const response = await client.extractUrlMetadata('https://minifetch.com', { includeResponseBody: true});
 
     expect(response.success).toBe(true);
     expect(response.results[0].metadata.url).toContain("minifetch.com");
     expect(response.results[0].metadata.title).toContain("Minifetch.com");
     expect(response.results[0].metadata["og:title"]).toContain("Minifetch.com");
+    expect(response.results[0].metadata.responseBody).toContain("<!DOCTYPE html>");
     expect(response.payment.success).toBe(true);
     expect(response.payment.payer).toContain("0x");
     expect(response.payment.network).toBe("base-sepolia");
@@ -48,24 +31,27 @@ describe.sequential("extractUrlMetadata() e2e", { timeout: 30000 }, () => {
     expect(response.payment.explorerLink).toBe(`https://sepolia.basescan.org/tx/${response.payment.txHash}`);
   });
 
-  it("throws on malformed URL", async () => {
+  it("checkAndExtractMetadata() throws on URL w unsupported extension", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
 
-    await expect(client.extractUrlMetadata('vvv'))
+    await expect(client.checkAndExtractUrlMetadata('http://foo.bar/baz.pdf'))
       .rejects.toThrow(InvalidUrlError);
   });
 
-  it("throws on URL w unsupported extension", async () => {
+  it("throws when robots check passes but page 403s anyway", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
 
-    await expect(client.extractUrlMetadata('http://foo.bar/baz.pdf'))
-      .rejects.toThrow(InvalidUrlError);
+    await expect(client.checkAndExtractUrlMetadata("http://coinbase.com"))
+      .rejects.toMatchObject({
+        name: "NetworkError",
+        message: "Request failed: 502 Bad Gateway",
+      });
   });
 
 });

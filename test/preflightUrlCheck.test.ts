@@ -2,11 +2,15 @@
 import { config } from 'dotenv';
 config({ path: '.env-dev' });
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { MinifetchClient } from '../src/client.js';
 import { InvalidUrlError } from '../src/types/errors.js';
 
-describe("preflightUrlCheck() e2e", { timeout: 30000 }, () => {
+afterEach(async () => {
+  await new Promise(r => setTimeout(r, 500));
+});
+
+describe.sequential("preflightUrlCheck() e2e", { timeout: 30000 }, () => {
 
   it("preflightUrlCheck() success", async () => {
     const client = new MinifetchClient({

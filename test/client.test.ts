@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest';
 import { MinifetchClient } from '../src/client.js';
 import { ConfigurationError } from '../src/types/errors.js';
 
-describe("MinifetchClient", { timeout: 30000 }, () => {
+describe.sequential("MinifetchClient", { timeout: 30000 }, () => {
 
   it("client should init instanceof MinifetchClient", () => {
     const client = new MinifetchClient({
