@@ -12,7 +12,7 @@ afterEach(async () => {
 
 describe.sequential("preflightUrlCheck() e2e", { timeout: 30000 }, () => {
 
-  it("preflightUrlCheck() success", async () => {
+  it("success with allowed url", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
@@ -26,7 +26,22 @@ describe.sequential("preflightUrlCheck() e2e", { timeout: 30000 }, () => {
     expect(response.results[0].crawlDelay).toBe(1);
   });
 
-  it("preflightUrlCheck() throws on malformed URL", async () => {
+  it("handles DNS lookup error", async () => {
+    const client = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: process.env.BASE_PRIVATE_KEY as any,
+    });
+
+    const dnsErrUrl = "https://mydns.errrrrr";
+
+    const response = await client.preflightUrlCheck(dnsErrUrl);
+    expect(response.success).toBe(true);
+    expect(response.results[0].url).toBe(dnsErrUrl);
+    expect(response.results[0].allowed).toBe(false);
+    expect(response.results[0].message).toContain("Invalid or non-existent domain")
+  });
+
+  it("throws on malformed URL", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
@@ -36,7 +51,7 @@ describe.sequential("preflightUrlCheck() e2e", { timeout: 30000 }, () => {
       .rejects.toThrow(InvalidUrlError);
   });
 
-  it("preflightUrlCheck() throws on URL w unsupported extension", async () => {
+  it("throws on URL w unsupported extension", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
