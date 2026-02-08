@@ -12,24 +12,6 @@ afterEach(async () => {
 
 describe.sequential("extractUrlMetadata() e2e", { timeout: 30000 }, () => {
 
-  it("solana-devnet success", async () => {
-    const client = new MinifetchClient({
-      network: "solana-devnet",
-      privateKey: process.env.SVM_PRIVATE_KEY as any,
-    });
-    const response = await client.extractUrlMetadata('https://minifetch.com');
-
-    expect(response.success).toBe(true);
-    expect(response.results[0].metadata.url).toContain("minifetch.com");
-    expect(response.results[0].metadata.title).toContain("Minifetch.com");
-    expect(response.results[0].metadata["og:title"]).toContain("Minifetch.com");
-    expect(response.payment.success).toBe(true);
-    expect(typeof response.payment.payer).toBe("string");
-    expect(response.payment.network).toBe("solana-devnet");
-    expect(typeof response.payment.txHash).toBe("string");
-    expect(response.payment.explorerLink).toBe(`https://explorer.solana.com/tx/${response.payment.txHash}?cluster=devnet`);
-  });
-
   it("base-sepolia testnet success", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
@@ -48,7 +30,25 @@ describe.sequential("extractUrlMetadata() e2e", { timeout: 30000 }, () => {
     expect(response.payment.explorerLink).toBe(`https://sepolia.basescan.org/tx/${response.payment.txHash}`);
   });
 
-  it("throws when robots.txt check = blocked url", async () => {
+  it("solana-devnet success", async () => {
+    const client = new MinifetchClient({
+      network: "solana-devnet",
+      privateKey: process.env.SVM_PRIVATE_KEY as any,
+    });
+    const response = await client.extractUrlMetadata('https://minifetch.com');
+
+    expect(response.success).toBe(true);
+    expect(response.results[0].metadata.url).toContain("minifetch.com");
+    expect(response.results[0].metadata.title).toContain("Minifetch.com");
+    expect(response.results[0].metadata["og:title"]).toContain("Minifetch.com");
+    expect(response.payment.success).toBe(true);
+    expect(typeof response.payment.payer).toBe("string");
+    expect(response.payment.network).toBe("solana-devnet");
+    expect(typeof response.payment.txHash).toBe("string");
+    expect(response.payment.explorerLink).toBe(`https://explorer.solana.com/tx/${response.payment.txHash}?cluster=devnet`);
+  });
+
+  it("throws on robots.txt check = blocked URL", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
@@ -57,6 +57,21 @@ describe.sequential("extractUrlMetadata() e2e", { timeout: 30000 }, () => {
     const blockedUrl = "https://www.npmjs.com/package/url-metadata";
 
     await expect(client.extractUrlMetadata(blockedUrl))
+      .rejects.toMatchObject({
+        name: "NetworkError",
+        message: "Request failed: 502 Bad Gateway",
+      });
+  });
+
+  it("throws on DNS lookup error", async () => {
+    const client = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: process.env.BASE_PRIVATE_KEY as any,
+    });
+
+    const dnsErrUrl = "https://mydns2.errrrrr";
+
+    await expect(client.extractUrlMetadata(dnsErrUrl))
       .rejects.toMatchObject({
         name: "NetworkError",
         message: "Request failed: 502 Bad Gateway",
