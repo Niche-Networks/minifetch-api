@@ -16,7 +16,7 @@ export class InvalidUrlError extends MinifetchError {
   public readonly url: string;
 
   constructor(url: string, message?: string) {
-    super(message || `Invalid URL: ${url}`);
+    super(message || `Invalid url: ${url}`);
     this.name = 'InvalidUrlError';
     this.url = url;
     Object.setPrototypeOf(this, InvalidUrlError.prototype);
@@ -30,7 +30,7 @@ export class RobotsBlockedError extends MinifetchError {
   public readonly url: string;
 
   constructor(url: string, message?: string) {
-    super(`Robots.txt blocks access to: ${url}${message ? ` (${message})` : ''}`);
+    super(message || `URL is blocked by robots.txt`);
     this.name = 'RobotsBlockedError';
     this.url = url;
     Object.setPrototypeOf(this, RobotsBlockedError.prototype);
@@ -62,7 +62,7 @@ export class ExtractionFailedError extends MinifetchError {
   public readonly originalError?: Error;
 
   constructor(url: string, message: string, statusCode?: number, originalError?: Error) {
-    super(`Extraction failed for ${url}: ${message}`);
+    super(message);
     this.name = 'ExtractionFailedError';
     this.url = url;
     this.statusCode = statusCode;

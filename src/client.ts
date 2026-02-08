@@ -325,8 +325,10 @@ export class MinifetchClient {
     const checkResult = await this.preflightUrlCheck(url);
 
     if (!checkResult.results[0]?.allowed) {
+
       throw new RobotsBlockedError(
-        checkResult.results[0]?.message || "URL blocked by robots.txt"
+        url,
+        checkResult.results[0]?.message || "URL is blocked by robots.txt"
       );
     }
 
@@ -342,7 +344,8 @@ export class MinifetchClient {
 
     if (!checkResult.results[0]?.allowed) {
       throw new RobotsBlockedError(
-        checkResult.results[0]?.message || "URL blocked by robots.txt"
+        url,
+        checkResult.results[0]?.message || "URL is blocked by robots.txt"
       );
     }
 
@@ -358,7 +361,8 @@ export class MinifetchClient {
 
     if (!checkResult.results[0]?.allowed) {
       throw new RobotsBlockedError(
-        checkResult.results[0]?.message || "URL blocked by robots.txt"
+        url,
+        checkResult.results[0]?.message || "URL is blocked by robots.txt"
       );
     }
 
@@ -377,7 +381,8 @@ export class MinifetchClient {
 
     if (!checkResult.results[0]?.allowed) {
       throw new RobotsBlockedError(
-        checkResult.results[0]?.message || "URL blocked by robots.txt"
+        url,
+        checkResult.results[0]?.message || "URL is blocked by robots.txt"
       );
     }
 

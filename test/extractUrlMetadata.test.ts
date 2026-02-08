@@ -48,6 +48,21 @@ describe.sequential("extractUrlMetadata() e2e", { timeout: 30000 }, () => {
     expect(response.payment.explorerLink).toBe(`https://sepolia.basescan.org/tx/${response.payment.txHash}`);
   });
 
+  it("throws when robots.txt check = blocked url", async () => {
+    const client = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: process.env.BASE_PRIVATE_KEY as any,
+    });
+
+    const blockedUrl = "https://www.npmjs.com/package/url-metadata";
+
+    await expect(client.extractUrlMetadata(blockedUrl))
+      .rejects.toMatchObject({
+        name: "NetworkError",
+        message: "Request failed: 502 Bad Gateway",
+      });
+  });
+
   it("throws on malformed URL", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
