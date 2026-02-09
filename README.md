@@ -1,11 +1,11 @@
 # Minifetch.com API
 
-Works with [x402](https://www.x402.org/) USDC payments on Coinbase's Base & Solana networks.
+Works with [x402](https://www.x402.org/) USDC stablecoin payments on Coinbase's Base & Solana blockchain networks.
 
 ## Prerequisites
 
-- Node.js v18+ & NPM
-- A valid Ethereum or Solana private key for making USDC payments on the network of your choice. Transaction fees are free on the Base network.
+- CLI: Node.js v18+ & NPM
+- A valid Ethereum or Solana private key for making USDC payments on the network of your choice. Transaction fees are free to the user.
 
 ## Install
 

@@ -23,7 +23,7 @@ export const DEFAULTS = {
 } as const;
 
 /**
- * Initialize and validate client configuration
+ * Validate & initialize client configuration
  */
 export function initConfig(config: ClientConfig): InitializedConfig {
   // Validate private key is provided
@@ -42,7 +42,7 @@ export function initConfig(config: ClientConfig): InitializedConfig {
   // Validate private key format based on network
   validatePrivateKey(config.privateKey, network);
 
-  // Build processed config
+  // Build initalized config
   const apiBaseUrl = DEFAULTS.apiBaseUrls[network];
   const explorerUrl = config.explorerUrl || DEFAULTS.explorerUrls[network];
 

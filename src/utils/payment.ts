@@ -96,6 +96,7 @@ export async function handlePayment(
   }
 }
 
+// Helper fn to build explorer links
 function getExplorerLink(config: InitializedConfig, txHash: string): string {
   if (config.network === "solana-devnet") {
     const strArray = config.explorerUrl.split("?");
