@@ -5,7 +5,7 @@ Works with [x402](https://www.x402.org/) USDC stablecoin payments on Coinbase's 
 ## Prerequisites
 
 - CLI: Node.js v18+ & NPM
-- A valid Ethereum or Solana private key for making USDC payments on the network of your choice. Transaction fees are free to the user.
+- A valid Ethereum or Solana private key for making USDC payments on the network of your choice. Transaction fees are free.
 
 ## Install
 
@@ -17,7 +17,7 @@ Works with [x402](https://www.x402.org/) USDC stablecoin payments on Coinbase's 
 import { MinifetchClient } from 'minifetch-api';
 
 // Network options: "base", "base-sepolia", "solana", "solana-devnet"
-// Bring your own private key, best practice = pass in via environment variable
+// Bring your own private key. Best practice: pass in via environment variable `process.env`
 const client = new MinifetchClient({
   network: 'base-sepolia',
   privateKey: process.env.BASE_PRIVATE_KEY,

@@ -2,6 +2,7 @@
 node_modules/
 .env-base-testnet
 .env-dev
+.env-prod
 .env
 test/prod.ts
 test/prod.test.ts
