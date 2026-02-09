@@ -6,3 +6,4 @@ node_modules/
 .env
 test/prod.ts
 test/prod.test.ts
+test/debug.test.ts
