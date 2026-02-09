@@ -60,8 +60,12 @@ export class MinifetchClient {
         queryParameters: data.queryParameters,
         results: data.results,
       };
+
     } catch (error) {
-      if (error instanceof InvalidUrlError || error instanceof NetworkError) {
+      if (
+        error instanceof InvalidUrlError ||
+        error instanceof NetworkError
+      ) {
         throw error;
       }
       throw new NetworkError(
@@ -109,13 +113,6 @@ export class MinifetchClient {
       }
 
       const data = await response.json();
-
-      // Check for server-side errors in response
-      if (!data.success) {
-        throw new ExtractionFailedError(
-          data.results?.[0]?.metadata?.error || "Metadata extraction failed"
-        );
-      }
 
       return {
         success: true,
@@ -167,18 +164,13 @@ export class MinifetchClient {
 
       const data = await response.json();
 
-      if (!data.success) {
-        throw new ExtractionFailedError(
-          data.results?.[0]?.error?.message || "Links extraction failed"
-        );
-      }
-
       return {
         success: true,
         queryParameters: data.queryParameters,
         results: data.results,
         payment,
       };
+
     } catch (error) {
       if (
         error instanceof InvalidUrlError ||
@@ -223,19 +215,13 @@ export class MinifetchClient {
 
       const data = await response.json();
 
-      // Check for server-side errors in response
-      if (!data.success) {
-        throw new ExtractionFailedError(
-          data.results?.[0]?.metadata?.error?.message || "Preview extraction failed"
-        );
-      }
-
       return {
         success: true,
         queryParameters: data.queryParameters,
         results: data.results,
         payment,
       };
+
     } catch (error) {
       if (
         error instanceof InvalidUrlError ||
@@ -288,19 +274,13 @@ export class MinifetchClient {
 
       const data = await response.json();
 
-      // Check for server-side errors in response
-      if (!data.success) {
-        throw new ExtractionFailedError(
-          data.results?.[0]?.content?.error?.message || "Content extraction failed"
-        );
-      }
-
       return {
         success: true,
         queryParameters: data.queryParameters,
         results: data.results,
         payment,
       };
+
     } catch (error) {
       if (
         error instanceof InvalidUrlError ||
