@@ -20,15 +20,3 @@ export interface InitializedConfig {
   apiBaseUrl: string;
   explorerUrl: string;
 }
-
-// Metadata-specific options
-export interface MetadataExtractOptions {
-  /**
-   * Include raw HTML response body in the result
-   * @default false
-   */
-  includeResponseBody?: boolean;
-}
-
-// TODO:
-// Links, Preview, Content ptions
