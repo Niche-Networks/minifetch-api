@@ -26,7 +26,7 @@ export async function handlePayment(
 
   try {
     // Create x402 client and signer based on network type
-    const client = new x402Client();
+    const _x402Client = new x402Client();
     let payer: string;
 
     const isEvm = config.network.startsWith("base");
@@ -36,21 +36,21 @@ export async function handlePayment(
       // Initialize EVM signer and register scheme
       const signer = privateKeyToAccount(config.privateKey as `0x${string}`);
       const evmSigner = signer as ReturnType<typeof privateKeyToAccount>; // Type assertion for EVM
-      registerExactEvmScheme(client, { signer: evmSigner });
+      registerExactEvmScheme(_x402Client, { signer: evmSigner });
       payer = signer.address;
     } else if (isSolana) {
       // Initialize Solana signer and register scheme
       const privateKeyBytes = bs58.decode(config.privateKey);
       const signer = await createKeyPairSignerFromBytes(privateKeyBytes);
       const svmSigner = signer as KeyPairSigner<string>; // Type assertion for Solana
-      registerExactSvmScheme(client, { signer: svmSigner });
+      registerExactSvmScheme(_x402Client, { signer: svmSigner });
       payer = signer.address;
     } else {
       throw new PaymentFailedError(`Unsupported network: ${config.network}`);
     }
 
     // Wrap fetch with payment capabilities
-    const fetchWithPayment = wrapFetchWithPayment(fetch, client);
+    const fetchWithPayment = wrapFetchWithPayment(fetch, _x402Client);
 
     // Make request with payment handling
     // console.log("Attempting to fetch w payment:", url);
@@ -65,13 +65,13 @@ export async function handlePayment(
     }
 
     // Extract payment receipt from response headers
-    const httpClient = new x402HTTPClient(client);
+    const httpClient = new x402HTTPClient(_x402Client);
     const paymentResponse = httpClient.getPaymentSettleResponse(
       (name) => response.headers.get(name)
     );
+    // DEBUG:
     // console.log("Payment response:");
     // console.log(paymentResponse);
-    // console.log(`View transaction: ${config.explorerUrl}/${paymentResponse.transaction}`);
 
     // Build payment info for user
     const payment: PaymentInfo = {
