@@ -20,17 +20,17 @@ For AI Agents, read the [LLMs.txt](https://minifetch.com/llms.txt).
 import Minifetch from "minifetch-api";
 
 // Inititialize the client with your network choice & private key.
-// Network options: "base" or "solana".
-// Bring your private key from an account loaded with small amt of USDC.
+//   - Network options: "base" or "solana"
+//   - Use private key from account that has a small amt of USDC
 const client = new Minifetch({
   network: "base",
   privateKey: process.env.BASE_PRIVATE_KEY,
 });
 
-// Use the "checkAndExtract" API methods provided for granular info
-// about why a URL may not return data, also to avoid paying for
-// blocked URLs. The "check" fetches the target URL's robots.txt file
-// first before fetching the URL to help ensure success.
+// Use the "checkAndExtract" API methods provided to avoid paying
+// for blocked URLs and for more granular info about why a URL may
+// or may not return data. The "check" fetches the target URL's
+// robots.txt file before fetching the URL to help ensure success.
 // Example:
 try {
   const url = "example.com";
