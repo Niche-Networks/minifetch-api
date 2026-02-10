@@ -1,11 +1,14 @@
 # Minifetch.com API
 
-Works with [x402](https://www.x402.org/) USDC stablecoin micropayments on Coinbase's Base & Solana blockchain networks. Transaction fees are free.
+Fetch & extract data from web pages. Works with [x402](https://www.x402.org/) USDC stablecoin micropayments on Coinbase's Base & Solana blockchain networks. Transaction fees are free.
+
+Full [API docs are here](https://minifetch.com/docs/api).
+For AI Agents, read the [LLMs.txt](https://minifetch.com/llms.txt).
 
 ## Prerequisites
 
-- CLI: Node.js v18+ & NPM
-- A valid Ethereum or Solana private key for making USDC payments on the network of your choice.
+- Node.js v18+ & NPM
+- A valid Ethereum or Solana private key for making USDC payments.
 
 ## Install
 
@@ -16,19 +19,18 @@ Works with [x402](https://www.x402.org/) USDC stablecoin micropayments on Coinba
 ```js
 import Minifetch from "minifetch-api";
 
-// Init the Minifetch client with your blockchain network choice & private key.
+// Inititialize the client with your network choice & private key.
 // Network options: "base" or "solana".
-// Bring your private key from a wallet account loaded with small amt of USDC.
-// Best practice: pass private key in via environment variable `process.env`
+// Bring your private key from an account loaded with small amt of USDC.
 const client = new Minifetch({
   network: "base",
   privateKey: process.env.BASE_PRIVATE_KEY,
 });
 
-// Use the "checkAndExtract" API methods provided for more granular info about
-// why a URL may not return data, as well as to avoid paying for blocked URLs.
-// The "check" fetches the target URL's robots.txt file first before fetching
-// the actual URL to help ensure success.
+// Use the "checkAndExtract" API methods provided for granular info
+// about why a URL may not return data, also to avoid paying for
+// blocked URLs. The "check" fetches the target URL's robots.txt file
+// first before fetching the URL to help ensure success.
 // Example:
 try {
   const url = "example.com";
@@ -40,18 +42,17 @@ try {
   // No payment or charges for errors!
   console.log(err);
   // "RobotsBlockedError: URL is blocked by robots.txt"
-  //   URLs explicitly blocked by robots.txt will error like this when you use
-  //   the "checkAndExtract" Minifetch API methods.
+  //   URLs explicitly blocked by their robots.txt error like this
+  //   when you use the "checkAndExtract" Minifetch API methods.
   // "402 Payment Required" errors:
   //   Check your wallet -- likely you ran out of USDC to pay!
   // "502 Bad Gateway" errors:
-  //   Web pages that pass the robots.txt check but are blocked anyway via 403
-  //   or other blocks when we try to fetch may error like this.
+  //   URLs that pass the robots.txt check but are blocked anyway
+  //   via 403 or other tactics may error like this.
   // "503 Service Temporarily Unavailable" errors:
-  //   Fetches that return 503 errors are likely encountering Minifetch
-  //   rate-limiting or upstream timeout errors on the target URL.
-  //   You may try again but limit your requests to 5-10 at a time.
-  //   We will implement bulk fetches in the future.
+  //   Likely encountering Minifetch rate-limiting or upstream
+  //   timeout errors on the target URL. You may try again but limit
+  //   requests to 5-10 at a time. Bulk fetches TBD in the future.
 }
 ```
 
@@ -59,7 +60,7 @@ try {
 
 - LLMs & Agents should *never* have direct access to your private key. They *will* expose it!
 - Only keep a small amount of USDC in the account whose private key you use.
-- Keep that account separate from the rest of your funds.
+- Keep that account separate from the rest of your onchain funds.
 - Pass your private key into the Minifetch API via an [environment variable](https://developer.vonage.com/en/blog/how-to-use-environment-variables-in-javascript-with-dotenv).
 
 ## Credits
