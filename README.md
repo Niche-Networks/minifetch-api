@@ -1,6 +1,6 @@
 # Minifetch.com API
 
-Works with [x402](https://www.x402.org/) USDC stablecoin payments on Coinbase's Base & Solana blockchain networks.
+Works with [x402](https://www.x402.org/) USDC stablecoin micropayments on Coinbase's Base & Solana blockchain networks.
 
 ## Prerequisites
 
@@ -54,6 +54,13 @@ try {
   //   We will implement bulk fetches in the future.
 }
 ```
+
+## x402 Best Practices
+
+- LLMs & Agents should *never* have direct access to your private key. They *will* expose it!
+- Only keep a small amount of USDC in the account whose private key you use.
+- Keep that account separate from the rest of your funds.
+- Pass your private key into the Minifetch API via an [environment variable](https://developer.vonage.com/en/blog/how-to-use-environment-variables-in-javascript-with-dotenv).
 
 ## Credits
 
