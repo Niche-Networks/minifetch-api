@@ -16,20 +16,42 @@ Works with [x402](https://www.x402.org/) USDC stablecoin payments on Coinbase's 
 ```js
 import { MinifetchClient } from 'minifetch-api';
 
-// Network options: "base", "base-sepolia", "solana", "solana-devnet"
-// Bring your own private key. Best practice: pass in via environment variable `process.env`
+// Init the Minifetch client with your blockchain network choice & private key.
+// Network options: "base" or "solana".
+// Bring your private key from a wallet account loaded with small amt of USDC.
+// Best practice: pass private key in via environment variable `process.env`
 const client = new MinifetchClient({
-  network: 'base-sepolia',
+  network: 'base',
   privateKey: process.env.BASE_PRIVATE_KEY,
 });
 
+// Use the "checkAndExtract" API methods provided for more granular info about
+// why a URL may not return data, as well as to avoid paying for blocked URLs.
+// The "check" fetches the target URL's robots.txt file first before fetching
+// the actual URL to help ensure success.
+// Example:
 try {
-  const response = await client.checkAndExtractMetadata("https://example.com");
+  const url = "example.com";
+  const response = await client.checkAndExtractMetadata(url);
+  // 200 "ok" responses will return the data and x402 payment info:
   console.log("metadata: ", response.results[0].metadata);
-  console.log("payment: ", response.payment);
-} catch (error) {
-  console.log(error.message);
-  // ...
+  console.log("payment info: ", response.payment);
+} catch (err) {
+  // No payment or charges for errors!
+  console.log(err);
+  // "RobotsBlockedError: URL is blocked by robots.txt"
+  //   URLs explicitly blocked by robots.txt will error like this when you use
+  //   the "checkAndExtract" Minifetch API methods.
+  // "402 Payment Required" errors:
+  //   Check your wallet -- likely you ran out of USDC to pay!
+  // "502 Bad Gateway" errors:
+  //   Web pages that pass the robots.txt check but are blocked anyway via 403
+  //   or other blocks when we try to fetch may error like this.
+  // "503 Service Temporarily Unavailable" errors:
+  //   Fetches that return 503 errors are likely encountering Minifetch
+  //   rate-limiting or upstream timeout errors on the target URL.
+  //   You may try again but limit your requests to 5-10 at a time.
+  //   We will implement bulk fetches in the future.
 }
 ```
 
