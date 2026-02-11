@@ -34,9 +34,9 @@ const client = new Minifetch({
 // Example:
 try {
   const url = "example.com";
-  const response = await client.checkAndExtractMetadata(url);
+  const response = await client.checkAndExtractPreview(url);
   // 200 "ok" responses will return the data and x402 payment info:
-  console.log("metadata: ", response.results[0].metadata);
+  console.log("data: ", response.data);
   console.log("payment info: ", response.payment);
 } catch (err) {
   // No payment or charges for errors!
