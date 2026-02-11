@@ -3,11 +3,8 @@ import { validateAndNormalizeUrl } from './utils/validation.js';
 import { handlePayment } from './utils/payment.js';
 import type { ClientConfig, InitializedConfig } from './types/config.js';
 import type {
-  PreflightCheckResult,
-  MetadataResult,
-  LinksResult,
-  PreviewResult,
-  ContentResult,
+  PreflightCheckResponse,
+  PaidEndpointResponse,
 } from './types/results.js';
 import {
   InvalidUrlError,
@@ -35,7 +32,7 @@ export class MinifetchClient {
    * @throws {InvalidUrlError} if URL is invalid
    * @throws {NetworkError} if request fails
    */
-  async preflightUrlCheck(url: string): Promise<PreflightCheckResult> {
+  async preflightUrlCheck(url: string): Promise<PreflightCheckResponse> {
 
     try {
       // Validate and normalize URL
@@ -79,7 +76,7 @@ export class MinifetchClient {
   async extractUrlMetadata(
     url: string,
     options?: { includeResponseBody?: boolean }
-  ): Promise<MetadataResult> {
+  ): Promise<PaidEndpointResponse> {
 
     try {
       // Validate and normalize URL
@@ -136,7 +133,7 @@ export class MinifetchClient {
    * @throws {PaymentFailedError} if payment fails
    * @throws {ExtractionFailedError} if extraction fails
    */
-  async extractUrlLinks(url: string): Promise<LinksResult> {
+  async extractUrlLinks(url: string): Promise<PaidEndpointResponse> {
 
     try {
       const normalizedUrl = validateAndNormalizeUrl(url);
@@ -182,7 +179,7 @@ export class MinifetchClient {
    * @throws {PaymentFailedError} if payment fails
    * @throws {ExtractionFailedError} if extraction fails
    */
-  async extractUrlPreview(url: string): Promise<PreviewResult> {
+  async extractUrlPreview(url: string): Promise<PaidEndpointResponse> {
 
     try {
       // Validate and normalize URL
@@ -234,7 +231,7 @@ export class MinifetchClient {
   async extractUrlContent(
     url: string,
     options?: { includeMediaUrls?: boolean }
-  ): Promise<ContentResult> {
+  ): Promise<PaidEndpointResponse> {
 
     try {
       // Validate and normalize URL
@@ -289,7 +286,7 @@ export class MinifetchClient {
   async checkAndExtractUrlMetadata(
     url: string,
     options?: { includeResponseBody?: boolean }
-): Promise<MetadataResult> {
+): Promise<PaidEndpointResponse> {
     const checkResult = await this.preflightUrlCheck(url);
 
     if (!checkResult.data?.results[0]?.data?.allowed) {
@@ -306,7 +303,7 @@ export class MinifetchClient {
    * Check URL and extract links in one call
    * Throws RobotsBlockedError if robots.txt blocks the URL
    */
-  async checkAndExtractUrlLinks(url: string): Promise<LinksResult> {
+  async checkAndExtractUrlLinks(url: string): Promise<PaidEndpointResponse> {
     const checkResult = await this.preflightUrlCheck(url);
 
     if (!checkResult.data?.results[0]?.data?.allowed) {
@@ -323,7 +320,7 @@ export class MinifetchClient {
    * Check URL and extract preview in one call
    * Throws RobotsBlockedError if robots.txt blocks the URL
    */
-  async checkAndExtractUrlPreview(url: string): Promise<PreviewResult> {
+  async checkAndExtractUrlPreview(url: string): Promise<PaidEndpointResponse> {
     const checkResult = await this.preflightUrlCheck(url);
 
     if (!checkResult.data?.results[0]?.data?.allowed) {
@@ -343,7 +340,7 @@ export class MinifetchClient {
   async checkAndExtractContent(
     url: string,
     options?: { includeMediaUrls?: boolean }
-  ): Promise<ContentResult> {
+  ): Promise<PaidEndpointResponse> {
     const checkResult = await this.preflightUrlCheck(url);
 
     if (!checkResult.data?.results[0]?.data?.allowed) {

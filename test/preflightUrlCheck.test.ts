@@ -51,7 +51,7 @@ describe.sequential("preflightUrlCheck() e2e", { timeout: 30000 }, () => {
       .rejects.toThrow(InvalidUrlError);
   });
 
-  it("throws on URL w unsupported extension", async () => {
+  it("throws on URL w unsupported file extension", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
