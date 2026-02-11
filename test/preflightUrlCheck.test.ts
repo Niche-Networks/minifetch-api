@@ -2,12 +2,12 @@
 import { config } from 'dotenv';
 config({ path: '.env-dev' });
 
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, beforeEach } from 'vitest';
 import { MinifetchClient } from '../src/client.js';
 import { InvalidUrlError } from '../src/types/errors.js';
 
-afterEach(async () => {
-  await new Promise(r => setTimeout(r, 500));
+beforeEach(async () => {
+  await new Promise(r => setTimeout(r, 1000));
 });
 
 describe.sequential("preflightUrlCheck() e2e", { timeout: 30000 }, () => {
@@ -19,11 +19,11 @@ describe.sequential("preflightUrlCheck() e2e", { timeout: 30000 }, () => {
     });
     const response = await client.preflightUrlCheck('https://minifetch.com');
 
-    expect(response.success).toBe(true);
-    expect(response.results[0].url).toBe("https://minifetch.com");
-    expect(response.results[0].allowed).toBe(true);
-    expect(response.results[0].message).toContain("allowed by robots.txt");
-    expect(response.results[0].crawlDelay).toBe(1);
+    expect(response.data.success).toBe(true);
+    expect(response.data.results[0].data.url).toBe("https://minifetch.com");
+    expect(response.data.results[0].data.allowed).toBe(true);
+    expect(response.data.results[0].data.message).toContain("allowed by robots.txt");
+    expect(response.data.results[0].data.crawlDelay).toBe(1);
   });
 
   it("handles DNS lookup error", async () => {
@@ -35,10 +35,10 @@ describe.sequential("preflightUrlCheck() e2e", { timeout: 30000 }, () => {
     const dnsErrUrl = "https://mydns1.errrrrr";
 
     const response = await client.preflightUrlCheck(dnsErrUrl);
-    expect(response.success).toBe(true);
-    expect(response.results[0].url).toBe(dnsErrUrl);
-    expect(response.results[0].allowed).toBe(false);
-    expect(response.results[0].message).toContain("Invalid or non-existent domain");
+    expect(response.data.success).toBe(true);
+    expect(response.data.results[0].data.url).toBe(dnsErrUrl);
+    expect(response.data.results[0].data.allowed).toBe(false);
+    expect(response.data.results[0].data.message).toContain("Invalid or non-existent domain");
   });
 
   it("throws on malformed URL", async () => {

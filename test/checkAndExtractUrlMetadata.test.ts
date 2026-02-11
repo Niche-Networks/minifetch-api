@@ -2,12 +2,12 @@
 import { config } from 'dotenv';
 config({ path: '.env-dev' });
 
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, beforeEach } from 'vitest';
 import { MinifetchClient } from '../src/client.js';
 import { InvalidUrlError, NetworkError } from '../src/types/errors.js';
 
-afterEach(async () => {
-  await new Promise(r => setTimeout(r, 1000));
+beforeEach(async () => {
+  await new Promise(r => setTimeout(r, 2500));
 });
 
 describe.sequential("checkAndExtractUrlMetadata() e2e", { timeout: 30000 }, () => {
@@ -19,11 +19,11 @@ describe.sequential("checkAndExtractUrlMetadata() e2e", { timeout: 30000 }, () =
     });
     const response = await client.extractUrlMetadata('https://minifetch.com', { includeResponseBody: true});
 
-    expect(response.success).toBe(true);
-    expect(response.results[0].metadata.url).toContain("minifetch.com");
-    expect(response.results[0].metadata.title).toContain("Minifetch.com");
-    expect(response.results[0].metadata["og:title"]).toContain("Minifetch.com");
-    expect(response.results[0].metadata.responseBody).toContain("<!DOCTYPE html>");
+    expect(response.data.success).toBe(true);
+    expect(response.data.results[0].data.url).toContain("minifetch.com");
+    expect(response.data.results[0].data.title).toContain("Minifetch.com");
+    expect(response.data.results[0].data["og:title"]).toContain("Minifetch.com");
+    expect(response.data.results[0].data.responseBody).toContain("<!DOCTYPE html>");
     expect(response.payment.success).toBe(true);
     expect(response.payment.payer).toContain("0x");
     expect(response.payment.network).toBe("base-sepolia");
