@@ -37,7 +37,7 @@ export interface PaidEndpointResponse {
 }
 
 /**
- * Payment information included with successful paid requests
+ * Payment information included with successful paid API responses
  */
 export interface PaymentInfo {
   /** Whether the payment was successful **/

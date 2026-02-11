@@ -5,7 +5,7 @@ import type { ClientConfig, InitializedConfig } from './types/config.js';
 import type {
   PreflightCheckResponse,
   PaidEndpointResponse,
-} from './types/results.js';
+} from './types/responses.js';
 import {
   InvalidUrlError,
   RobotsBlockedError,

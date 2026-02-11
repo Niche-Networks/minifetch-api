@@ -5,7 +5,7 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { createKeyPairSignerFromBytes, type KeyPairSigner } from '@solana/kit';
 import bs58 from 'bs58';
 import type { InitializedConfig } from '../types/config.js';
-import type { PaymentInfo } from '../types/results.js';
+import type { PaymentInfo } from '../types/responses.js';
 import { PaymentFailedError, NetworkError } from '../types/errors.js';
 
 /**
