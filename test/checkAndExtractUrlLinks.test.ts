@@ -10,20 +10,21 @@ beforeEach(async () => {
   await new Promise(r => setTimeout(r, 1000));
 });
 
-describe.sequential("checkAndExtractUrlMetadata() e2e", { timeout: 30000 }, () => {
+describe.sequential("checkAndExtractUrlLinks() e2e", { timeout: 30000 }, () => {
 
-  it("base-sepolia success w includeResponseBody true", async () => {
+  it("base-sepolia success", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
-    const response = await client.checkAndExtractUrlMetadata('https://minifetch.com', { includeResponseBody: true});
+    const response = await client.checkAndExtractUrlLinks('https://minifetch.com');
 
     expect(response.success).toBe(true);
+    expect(response.results).toHaveLength(1);
     expect(response.results[0].data.url).toContain("minifetch.com");
-    expect(response.results[0].data.title).toContain("Minifetch.com");
-    expect(response.results[0].data["og:title"]).toContain("Minifetch.com");
-    expect(response.results[0].data.responseBody).toContain("<!DOCTYPE html>");
+    expect(response.results[0].data.links.internal.length).toBeGreaterThan(1);
+    expect(response.results[0].data.links.external.length).toBeGreaterThan(1);
+    expect(response.results[0].data.links.summary.totalLinks).toBeGreaterThan(1);
 
     expect(response.payment.success).toBe(true);
     expect(response.payment.payer).toContain("0x");
@@ -40,7 +41,7 @@ describe.sequential("checkAndExtractUrlMetadata() e2e", { timeout: 30000 }, () =
 
     const blockedUrl = "https://www.npmjs.com/package/url-metadata";
 
-    await expect(client.checkAndExtractUrlMetadata(blockedUrl))
+    await expect(client.checkAndExtractUrlLinks(blockedUrl))
       .rejects.toMatchObject({
         name: "RobotsBlockedError",
         message: expect.stringContaining("URL is blocked by robots.txt"),
@@ -54,7 +55,7 @@ describe.sequential("checkAndExtractUrlMetadata() e2e", { timeout: 30000 }, () =
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
 
-    await expect(client.checkAndExtractUrlMetadata("http://coinbase.com"))
+    await expect(client.checkAndExtractUrlLinks("http://coinbase.com"))
       .rejects.toMatchObject({
         name: "NetworkError",
         message: "Request failed: 502 Bad Gateway",
@@ -67,7 +68,7 @@ describe.sequential("checkAndExtractUrlMetadata() e2e", { timeout: 30000 }, () =
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
 
-    await expect(client.checkAndExtractUrlMetadata('http://foo.bar/baz.pdf'))
+    await expect(client.checkAndExtractUrlLinks('http://foo.bar/baz.pdf'))
       .rejects.toThrow(InvalidUrlError);
   });
 

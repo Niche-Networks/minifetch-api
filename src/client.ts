@@ -52,7 +52,7 @@ export class MinifetchClient {
 
       const data = await response.json();
 
-      return { data };
+      return data;
 
     } catch (error) {
       if (
@@ -108,7 +108,8 @@ export class MinifetchClient {
       const data = await response.json();
 
       return {
-        data,
+        success: data.success,
+        results: data.results,
         payment,
       };
 
@@ -156,14 +157,17 @@ export class MinifetchClient {
       const data = await response.json();
 
       return {
-        data,
+        success: data.success,
+        results: data.results,
         payment,
       };
 
     } catch (error) {
       if (
         error instanceof InvalidUrlError ||
-        error instanceof ExtractionFailedError
+        error instanceof ExtractionFailedError ||
+        error instanceof PaymentFailedError ||
+        error instanceof NetworkError
       ) {
         throw error;
       }
@@ -205,19 +209,22 @@ export class MinifetchClient {
       const data = await response.json();
 
       return {
-        data,
+        success: data.success,
+        results: data.results,
         payment,
       };
 
     } catch (error) {
       if (
         error instanceof InvalidUrlError ||
-        error instanceof ExtractionFailedError
+        error instanceof ExtractionFailedError ||
+        error instanceof PaymentFailedError ||
+        error instanceof NetworkError
       ) {
         throw error;
       }
       throw new ExtractionFailedError(
-        `Preview extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Preview extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`
       );
     }
   }
@@ -262,14 +269,17 @@ export class MinifetchClient {
       const data = await response.json();
 
       return {
-        data,
+        success: data.success,
+        results: data.results,
         payment,
       };
 
     } catch (error) {
       if (
         error instanceof InvalidUrlError ||
-        error instanceof ExtractionFailedError
+        error instanceof ExtractionFailedError ||
+        error instanceof PaymentFailedError ||
+        error instanceof NetworkError
       ) {
         throw error;
       }
@@ -287,12 +297,12 @@ export class MinifetchClient {
     url: string,
     options?: { includeResponseBody?: boolean }
 ): Promise<PaidEndpointResponse> {
-    const checkResult = await this.preflightUrlCheck(url);
+    const checkResponse = await this.preflightUrlCheck(url);
 
-    if (!checkResult.data?.results[0]?.data?.allowed) {
+    if (!checkResponse.results[0]?.data?.allowed) {
       throw new RobotsBlockedError(
         url,
-        checkResult.data?.results[0]?.data?.message || "URL is blocked by robots.txt"
+        checkResponse.results[0]?.data?.message || "URL is blocked by robots.txt"
       );
     }
 
@@ -304,12 +314,12 @@ export class MinifetchClient {
    * Throws RobotsBlockedError if robots.txt blocks the URL
    */
   async checkAndExtractUrlLinks(url: string): Promise<PaidEndpointResponse> {
-    const checkResult = await this.preflightUrlCheck(url);
+    const checkResponse = await this.preflightUrlCheck(url);
 
-    if (!checkResult.data?.results[0]?.data?.allowed) {
+    if (!checkResponse.results[0]?.data?.allowed) {
       throw new RobotsBlockedError(
         url,
-        checkResult.data?.results[0]?.data?.message || "URL is blocked by robots.txt"
+        checkResponse.results[0]?.data?.message || "URL is blocked by robots.txt"
       );
     }
 
@@ -321,12 +331,12 @@ export class MinifetchClient {
    * Throws RobotsBlockedError if robots.txt blocks the URL
    */
   async checkAndExtractUrlPreview(url: string): Promise<PaidEndpointResponse> {
-    const checkResult = await this.preflightUrlCheck(url);
+    const checkResponse = await this.preflightUrlCheck(url);
 
-    if (!checkResult.data?.results[0]?.data?.allowed) {
+    if (!checkResponse.results[0]?.data?.allowed) {
       throw new RobotsBlockedError(
         url,
-        checkResult.data?.results[0]?.data?.message || "URL is blocked by robots.txt"
+        checkResponse.results[0]?.data?.message || "URL is blocked by robots.txt"
       );
     }
 
@@ -341,12 +351,12 @@ export class MinifetchClient {
     url: string,
     options?: { includeMediaUrls?: boolean }
   ): Promise<PaidEndpointResponse> {
-    const checkResult = await this.preflightUrlCheck(url);
+    const checkResponse = await this.preflightUrlCheck(url);
 
-    if (!checkResult.data?.results[0]?.data?.allowed) {
+    if (!checkResponse.results[0]?.data?.allowed) {
       throw new RobotsBlockedError(
         url,
-        checkResult.data?.results[0]?.data?.message || "URL is blocked by robots.txt"
+        checkResponse.results[0]?.data?.message || "URL is blocked by robots.txt"
       );
     }
 

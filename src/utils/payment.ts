@@ -87,7 +87,10 @@ export async function handlePayment(
     return { response, payment };
 
   } catch (error) {
-    if (error instanceof PaymentFailedError || error instanceof NetworkError) {
+    if (
+      error instanceof PaymentFailedError ||
+      error instanceof NetworkError
+    ) {
       throw error;
     }
     throw new PaymentFailedError(

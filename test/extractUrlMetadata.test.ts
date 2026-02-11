@@ -19,10 +19,11 @@ describe.sequential("extractUrlMetadata() e2e", { timeout: 30000 }, () => {
     });
     const response = await client.extractUrlMetadata('https://minifetch.com');
 
-    expect(response.data.success).toBe(true);
-    expect(response.data.results[0].data.url).toContain("minifetch.com");
-    expect(response.data.results[0].data.title).toContain("Minifetch.com");
-    expect(response.data.results[0].data["og:title"]).toContain("Minifetch.com");
+    expect(response.success).toBe(true);
+    expect(response.results[0].data.url).toContain("minifetch.com");
+    expect(response.results[0].data.title).toContain("Minifetch.com");
+    expect(response.results[0].data["og:title"]).toContain("Minifetch.com");
+
     expect(response.payment.success).toBe(true);
     expect(response.payment.payer).toContain("0x");
     expect(response.payment.network).toBe("base-sepolia");
@@ -37,10 +38,11 @@ describe.sequential("extractUrlMetadata() e2e", { timeout: 30000 }, () => {
     });
     const response = await client.extractUrlMetadata('https://minifetch.com');
 
-    expect(response.data.success).toBe(true);
-    expect(response.data.results[0].data.url).toContain("minifetch.com");
-    expect(response.data.results[0].data.title).toContain("Minifetch.com");
-    expect(response.data.results[0].data["og:title"]).toContain("Minifetch.com");
+    expect(response.success).toBe(true);
+    expect(response.results[0].data.url).toContain("minifetch.com");
+    expect(response.results[0].data.title).toContain("Minifetch.com");
+    expect(response.results[0].data["og:title"]).toContain("Minifetch.com");
+
     expect(response.payment.success).toBe(true);
     expect(typeof response.payment.payer).toBe("string");
     expect(response.payment.network).toBe("solana-devnet");

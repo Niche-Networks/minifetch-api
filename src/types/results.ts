@@ -20,8 +20,15 @@ export interface PreflightCheckResponse {
  * Response structure for all paid API responses
  */
 export interface PaidEndpointResponse {
-  /** Data returned from the fetch request */
-  data: Record<string, any>;
+  /** Minifetch API success (200, ok) **/
+  success: boolean;
+  /** Data returned from the Minifetch.com API **/
+  results: Array<{
+    data: {
+      [key: string]: any;
+    },
+    error?: Record<string, any>;
+  }>;
   /**
    * Payment information
    * Only present for paid endpoints when request was successful
@@ -39,7 +46,7 @@ export interface PaymentInfo {
   payer: string;
   /** Network the payment was made on **/
   network: 'base' | 'base-sepolia' | 'solana' | 'solana-devnet';
-  /** Transaction hash */
+  /** Transaction hash **/
   txHash: string;
   /** Link to view transaction on block explorer **/
   explorerLink: string;

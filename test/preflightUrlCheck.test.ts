@@ -19,11 +19,11 @@ describe.sequential("preflightUrlCheck() e2e", { timeout: 30000 }, () => {
     });
     const response = await client.preflightUrlCheck('https://minifetch.com');
 
-    expect(response.data.success).toBe(true);
-    expect(response.data.results[0].data.url).toBe("https://minifetch.com");
-    expect(response.data.results[0].data.allowed).toBe(true);
-    expect(response.data.results[0].data.message).toContain("allowed by robots.txt");
-    expect(response.data.results[0].data.crawlDelay).toBe(1);
+    expect(response.success).toBe(true);
+    expect(response.results[0].data.url).toBe("https://minifetch.com");
+    expect(response.results[0].data.allowed).toBe(true);
+    expect(response.results[0].data.message).toContain("allowed by robots.txt");
+    expect(response.results[0].data.crawlDelay).toBe(1);
   });
 
   it("handles DNS lookup error", async () => {
@@ -35,10 +35,10 @@ describe.sequential("preflightUrlCheck() e2e", { timeout: 30000 }, () => {
     const dnsErrUrl = "https://mydns1.errrrrr";
 
     const response = await client.preflightUrlCheck(dnsErrUrl);
-    expect(response.data.success).toBe(true);
-    expect(response.data.results[0].data.url).toBe(dnsErrUrl);
-    expect(response.data.results[0].data.allowed).toBe(false);
-    expect(response.data.results[0].data.message).toContain("Invalid or non-existent domain");
+    expect(response.success).toBe(true);
+    expect(response.results[0].data.url).toBe(dnsErrUrl);
+    expect(response.results[0].data.allowed).toBe(false);
+    expect(response.results[0].data.message).toContain("Invalid or non-existent domain");
   });
 
   it("throws on malformed URL", async () => {
