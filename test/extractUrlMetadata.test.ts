@@ -7,7 +7,7 @@ import { MinifetchClient } from '../src/client.js';
 import { InvalidUrlError, NetworkError } from '../src/types/errors.js';
 
 beforeEach(async () => {
-  await new Promise(r => setTimeout(r, 2500));
+  await new Promise(r => setTimeout(r, 1000));
 });
 
 describe.sequential("extractUrlMetadata() e2e", { timeout: 30000 }, () => {

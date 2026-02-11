@@ -7,7 +7,7 @@ import { MinifetchClient } from '../src/client.js';
 import { InvalidUrlError, NetworkError } from '../src/types/errors.js';
 
 beforeEach(async () => {
-  await new Promise(r => setTimeout(r, 2500));
+  await new Promise(r => setTimeout(r, 1000));
 });
 
 describe.sequential("checkAndExtractUrlMetadata() e2e", { timeout: 30000 }, () => {
@@ -17,7 +17,7 @@ describe.sequential("checkAndExtractUrlMetadata() e2e", { timeout: 30000 }, () =
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
-    const response = await client.extractUrlMetadata('https://minifetch.com', { includeResponseBody: true});
+    const response = await client.checkAndExtractUrlMetadata('https://minifetch.com', { includeResponseBody: true});
 
     expect(response.data.success).toBe(true);
     expect(response.data.results[0].data.url).toContain("minifetch.com");
