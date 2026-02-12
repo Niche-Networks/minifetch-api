@@ -10,7 +10,7 @@ beforeEach(async () => {
   await new Promise(r => setTimeout(r, 1000));
 });
 
-describe.sequential("extractUrlLinks() e2e", { timeout: 30000 }, () => {
+describe.sequential("extractUrlContent() e2e", { timeout: 30000 }, () => {
 
   it("base-sepolia testnet success", async () => {
     const client = new MinifetchClient({
