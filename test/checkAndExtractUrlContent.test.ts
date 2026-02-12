@@ -18,11 +18,12 @@ describe.sequential("checkAndExtractUrlContent() e2e", { timeout: 30000 }, () =>
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
     const response = await client.checkAndExtractUrlContent('https://minifetch.com', { includeMediaUrls: true });
-console.log(response.results[0])
+
     expect(response.success).toBe(true);
     expect(response.results).toHaveLength(1);
     expect(response.results[0].data.url).toContain("minifetch.com");
     expect(typeof response.results[0].data.summary).toBe("string");
+    expect(typeof response.results[0].data.mediaUrls).toBe("object"); // is array
 
     expect(response.payment.success).toBe(true);
     expect(response.payment.payer).toContain("0x");
