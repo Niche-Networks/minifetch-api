@@ -12,13 +12,13 @@ beforeEach(async () => {
 
 describe.sequential("checkAndExtractUrlContent() e2e", { timeout: 30000 }, () => {
 
-  it("base-sepolia success", async () => {
+  it("base-sepolia success w includeMediaUrls true", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
-    const response = await client.checkAndExtractUrlContent('https://minifetch.com');
-
+    const response = await client.checkAndExtractUrlContent('https://minifetch.com', { includeMediaUrls: true });
+console.log(response.results[0])
     expect(response.success).toBe(true);
     expect(response.results).toHaveLength(1);
     expect(response.results[0].data.url).toContain("minifetch.com");
