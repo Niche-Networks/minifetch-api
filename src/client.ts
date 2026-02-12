@@ -347,7 +347,7 @@ export class MinifetchClient {
    * Check URL and extract content in one call
    * Throws RobotsBlockedError if robots.txt blocks the URL
    */
-  async checkAndExtractContent(
+  async checkAndExtractUrlContent(
     url: string,
     options?: { includeMediaUrls?: boolean }
   ): Promise<PaidEndpointResponse> {
