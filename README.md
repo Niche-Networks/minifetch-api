@@ -9,11 +9,11 @@
 
 We offer competitive prices, check the [API docs](https://minifetch.com/docs/api) for the latest.
 
+**Full [API docs are here](https://minifetch.com/docs/api)**, including example response data. For AI Agents, read the [LLMs.txt](https://minifetch.com/llms.txt).
+
 **Payments** work with [x402](https://www.x402.org/) USDC stablecoin micropayments on Coinbase's Base & Solana blockchain networks. Transaction fees are free. If you'd like to use a traditional credit card & API key instead, sign up for the waitlist and we'll let you know when it's ready: [forms.gle/rkMi7T23bHJc8XFw9](https://forms.gle/rkMi7T23bHJc8XFw9)
 
 **Bulk fetches** for building datasets is coming soon, sign up for the waitlist and we'll let you know when it's ready: [forms.gle/rkMi7T23bHJc8XFw9](https://forms.gle/rkMi7T23bHJc8XFw9)
-
-**Full [API docs are here](https://minifetch.com/docs/api)**, including example response data. For AI Agents, read the [LLMs.txt](https://minifetch.com/llms.txt).
 
 ## Prerequisites
 
@@ -91,6 +91,20 @@ When you wrap the functions above in a try/catch, here are the errors you may en
   - Likely encountering Minifetch rate-limiting or upstream timeout errors on the target URL. You may try again but limit requests to 5-10 at a time. Bulk fetches coming soon.
 - **"InvalidURLError: Invalid url ${url}"**
   - The URL you passed in is malformed in some way, correct it and try again.
+
+### Service Limitations
+What Minifetch does NOT do:
+
+- Ignore robots.txt directives
+- Access authenticated or logged-in content
+- Create accounts or log into user sessions
+- Perform transactional actions (checkout, bidding, purchasing, form submissions)
+- Bypass paywalls or access restricted content
+
+What Minifetch does NOT do *currently* but may offer in the future as an add-on:
+- Javascript execution
+
+Minifetch only extracts publicly available metadata and content from pages accessible without authentication and javascript execution.
 
 ## x402 Best Practices
 
