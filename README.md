@@ -93,6 +93,8 @@ When you wrap the functions above in a try/catch, here are the errors you may en
   - The URL you passed in is malformed in some way, correct it and try again.
 
 ### Service Limitations
+Minifetch only extracts publicly available metadata and content from pages accessible without authentication and javascript execution.
+
 What Minifetch does NOT do:
 
 - Ignore robots.txt directives
@@ -103,8 +105,6 @@ What Minifetch does NOT do:
 
 What Minifetch does NOT do *currently* but may offer in the future as an add-on:
 - Javascript execution
-
-Minifetch only extracts publicly available metadata and content from pages accessible without authentication and javascript execution.
 
 ## x402 Best Practices
 
