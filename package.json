@@ -45,6 +45,7 @@
     "test": "SKIP_DEBUG_TESTS=truevitest",
     "test:run": "SKIP_DEBUG_TESTS=true vitest run",
     "test:file": "vitest run",
+    "test:debug": "vitest run test/debug.test.ts",
     "test:coverage": "vitest run --coverage",
     "prepublishOnly": "pnpm run build"
   },
