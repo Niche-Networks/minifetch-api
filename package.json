@@ -47,6 +47,7 @@
     "test:file": "vitest run",
     "test:debug": "vitest run test/debug.test.ts",
     "test:coverage": "vitest run --coverage",
+    "example": "cd example-typescript && pnpm install && pnpm start",
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {

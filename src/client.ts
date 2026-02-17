@@ -50,7 +50,7 @@ export class MinifetchClient {
         throw new NetworkError(`Preflight check failed: ${response.status} ${response.statusText}`);
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as PreflightCheckResponse;
 
       return data;
     } catch (error) {
