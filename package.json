@@ -1,24 +1,54 @@
 {
   "name": "minifetch-api",
-  "version": "0.0.1",
+  "version": "1.0.0",
+  "description": "JavaScript client for Minifetch metadata extraction API with x402 micropayments",
   "type": "module",
+  "main": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "metadata",
+    "scraping",
+    "x402",
+    "micropayments",
+    "web-scraping",
+    "ai-agents",
+    "llm",
+    "seo"
+  ],
   "bugs": {
     "url": "https://github.com/Niche-Networks/minifetch-api/issues"
   },
-  "homepage": "https://minifetch.com/ ",
+  "homepage": "https://minifetch.com/",
   "repository": {
     "type": "git",
     "url": "git@github.com:Niche-Networks/minifetch-api.git"
   },
   "scripts": {
-    "dev:basedev:check": "tsx index.ts --env=dev --network=base --endpoint=check",
-    "dev:basedev:metadata": "tsx index.ts --env=dev --network=base --endpoint=metadata",
-    "dev:svmdev:check": "tsx index.ts --env=dev --network=svm --endpoint=check",
-    "dev:svmdev:metadata": "tsx index.ts --env=dev --network=svm --endpoint=metadata",
+    "dist:clean": "rm -rf dist",
+    "build": "pnpm run dist:clean && pnpm run build:esm",
+    "build:esm": "tsc -p tsconfig.json",
     "format": "prettier -c .prettierrc --write \"**/*.{ts,js,cjs,json,md}\"",
     "format:check": "prettier -c .prettierrc --check \"**/*.{ts,js,cjs,json,md}\"",
     "lint": "eslint . --ext .ts --fix",
-    "lint:check": "eslint . --ext .ts"
+    "lint:check": "eslint . --ext .ts",
+    "test": "SKIP_DEBUG_TESTS=truevitest",
+    "test:run": "SKIP_DEBUG_TESTS=true vitest run",
+    "test:file": "vitest run",
+    "test:debug": "vitest run test/debug.test.ts",
+    "test:coverage": "vitest run --coverage",
+    "example": "cd example-typescript && pnpm install && pnpm start",
+    "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
     "@solana/kit": "^5.4.0",
@@ -26,19 +56,25 @@
     "@x402/fetch": "^2.2.0",
     "@x402/svm": "^2.2.0",
     "bs58": "^6.0.0",
-    "dotenv": "^16.4.7",
     "viem": "^2.23.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",
+    "@types/node": "^25.2.0",
     "@typescript-eslint/eslint-plugin": "^8.29.1",
     "@typescript-eslint/parser": "^8.29.1",
+    "@vitest/coverage-v8": "^3.0.0",
+    "dotenv": "^16.4.7",
     "eslint": "^9.24.0",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jsdoc": "^50.6.9",
     "eslint-plugin-prettier": "^5.2.6",
     "prettier": "3.5.2",
     "tsx": "^4.7.0",
-    "typescript": "^5.3.0"
+    "typescript": "^5.3.0",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
