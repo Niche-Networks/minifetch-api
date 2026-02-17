@@ -102,7 +102,7 @@ export class MinifetchClient {
         );
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as PaidEndpointResponse;
 
       return {
         success: data.success,
@@ -150,7 +150,7 @@ export class MinifetchClient {
         );
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as PaidEndpointResponse;
 
       return {
         success: data.success,
@@ -201,7 +201,7 @@ export class MinifetchClient {
         );
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as PaidEndpointResponse;
 
       return {
         success: data.success,
@@ -262,7 +262,7 @@ export class MinifetchClient {
         );
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as PaidEndpointResponse;
 
       return {
         success: data.success,
