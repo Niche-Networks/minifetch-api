@@ -1,18 +1,15 @@
-import { initConfig } from './init.js';
-import { validateAndNormalizeUrl } from './utils/validation.js';
-import { handlePayment } from './utils/payment.js';
-import type { ClientConfig, InitializedConfig } from './types/config.js';
-import type {
-  PreflightCheckResponse,
-  PaidEndpointResponse,
-} from './types/responses.js';
+import { initConfig } from "./init.js";
+import { validateAndNormalizeUrl } from "./utils/validation.js";
+import { handlePayment } from "./utils/payment.js";
+import type { ClientConfig, InitializedConfig } from "./types/config.js";
+import type { PreflightCheckResponse, PaidEndpointResponse } from "./types/responses.js";
 import {
   InvalidUrlError,
   RobotsBlockedError,
   PaymentFailedError,
   ExtractionFailedError,
   NetworkError,
-} from './types/errors.js';
+} from "./types/errors.js";
 
 /**
  * Main Minifetch API client
@@ -22,6 +19,10 @@ export class MinifetchClient {
   private config: InitializedConfig;
   private baseUrl: string;
 
+  /**
+   *
+   * @param config
+   */
   constructor(config: ClientConfig) {
     this.config = initConfig(config);
     this.baseUrl = this.config.apiBaseUrl;
@@ -29,11 +30,12 @@ export class MinifetchClient {
 
   /**
    * Check if URL is allowed by robots.txt (free preflight check)
+   *
+   * @param url
    * @throws {InvalidUrlError} if URL is invalid
    * @throws {NetworkError} if request fails
    */
   async preflightUrlCheck(url: string): Promise<PreflightCheckResponse> {
-
     try {
       // Validate and normalize URL
       const normalizedUrl = validateAndNormalizeUrl(url);
@@ -45,39 +47,36 @@ export class MinifetchClient {
       const response = await fetch(requestUrl);
 
       if (!response.ok) {
-        throw new NetworkError(
-          `Preflight check failed: ${response.status} ${response.statusText}`
-        );
+        throw new NetworkError(`Preflight check failed: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
 
       return data;
-
     } catch (error) {
-      if (
-        error instanceof InvalidUrlError ||
-        error instanceof NetworkError
-      ) {
+      if (error instanceof InvalidUrlError || error instanceof NetworkError) {
         throw error;
       }
       throw new NetworkError(
-        `Preflight check failed: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Preflight check failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   }
 
   /**
    * Extract URL metadata (paid, requires x402 payment)
+   *
+   * @param url
+   * @param options
+   * @param options.includeResponseBody
    * @throws {InvalidUrlError} if URL is invalid
    * @throws {PaymentFailedError} if payment fails
    * @throws {ExtractionFailedError} if extraction fails
    */
   async extractUrlMetadata(
     url: string,
-    options?: { includeResponseBody?: boolean }
+    options?: { includeResponseBody?: boolean },
   ): Promise<PaidEndpointResponse> {
-
     try {
       // Validate and normalize URL
       const normalizedUrl = validateAndNormalizeUrl(url);
@@ -93,15 +92,12 @@ export class MinifetchClient {
       const requestUrl = `${this.baseUrl}${endpoint}`;
 
       // Make request with x402 payment handling
-      const { response, payment } = await handlePayment(
-        requestUrl,
-        this.config
-      );
+      const { response, payment } = await handlePayment(requestUrl, this.config);
 
       // Check if extraction succeeded
       if (!response.ok) {
         throw new ExtractionFailedError(
-          `Metadata extraction failed: ${response.status} ${response.statusText}`
+          `Metadata extraction failed: ${response.status} ${response.statusText}`,
         );
       }
 
@@ -112,7 +108,6 @@ export class MinifetchClient {
         results: data.results,
         payment,
       };
-
     } catch (error) {
       if (
         error instanceof InvalidUrlError ||
@@ -123,19 +118,20 @@ export class MinifetchClient {
         throw error;
       }
       throw new ExtractionFailedError(
-        `Metadata extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Metadata extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   }
 
   /**
    * Extract URL links (paid, requires x402 payment)
+   *
+   * @param url
    * @throws {InvalidUrlError} if URL is invalid
    * @throws {PaymentFailedError} if payment fails
    * @throws {ExtractionFailedError} if extraction fails
    */
   async extractUrlLinks(url: string): Promise<PaidEndpointResponse> {
-
     try {
       const normalizedUrl = validateAndNormalizeUrl(url);
 
@@ -143,14 +139,11 @@ export class MinifetchClient {
       const requestUrl = `${this.baseUrl}${endpoint}`;
 
       // Make request with x402 payment handling
-      const { response, payment } = await handlePayment(
-        requestUrl,
-        this.config
-      );
+      const { response, payment } = await handlePayment(requestUrl, this.config);
 
       if (!response.ok) {
         throw new ExtractionFailedError(
-          `Links extraction failed: ${response.status} ${response.statusText}`
+          `Links extraction failed: ${response.status} ${response.statusText}`,
         );
       }
 
@@ -161,7 +154,6 @@ export class MinifetchClient {
         results: data.results,
         payment,
       };
-
     } catch (error) {
       if (
         error instanceof InvalidUrlError ||
@@ -172,19 +164,20 @@ export class MinifetchClient {
         throw error;
       }
       throw new ExtractionFailedError(
-        `Links extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Links extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   }
 
   /**
    * Extract URL preview (paid, requires x402 payment)
+   *
+   * @param url
    * @throws {InvalidUrlError} if URL is invalid
    * @throws {PaymentFailedError} if payment fails
    * @throws {ExtractionFailedError} if extraction fails
    */
   async extractUrlPreview(url: string): Promise<PaidEndpointResponse> {
-
     try {
       // Validate and normalize URL
       const normalizedUrl = validateAndNormalizeUrl(url);
@@ -194,15 +187,12 @@ export class MinifetchClient {
       const requestUrl = `${this.baseUrl}${endpoint}`;
 
       // Make request with x402 payment handling
-      const { response, payment } = await handlePayment(
-        requestUrl,
-        this.config
-      );
+      const { response, payment } = await handlePayment(requestUrl, this.config);
 
       // Check if extraction succeeded
       if (!response.ok) {
         throw new ExtractionFailedError(
-          `Preview extraction failed: ${response.status} ${response.statusText}`
+          `Preview extraction failed: ${response.status} ${response.statusText}`,
         );
       }
 
@@ -213,7 +203,6 @@ export class MinifetchClient {
         results: data.results,
         payment,
       };
-
     } catch (error) {
       if (
         error instanceof InvalidUrlError ||
@@ -224,22 +213,25 @@ export class MinifetchClient {
         throw error;
       }
       throw new ExtractionFailedError(
-        `Preview extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Preview extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   }
 
   /**
    * Extract URL content as markdown (paid, requires x402 payment)
+   *
+   * @param url
+   * @param options
+   * @param options.includeMediaUrls
    * @throws {InvalidUrlError} if URL is invalid
    * @throws {PaymentFailedError} if payment fails
    * @throws {ExtractionFailedError} if extraction fails
    */
   async extractUrlContent(
     url: string,
-    options?: { includeMediaUrls?: boolean }
+    options?: { includeMediaUrls?: boolean },
   ): Promise<PaidEndpointResponse> {
-
     try {
       // Validate and normalize URL
       const normalizedUrl = validateAndNormalizeUrl(url);
@@ -254,15 +246,12 @@ export class MinifetchClient {
       const requestUrl = `${this.baseUrl}${endpoint}`;
 
       // Make request with x402 payment handling
-      const { response, payment } = await handlePayment(
-        requestUrl,
-        this.config
-      );
+      const { response, payment } = await handlePayment(requestUrl, this.config);
 
       // Check if extraction succeeded
       if (!response.ok) {
         throw new ExtractionFailedError(
-          `Content extraction failed: ${response.status} ${response.statusText}`
+          `Content extraction failed: ${response.status} ${response.statusText}`,
         );
       }
 
@@ -273,7 +262,6 @@ export class MinifetchClient {
         results: data.results,
         payment,
       };
-
     } catch (error) {
       if (
         error instanceof InvalidUrlError ||
@@ -284,7 +272,7 @@ export class MinifetchClient {
         throw error;
       }
       throw new ExtractionFailedError(
-        `Content extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Content extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   }
@@ -292,17 +280,21 @@ export class MinifetchClient {
   /**
    * Check URL and extract metadata in one call
    * Throws RobotsBlockedError if robots.txt blocks the URL
+   *
+   * @param url
+   * @param options
+   * @param options.includeResponseBody
    */
   async checkAndExtractUrlMetadata(
     url: string,
-    options?: { includeResponseBody?: boolean }
-): Promise<PaidEndpointResponse> {
+    options?: { includeResponseBody?: boolean },
+  ): Promise<PaidEndpointResponse> {
     const checkResponse = await this.preflightUrlCheck(url);
 
     if (!checkResponse.results[0]?.data?.allowed) {
       throw new RobotsBlockedError(
         url,
-        checkResponse.results[0]?.data?.message || "URL is blocked by robots.txt"
+        checkResponse.results[0]?.data?.message || "URL is blocked by robots.txt",
       );
     }
 
@@ -312,6 +304,8 @@ export class MinifetchClient {
   /**
    * Check URL and extract links in one call
    * Throws RobotsBlockedError if robots.txt blocks the URL
+   *
+   * @param url
    */
   async checkAndExtractUrlLinks(url: string): Promise<PaidEndpointResponse> {
     const checkResponse = await this.preflightUrlCheck(url);
@@ -319,7 +313,7 @@ export class MinifetchClient {
     if (!checkResponse.results[0]?.data?.allowed) {
       throw new RobotsBlockedError(
         url,
-        checkResponse.results[0]?.data?.message || "URL is blocked by robots.txt"
+        checkResponse.results[0]?.data?.message || "URL is blocked by robots.txt",
       );
     }
 
@@ -329,6 +323,8 @@ export class MinifetchClient {
   /**
    * Check URL and extract preview in one call
    * Throws RobotsBlockedError if robots.txt blocks the URL
+   *
+   * @param url
    */
   async checkAndExtractUrlPreview(url: string): Promise<PaidEndpointResponse> {
     const checkResponse = await this.preflightUrlCheck(url);
@@ -336,7 +332,7 @@ export class MinifetchClient {
     if (!checkResponse.results[0]?.data?.allowed) {
       throw new RobotsBlockedError(
         url,
-        checkResponse.results[0]?.data?.message || "URL is blocked by robots.txt"
+        checkResponse.results[0]?.data?.message || "URL is blocked by robots.txt",
       );
     }
 
@@ -346,17 +342,21 @@ export class MinifetchClient {
   /**
    * Check URL and extract content in one call
    * Throws RobotsBlockedError if robots.txt blocks the URL
+   *
+   * @param url
+   * @param options
+   * @param options.includeMediaUrls
    */
   async checkAndExtractUrlContent(
     url: string,
-    options?: { includeMediaUrls?: boolean }
+    options?: { includeMediaUrls?: boolean },
   ): Promise<PaidEndpointResponse> {
     const checkResponse = await this.preflightUrlCheck(url);
 
     if (!checkResponse.results[0]?.data?.allowed) {
       throw new RobotsBlockedError(
         url,
-        checkResponse.results[0]?.data?.message || "URL is blocked by robots.txt"
+        checkResponse.results[0]?.data?.message || "URL is blocked by robots.txt",
       );
     }
 

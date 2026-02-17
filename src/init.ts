@@ -7,35 +7,37 @@ import { ConfigurationError } from "./types/errors.js";
  * Exported for testing purposes
  */
 export const DEFAULTS = {
-  network: 'base' as Network,
+  network: "base" as Network,
   apiBaseUrls: {
-    'base-sepolia': 'http://localhost:4021',
-    'solana-devnet': 'http://localhost:4021',
-    'base': 'https://minifetch.com',
-    'solana': 'https://minifetch.com'
+    "base-sepolia": "http://localhost:4021",
+    "solana-devnet": "http://localhost:4021",
+    base: "https://minifetch.com",
+    solana: "https://minifetch.com",
   },
   explorerUrls: {
-    'base-sepolia': 'https://sepolia.basescan.org/tx',
-    'solana-devnet': 'https://explorer.solana.com/tx?cluster=devnet',
-    'base': 'https://basescan.org/tx',
-    'solana': 'https://explorer.solana.com/tx',
+    "base-sepolia": "https://sepolia.basescan.org/tx",
+    "solana-devnet": "https://explorer.solana.com/tx?cluster=devnet",
+    base: "https://basescan.org/tx",
+    solana: "https://explorer.solana.com/tx",
   },
 } as const;
 
 /**
  * Validate & initialize client configuration
+ *
+ * @param config
  */
 export function initConfig(config: ClientConfig): InitializedConfig {
   // Validate private key is provided
-  if (!config.privateKey || config.privateKey.trim() === '') {
-    throw new ConfigurationError('Private key is required');
+  if (!config.privateKey || config.privateKey.trim() === "") {
+    throw new ConfigurationError("Private key is required");
   }
 
   // Validate network
   const network = config.network || DEFAULTS.network;
   if (!VALID_NETWORKS.includes(network as Network)) {
     throw new ConfigurationError(
-      `Invalid network: "${network}". Must be one of: ${VALID_NETWORKS.join(', ')}`
+      `Invalid network: "${network}". Must be one of: ${VALID_NETWORKS.join(", ")}`,
     );
   }
 
@@ -58,21 +60,22 @@ export function initConfig(config: ClientConfig): InitializedConfig {
 
 /**
  * Validate private key format for the given network
+ *
+ * @param privateKey
+ * @param network
  */
 function validatePrivateKey(privateKey: string, network: Network): void {
-  if (network === 'solana' || network === 'solana-devnet') {
+  if (network === "solana" || network === "solana-devnet") {
     // Solana: base58 encoded, typically 88 characters
     if (!/^[1-9A-HJ-NP-Za-km-z]{87,88}$/.test(privateKey)) {
-      throw new ConfigurationError(
-        "Invalid Solana private key format (expected base58 string)"
-      );
+      throw new ConfigurationError("Invalid Solana private key format (expected base58 string)");
     }
   } else {
     // EVM: hex string, 64 characters (with or without 0x prefix)
-    const cleanKey = privateKey.startsWith('0x') ? privateKey.slice(2) : privateKey;
+    const cleanKey = privateKey.startsWith("0x") ? privateKey.slice(2) : privateKey;
     if (!/^[0-9a-fA-F]{64}$/.test(cleanKey)) {
       throw new ConfigurationError(
-        "Invalid EVM private key format (expected hex string that starts with 0x)"
+        "Invalid EVM private key format (expected hex string that starts with 0x)",
       );
     }
   }

@@ -1,23 +1,22 @@
 // First, set env
-import { config } from 'dotenv';
-config({ path: '.env-dev' });
+import { config } from "dotenv";
 
-import { describe, it, expect, afterEach, beforeEach } from 'vitest';
-import { MinifetchClient } from '../src/client.js';
-import { InvalidUrlError, NetworkError } from '../src/types/errors.js';
+import { describe, it, expect, afterEach, beforeEach } from "vitest";
+import { MinifetchClient } from "../src/client.js";
+import { InvalidUrlError, NetworkError } from "../src/types/errors.js";
+config({ path: ".env-dev" });
 
 beforeEach(async () => {
   await new Promise(r => setTimeout(r, 1000));
 });
 
 describe.sequential("checkAndExtractUrlLinks() e2e", { timeout: 30000 }, () => {
-
   it("base-sepolia success", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
-    const response = await client.checkAndExtractUrlLinks('https://minifetch.com');
+    const response = await client.checkAndExtractUrlLinks("https://minifetch.com");
 
     expect(response.success).toBe(true);
     expect(response.results).toHaveLength(1);
@@ -30,7 +29,9 @@ describe.sequential("checkAndExtractUrlLinks() e2e", { timeout: 30000 }, () => {
     expect(response.payment.payer).toContain("0x");
     expect(response.payment.network).toBe("base-sepolia");
     expect(response.payment.txHash).toContain("0x");
-    expect(response.payment.explorerLink).toBe(`https://sepolia.basescan.org/tx/${response.payment.txHash}`);
+    expect(response.payment.explorerLink).toBe(
+      `https://sepolia.basescan.org/tx/${response.payment.txHash}`,
+    );
   });
 
   it("throws when robots.txt check fails", async () => {
@@ -41,12 +42,11 @@ describe.sequential("checkAndExtractUrlLinks() e2e", { timeout: 30000 }, () => {
 
     const blockedUrl = "https://www.npmjs.com/package/url-metadata";
 
-    await expect(client.checkAndExtractUrlLinks(blockedUrl))
-      .rejects.toMatchObject({
-        name: "RobotsBlockedError",
-        message: expect.stringContaining("URL is blocked by robots.txt"),
-        url: blockedUrl
-      });
+    await expect(client.checkAndExtractUrlLinks(blockedUrl)).rejects.toMatchObject({
+      name: "RobotsBlockedError",
+      message: expect.stringContaining("URL is blocked by robots.txt"),
+      url: blockedUrl,
+    });
   });
 
   it("throws when robots check passes but page 403s anyway", async () => {
@@ -55,11 +55,10 @@ describe.sequential("checkAndExtractUrlLinks() e2e", { timeout: 30000 }, () => {
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
 
-    await expect(client.checkAndExtractUrlLinks("http://coinbase.com"))
-      .rejects.toMatchObject({
-        name: "NetworkError",
-        message: "Request failed: 502 Bad Gateway",
-      });
+    await expect(client.checkAndExtractUrlLinks("http://coinbase.com")).rejects.toMatchObject({
+      name: "NetworkError",
+      message: "Request failed: 502 Bad Gateway",
+    });
   });
 
   it("throws on URL w unsupported file extension", async () => {
@@ -68,8 +67,8 @@ describe.sequential("checkAndExtractUrlLinks() e2e", { timeout: 30000 }, () => {
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
 
-    await expect(client.checkAndExtractUrlLinks('http://foo.bar/baz.pdf'))
-      .rejects.toThrow(InvalidUrlError);
+    await expect(client.checkAndExtractUrlLinks("http://foo.bar/baz.pdf")).rejects.toThrow(
+      InvalidUrlError,
+    );
   });
-
 });

@@ -1,14 +1,13 @@
 // First, set env
-import { config } from 'dotenv';
-config({ path: '.env-dev' });
+import { config } from "dotenv";
 
-import { describe, it, expect } from 'vitest';
-import Minifetch from '../src/index.js';
-import { MinifetchClient } from '../src/index.js';
-import { ConfigurationError } from '../src/types/errors.js';
+import { describe, it, expect } from "vitest";
+import Minifetch from "../src/index.js";
+import { MinifetchClient } from "../src/index.js";
+import { ConfigurationError } from "../src/types/errors.js";
+config({ path: ".env-dev" });
 
 describe.sequential("package exports from index.js", { timeout: 30000 }, () => {
-
   it("default export -> initialized MinifetchClient instance", () => {
     const client1 = new Minifetch({
       network: "base-sepolia",
@@ -25,5 +24,4 @@ describe.sequential("package exports from index.js", { timeout: 30000 }, () => {
     });
     expect(client2).toBeInstanceOf(MinifetchClient);
   });
-
 });

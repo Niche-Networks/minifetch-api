@@ -1,23 +1,22 @@
 // First, set env
-import { config } from 'dotenv';
-config({ path: '.env-dev' });
+import { config } from "dotenv";
 
-import { describe, it, expect, afterEach, beforeEach } from 'vitest';
-import { MinifetchClient } from '../src/client.js';
-import { InvalidUrlError } from '../src/types/errors.js';
+import { describe, it, expect, afterEach, beforeEach } from "vitest";
+import { MinifetchClient } from "../src/client.js";
+import { InvalidUrlError } from "../src/types/errors.js";
+config({ path: ".env-dev" });
 
 beforeEach(async () => {
   await new Promise(r => setTimeout(r, 1000));
 });
 
 describe.sequential("preflightUrlCheck() e2e", { timeout: 30000 }, () => {
-
   it("success with allowed URL", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
-    const response = await client.preflightUrlCheck('https://minifetch.com');
+    const response = await client.preflightUrlCheck("https://minifetch.com");
 
     expect(response.success).toBe(true);
     expect(response.results[0].data.url).toBe("https://minifetch.com");
@@ -47,8 +46,7 @@ describe.sequential("preflightUrlCheck() e2e", { timeout: 30000 }, () => {
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
 
-    await expect(client.preflightUrlCheck('vvv'))
-      .rejects.toThrow(InvalidUrlError);
+    await expect(client.preflightUrlCheck("vvv")).rejects.toThrow(InvalidUrlError);
   });
 
   it("throws on URL w unsupported file extension", async () => {
@@ -57,8 +55,8 @@ describe.sequential("preflightUrlCheck() e2e", { timeout: 30000 }, () => {
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
 
-    await expect(client.preflightUrlCheck('http://foo.bar/baz.pdf'))
-      .rejects.toThrow(InvalidUrlError);
+    await expect(client.preflightUrlCheck("http://foo.bar/baz.pdf")).rejects.toThrow(
+      InvalidUrlError,
+    );
   });
-
 });

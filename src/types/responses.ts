@@ -11,7 +11,7 @@ export interface PreflightCheckResponse {
       message?: string;
       crawlDelay?: number;
       [key: string]: any;
-    }
+    };
   }>;
   // No payment field - this is a free endpoint
 }
@@ -26,7 +26,7 @@ export interface PaidEndpointResponse {
   results: Array<{
     data: {
       [key: string]: any;
-    },
+    };
     error?: Record<string, any>;
   }>;
   /**
@@ -45,7 +45,7 @@ export interface PaymentInfo {
   /** Account that paid for tx **/
   payer: string;
   /** Network the payment was made on **/
-  network: 'base' | 'base-sepolia' | 'solana' | 'solana-devnet';
+  network: "base" | "base-sepolia" | "solana" | "solana-devnet";
   /** Transaction hash **/
   txHash: string;
   /** Link to view transaction on block explorer **/

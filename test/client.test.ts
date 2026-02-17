@@ -1,13 +1,12 @@
 // First, set env
-import { config } from 'dotenv';
-config({ path: '.env-dev' });
+import { config } from "dotenv";
 
-import { describe, it, expect } from 'vitest';
-import { MinifetchClient } from '../src/client.js';
-import { ConfigurationError } from '../src/types/errors.js';
+import { describe, it, expect } from "vitest";
+import { MinifetchClient } from "../src/client.js";
+import { ConfigurationError } from "../src/types/errors.js";
+config({ path: ".env-dev" });
 
 describe.sequential("MinifetchClient", { timeout: 30000 }, () => {
-
   it("client should init instanceof MinifetchClient", () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
@@ -17,10 +16,11 @@ describe.sequential("MinifetchClient", { timeout: 30000 }, () => {
   });
 
   it("throws error if network misconfigured", () => {
-    const fn = () => new MinifetchClient({
-      network: "XYZ" as any,
-      privateKey: process.env.BASE_PRIVATE_KEY as any,
-    });
+    const fn = () =>
+      new MinifetchClient({
+        network: "XYZ" as any,
+        privateKey: process.env.BASE_PRIVATE_KEY as any,
+      });
 
     expect(fn).toThrow(ConfigurationError);
     expect(fn).toThrow('Invalid network: "XYZ"');
@@ -43,5 +43,4 @@ describe.sequential("MinifetchClient", { timeout: 30000 }, () => {
       });
     }).toThrow(ConfigurationError);
   });
-
 });
