@@ -97,6 +97,7 @@ export class MinifetchClient {
       // Check if extraction succeeded
       if (!response.ok) {
         throw new ExtractionFailedError(
+          normalizedUrl,
           `Metadata extraction failed: ${response.status} ${response.statusText}`,
         );
       }
@@ -118,6 +119,7 @@ export class MinifetchClient {
         throw error;
       }
       throw new ExtractionFailedError(
+        url,
         `Metadata extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
@@ -143,6 +145,7 @@ export class MinifetchClient {
 
       if (!response.ok) {
         throw new ExtractionFailedError(
+          normalizedUrl,
           `Links extraction failed: ${response.status} ${response.statusText}`,
         );
       }
@@ -164,6 +167,7 @@ export class MinifetchClient {
         throw error;
       }
       throw new ExtractionFailedError(
+        url,
         `Links extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
@@ -192,6 +196,7 @@ export class MinifetchClient {
       // Check if extraction succeeded
       if (!response.ok) {
         throw new ExtractionFailedError(
+          normalizedUrl,
           `Preview extraction failed: ${response.status} ${response.statusText}`,
         );
       }
@@ -213,6 +218,7 @@ export class MinifetchClient {
         throw error;
       }
       throw new ExtractionFailedError(
+        url,
         `Preview extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
@@ -251,6 +257,7 @@ export class MinifetchClient {
       // Check if extraction succeeded
       if (!response.ok) {
         throw new ExtractionFailedError(
+          normalizedUrl,
           `Content extraction failed: ${response.status} ${response.statusText}`,
         );
       }
@@ -272,6 +279,7 @@ export class MinifetchClient {
         throw error;
       }
       throw new ExtractionFailedError(
+        url,
         `Content extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
