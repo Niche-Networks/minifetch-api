@@ -8,7 +8,7 @@ config({ path: resolve(__dirname, "../.env-dev") });
 
 import Minifetch from "minifetch-api";
 
-const URL_TO_FETCH = "https://example.com";
+const URL_TO_FETCH = "https://wikipedia.org";
 
 async function main() {
 
