@@ -7,3 +7,4 @@ node_modules/
 test/prod.ts
 test/prod.test.ts
 test/debug.test.ts
+example-typescript/*-lock.yaml
