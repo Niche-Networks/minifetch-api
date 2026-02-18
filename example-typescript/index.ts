@@ -6,20 +6,19 @@ import { fileURLToPath } from "url";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 config({ path: resolve(__dirname, "../.env-dev") });
 
-import { MinifetchClient } from "minifetch-api";
+import Minifetch from "minifetch-api";
 
-const URL_TO_FETCH = "https://minifetch.com";
+const URL_TO_FETCH = "https://example.com";
 
 async function main() {
-  console.log("🔧 Initializing MinifetchClient on base-sepolia...\n");
 
-  const client = new MinifetchClient({
+  console.log("🔧 Initializing MinifetchClient on base-sepolia...\n");
+  const client = new Minifetch({
     network: "base-sepolia",
     privateKey: process.env.BASE_PRIVATE_KEY as `0x${string}`,
   });
 
   console.log(`🌐 Fetching metadata for: ${URL_TO_FETCH}\n`);
-
   try {
     const result = await client.extractUrlMetadata(URL_TO_FETCH);
 
