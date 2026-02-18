@@ -1,7 +1,7 @@
 {
   "name": "minifetch-api",
   "version": "1.0.0",
-  "description": "JavaScript client for Minifetch metadata extraction API with x402 micropayments",
+  "description": "Minifetch.com API client. Fetch and extract data from web pages. For AI Agents & SEO research.",
   "type": "module",
   "main": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
@@ -17,14 +17,17 @@
     "LICENSE"
   ],
   "keywords": [
+    "seo",
     "metadata",
+    "meta-tags",
+    "web-pages",
+    "web-scraping",
     "scraping",
+    "html-parser",
     "x402",
     "micropayments",
-    "web-scraping",
     "ai-agents",
-    "llm",
-    "seo"
+    "llm"
   ],
   "bugs": {
     "url": "https://github.com/Niche-Networks/minifetch-api/issues"
