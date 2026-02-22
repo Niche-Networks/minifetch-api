@@ -14,7 +14,9 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "example-javascript",
+    "example-typescript"
   ],
   "keywords": [
     "seo",
