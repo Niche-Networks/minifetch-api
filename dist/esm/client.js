@@ -264,4 +264,3 @@ export class MinifetchClient {
         return this.extractUrlContent(url, options);
     }
 }
-//# sourceMappingURL=client.js.map

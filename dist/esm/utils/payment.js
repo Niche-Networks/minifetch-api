@@ -96,4 +96,3 @@ function getExplorerLink(config, txHash) {
         return "";
     }
 }
-//# sourceMappingURL=payment.js.map

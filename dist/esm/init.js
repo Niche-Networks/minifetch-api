@@ -68,4 +68,3 @@ function validatePrivateKey(privateKey, network) {
         }
     }
 }
-//# sourceMappingURL=init.js.map

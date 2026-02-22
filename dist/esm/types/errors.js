@@ -120,4 +120,3 @@ export class NetworkError extends MinifetchError {
         Object.setPrototypeOf(this, NetworkError.prototype);
     }
 }
-//# sourceMappingURL=errors.js.map

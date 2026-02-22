@@ -96,4 +96,3 @@ function isPrivateOrLocalhost(hostname) {
     ];
     return privateIpPatterns.some(pattern => pattern.test(hostname));
 }
-//# sourceMappingURL=validation.js.map
