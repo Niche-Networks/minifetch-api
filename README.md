@@ -109,5 +109,5 @@ What Minifetch does NOT do *currently* but may offer in the future as an add-on:
 - LLMs & Agents should *never* have direct access to your private key. They *will* expose it!
 - Only keep a small amount of USDC in the account whose private key you use.
 - Keep that account separate from the rest of your onchain funds.
-- Pass your private key into the Minifetch API via an [environment variable](https://developer.vonage.com/en/blog/how-to-use-environment-variables-in-javascript-with-dotenv).
+- Pass your private key into the Minifetch API Client via an [environment variable](https://developer.vonage.com/en/blog/how-to-use-environment-variables-in-javascript-with-dotenv).
 
