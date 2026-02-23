@@ -49,7 +49,7 @@
     "format:check": "prettier -c .prettierrc --check \"**/*.{ts,js,cjs,json,md}\"",
     "lint": "eslint . --ext .ts --fix",
     "lint:check": "eslint . --ext .ts",
-    "test": "SKIP_DEBUG_TESTS=truevitest",
+    "test": "SKIP_DEBUG_TESTS=true vitest",
     "test:run": "SKIP_DEBUG_TESTS=true vitest run",
     "test:file": "vitest run",
     "test:debug": "vitest run test/debug.test.ts",
