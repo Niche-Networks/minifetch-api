@@ -14,7 +14,7 @@ async function main() {
 
   console.log("🔧 Initializing MinifetchClient on base-sepolia...\n");
   const client = new Minifetch({
-    network: "base-sepolia",
+    network: "base",
     privateKey: process.env.BASE_PRIVATE_KEY as `0x${string}`,
   });
 
