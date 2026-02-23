@@ -12,7 +12,7 @@ const URL_TO_FETCH = "https://wikipedia.org";
 
 async function main() {
 
-  console.log("🔧 Initializing MinifetchClient on base-sepolia...\n");
+  console.log("🔧 Initializing MinifetchClient on base...\n");
   const client = new Minifetch({
     network: "base",
     privateKey: process.env.BASE_PRIVATE_KEY as `0x${string}`,
