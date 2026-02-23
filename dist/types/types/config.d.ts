@@ -19,4 +19,3 @@ export interface InitializedConfig {
     apiBaseUrl: string;
     explorerUrl: string;
 }
-//# sourceMappingURL=config.d.ts.map

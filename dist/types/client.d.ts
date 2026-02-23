@@ -101,4 +101,3 @@ export declare class MinifetchClient {
         includeMediaUrls?: boolean;
     }): Promise<PaidEndpointResponse>;
 }
-//# sourceMappingURL=client.d.ts.map

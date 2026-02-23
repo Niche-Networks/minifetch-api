@@ -24,4 +24,3 @@ export declare const DEFAULTS: {
  * @param config
  */
 export declare function initConfig(config: ClientConfig): InitializedConfig;
-//# sourceMappingURL=init.d.ts.map

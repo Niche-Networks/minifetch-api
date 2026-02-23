@@ -84,4 +84,3 @@ export declare class NetworkError extends MinifetchError {
      */
     constructor(message: string, originalError?: Error);
 }
-//# sourceMappingURL=errors.d.ts.map

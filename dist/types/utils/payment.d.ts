@@ -14,4 +14,3 @@ export declare function handlePayment(url: string, config: InitializedConfig): P
     response: Response;
     payment?: PaymentInfo;
 }>;
-//# sourceMappingURL=payment.d.ts.map

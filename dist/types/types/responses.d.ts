@@ -48,4 +48,3 @@ export interface PaymentInfo {
     /** Link to view transaction on block explorer **/
     explorerLink: string;
 }
-//# sourceMappingURL=responses.d.ts.map

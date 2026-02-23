@@ -6,4 +6,3 @@
  * @throws {InvalidUrlError} if URL is invalid
  */
 export declare function validateAndNormalizeUrl(url: string): string;
-//# sourceMappingURL=validation.d.ts.map
