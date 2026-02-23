@@ -111,3 +111,8 @@ What Minifetch does NOT do *currently* but may offer in the future as an add-on:
 - Keep that account separate from the rest of your onchain funds.
 - Pass your private key into the Minifetch API Client via an [environment variable](https://developer.vonage.com/en/blog/how-to-use-environment-variables-in-javascript-with-dotenv).
 
+---
+**License**
+
+MIT / Copyright (c) 2026 Lauren Garcia
+This package is an API client for Minifetch.com. The client code is open source, but use of the Minifetch API is subject to the [Minifetch.com Terms of Service](https://minifetch.com/terms-of-service).
