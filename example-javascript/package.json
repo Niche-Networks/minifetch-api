@@ -1,0 +1,13 @@
+{
+  "name": "minifetch-api-example-javascript",
+  "version": "1.0.0",
+  "description": "Example vanilla JavaScript app using the minifetch-api client",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "minifetch-api": "file:.."
+  }
+}
