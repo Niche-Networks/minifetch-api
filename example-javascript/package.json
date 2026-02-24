@@ -8,6 +8,6 @@
   },
   "dependencies": {
     "dotenv": "^16.4.7",
-    "minifetch-api": "file:.."
+    "minifetch-api": "1.0.1"
   }
 }
