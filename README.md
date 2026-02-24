@@ -9,7 +9,7 @@
 
 **Payments** work with [x402](https://www.x402.org/) USDC stablecoin micropayments on Coinbase's Base & Solana blockchain networks. Transaction fees are free. If you'd like to use a traditional credit card & API key instead, sign up for the waitlist and we'll let you know when it's ready: [forms.gle/rkMi7T23bHJc8XFw9](https://forms.gle/rkMi7T23bHJc8XFw9)
 
-**Bulk fetches** for building datasets is coming soon, sign up for the waitlist and we'll let you know when it's ready: [forms.gle/rkMi7T23bHJc8XFw9](https://forms.gle/rkMi7T23bHJc8XFw9)
+**Bulk fetch and extract** for building datasets is coming soon, sign up for the waitlist and we'll let you know when it's ready: [forms.gle/rkMi7T23bHJc8XFw9](https://forms.gle/rkMi7T23bHJc8XFw9)
 
 ## Prerequisites
 
@@ -47,9 +47,11 @@ try {
 
 ### Client Methods Available
 
-After you initialize the client (above), you have the following methods available to use. The "checkAndExtract" API methods provided help you avoid paying for blocked URLs and return more granular info about why a URL may or may not return data. There is no charge for blocked URLs.
+After you initialize the client (above), you have the following methods available to use. The "checkAndExtract" API methods provided help you avoid paying for blocked URLs and return more granular info about why a URL may or may not return data. There is no charge for blocked upstream URLs.
 
-[Example data for each method & price list is here.](https://minifetch.com/docs/api#example-data)
+[Price list and example data for each method is here.](https://minifetch.com/docs/api#example-data)
+
+Requests exceeding rate limits return `503` errors. This is intentional — back off and retry, max 5-10 queries per second. We'll add bulk fetch and extract in the future. Sign up for the [waitlist here](https://forms.gle/rkMi7T23bHJc8XFw9).
 
 - `client.checkAndExtractUrlPreview(url)`
   - Extracts a light, token-efficient preview of a URL: title, description, and image (only).
