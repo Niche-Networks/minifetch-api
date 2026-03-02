@@ -11,13 +11,13 @@ beforeEach(async () => {
 });
 
 describe.sequential("checkAndExtractUrlMetadata() e2e", { timeout: 30000 }, () => {
-  it("base-sepolia success w includeResponseBody true", async () => {
+  it("base-sepolia success w ?verbosity=standard & ?includeResponseBody=true", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
     const response = await client.checkAndExtractUrlMetadata("https://minifetch.com", {
-      includeResponseBody: true,
+      includeResponseBody: true
     });
 
     expect(response.success).toBe(true);
@@ -25,6 +25,9 @@ describe.sequential("checkAndExtractUrlMetadata() e2e", { timeout: 30000 }, () =
     expect(response.results[0].data.title).toContain("Minifetch.com");
     expect(response.results[0].data["og:title"]).toContain("Minifetch.com");
     expect(response.results[0].data.responseBody).toContain("<!DOCTYPE html>");
+    // verbosity = "standard" (default):
+    expect(typeof response.results[0].data.headings).toBe("undefined");
+    expect(typeof response.results[0].data.imgTags).toBe("undefined");
 
     expect(response.payment.success).toBe(true);
     expect(response.payment.payer).toContain("0x");

@@ -22,6 +22,9 @@ describe.sequential("extractUrlMetadata() e2e", { timeout: 30000 }, () => {
     expect(response.results[0].data.url).toContain("minifetch.com");
     expect(response.results[0].data.title).toContain("Minifetch.com");
     expect(response.results[0].data["og:title"]).toContain("Minifetch.com");
+    // verbosity = "standard" (default):
+    expect(typeof response.results[0].data.headings).toBe("undefined");
+    expect(typeof response.results[0].data.imgTags).toBe("undefined");
 
     expect(response.payment.success).toBe(true);
     expect(response.payment.payer).toContain("0x");
@@ -32,17 +35,22 @@ describe.sequential("extractUrlMetadata() e2e", { timeout: 30000 }, () => {
     );
   });
 
-  it("solana-devnet success", async () => {
+  it("solana-devnet success w ?verbosity=full", async () => {
     const client = new MinifetchClient({
       network: "solana-devnet",
       privateKey: process.env.SVM_PRIVATE_KEY as any,
     });
-    const response = await client.extractUrlMetadata("https://minifetch.com");
+    const response = await client.extractUrlMetadata("https://minifetch.com", {
+      verbosity: "full"
+    });
 
     expect(response.success).toBe(true);
     expect(response.results[0].data.url).toContain("minifetch.com");
     expect(response.results[0].data.title).toContain("Minifetch.com");
     expect(response.results[0].data["og:title"]).toContain("Minifetch.com");
+    // verbosity = "full":
+    expect(typeof response.results[0].data.headings).toBe("object");
+    expect(typeof response.results[0].data.imgTags).toBe("object");
 
     expect(response.payment.success).toBe(true);
     expect(typeof response.payment.payer).toBe("string");
