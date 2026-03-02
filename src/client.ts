@@ -69,13 +69,18 @@ export class MinifetchClient {
    * @param url
    * @param options
    * @param options.includeResponseBody
+   * @param options.verbosity - Controls response detail level: "standard" (default) or "full"
    * @throws {InvalidUrlError} if URL is invalid
+   * @throws {ExtractionFailedError} various reasons, check README
    * @throws {PaymentFailedError} if payment fails
-   * @throws {ExtractionFailedError} if extraction fails
+   * @throws {NetworkError} various reasons, check README
    */
   async extractUrlMetadata(
     url: string,
-    options?: { includeResponseBody?: boolean },
+    options?: {
+      verbosity?: "standard" | "full",
+      includeResponseBody?: boolean
+    },
   ): Promise<PaidEndpointResponse> {
     try {
       // Validate and normalize URL
@@ -83,6 +88,9 @@ export class MinifetchClient {
 
       // Build request URL with optional params
       const params = new URLSearchParams({ url: normalizedUrl });
+      if (options?.verbosity) {
+        params.set("verbosity", options.verbosity);
+      }
       if (options?.includeResponseBody) {
         params.set("includeResponseBody", "true");
       }
@@ -130,8 +138,9 @@ export class MinifetchClient {
    *
    * @param url
    * @throws {InvalidUrlError} if URL is invalid
+   * @throws {ExtractionFailedError} various reasons, check README
    * @throws {PaymentFailedError} if payment fails
-   * @throws {ExtractionFailedError} if extraction fails
+   * @throws {NetworkError} various reasons, check README
    */
   async extractUrlLinks(url: string): Promise<PaidEndpointResponse> {
     try {
@@ -178,8 +187,9 @@ export class MinifetchClient {
    *
    * @param url
    * @throws {InvalidUrlError} if URL is invalid
+   * @throws {ExtractionFailedError} various reasons, check README
    * @throws {PaymentFailedError} if payment fails
-   * @throws {ExtractionFailedError} if extraction fails
+   * @throws {NetworkError} various reasons, check README
    */
   async extractUrlPreview(url: string): Promise<PaidEndpointResponse> {
     try {
@@ -231,8 +241,9 @@ export class MinifetchClient {
    * @param options
    * @param options.includeMediaUrls
    * @throws {InvalidUrlError} if URL is invalid
+   * @throws {ExtractionFailedError} various reasons, check README
    * @throws {PaymentFailedError} if payment fails
-   * @throws {ExtractionFailedError} if extraction fails
+   * @throws {NetworkError} various reasons, check README
    */
   async extractUrlContent(
     url: string,
@@ -291,11 +302,15 @@ export class MinifetchClient {
    *
    * @param url
    * @param options
-   * @param options.includeResponseBody
+   * @param options.verbosity - Controls response detail level: "standard" (default) or "full"
+   * @param options.includeResponseBody - Include raw response body in result
    */
   async checkAndExtractUrlMetadata(
     url: string,
-    options?: { includeResponseBody?: boolean },
+    options?: {
+      verbosity?: "standard" | "full",
+      includeResponseBody?: boolean,
+    },
   ): Promise<PaidEndpointResponse> {
     const checkResponse = await this.preflightUrlCheck(url);
 
