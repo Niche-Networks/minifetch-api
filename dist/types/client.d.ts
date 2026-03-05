@@ -26,11 +26,14 @@ export declare class MinifetchClient {
      * @param url
      * @param options
      * @param options.includeResponseBody
+     * @param options.verbosity - Controls response detail level: "standard" (default) or "full"
      * @throws {InvalidUrlError} if URL is invalid
+     * @throws {ExtractionFailedError} various reasons, check README
      * @throws {PaymentFailedError} if payment fails
-     * @throws {ExtractionFailedError} if extraction fails
+     * @throws {NetworkError} various reasons, check README
      */
     extractUrlMetadata(url: string, options?: {
+        verbosity?: "standard" | "full";
         includeResponseBody?: boolean;
     }): Promise<PaidEndpointResponse>;
     /**
@@ -38,8 +41,9 @@ export declare class MinifetchClient {
      *
      * @param url
      * @throws {InvalidUrlError} if URL is invalid
+     * @throws {ExtractionFailedError} various reasons, check README
      * @throws {PaymentFailedError} if payment fails
-     * @throws {ExtractionFailedError} if extraction fails
+     * @throws {NetworkError} various reasons, check README
      */
     extractUrlLinks(url: string): Promise<PaidEndpointResponse>;
     /**
@@ -47,8 +51,9 @@ export declare class MinifetchClient {
      *
      * @param url
      * @throws {InvalidUrlError} if URL is invalid
+     * @throws {ExtractionFailedError} various reasons, check README
      * @throws {PaymentFailedError} if payment fails
-     * @throws {ExtractionFailedError} if extraction fails
+     * @throws {NetworkError} various reasons, check README
      */
     extractUrlPreview(url: string): Promise<PaidEndpointResponse>;
     /**
@@ -58,8 +63,9 @@ export declare class MinifetchClient {
      * @param options
      * @param options.includeMediaUrls
      * @throws {InvalidUrlError} if URL is invalid
+     * @throws {ExtractionFailedError} various reasons, check README
      * @throws {PaymentFailedError} if payment fails
-     * @throws {ExtractionFailedError} if extraction fails
+     * @throws {NetworkError} various reasons, check README
      */
     extractUrlContent(url: string, options?: {
         includeMediaUrls?: boolean;
@@ -70,9 +76,11 @@ export declare class MinifetchClient {
      *
      * @param url
      * @param options
-     * @param options.includeResponseBody
+     * @param options.verbosity - Controls response detail level: "standard" (default) or "full"
+     * @param options.includeResponseBody - Include raw response body in result
      */
     checkAndExtractUrlMetadata(url: string, options?: {
+        verbosity?: "standard" | "full";
         includeResponseBody?: boolean;
     }): Promise<PaidEndpointResponse>;
     /**
