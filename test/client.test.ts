@@ -6,7 +6,8 @@ import { MinifetchClient } from "../src/client.js";
 import { ConfigurationError } from "../src/types/errors.js";
 config({ path: ".env-dev" });
 
-describe.sequential("MinifetchClient", { timeout: 30000 }, () => {
+describe.sequential("x402: MinifetchClient", { timeout: 30000 }, () => {
+
   it("client should init instanceof MinifetchClient", () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
@@ -43,4 +44,5 @@ describe.sequential("MinifetchClient", { timeout: 30000 }, () => {
       });
     }).toThrow(ConfigurationError);
   });
+
 });
