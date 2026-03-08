@@ -10,7 +10,8 @@ beforeEach(async () => {
   await new Promise(r => setTimeout(r, 1000));
 });
 
-describe.sequential("extractUrlContent() e2e", { timeout: 30000 }, () => {
+describe.sequential("x402: extractUrlContent() e2e", { timeout: 30000 }, () => {
+
   it("base-sepolia testnet success", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
@@ -51,6 +52,22 @@ describe.sequential("extractUrlContent() e2e", { timeout: 30000 }, () => {
     expect(response.payment.explorerLink).toBe(
       `https://explorer.solana.com/tx/${response.payment.txHash}?cluster=devnet`,
     );
+  });
+
+});
+
+describe.sequential("x402: extractUrlContent() fails gracefully", { timeout: 30000 }, () => {
+
+  it("throws w bad private key", async () => {
+    const failClient = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: "0xDEADBEEF00000000000000000000000000000000000000000000000000FACADE" as any,
+    });
+
+    const r = await expect(failClient.extractUrlContent("https://anthropic.com")).rejects.toMatchObject({
+      name: "NetworkError",
+      message: "Request failed: 402 Payment Required",
+    });
   });
 
   it("throws on robots.txt check = blocked URL", async () => {
