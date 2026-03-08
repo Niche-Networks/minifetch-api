@@ -57,6 +57,8 @@ describe.sequential("x402: extractUrlPreview() e2e", { timeout: 30000 }, () => {
     );
   });
 
+});
+
 describe.sequential("x402: extractUrlPreview() fails gracefully", { timeout: 30000 }, () => {
 
   it("throws w bad private key", async () => {
@@ -77,7 +79,7 @@ describe.sequential("x402: extractUrlPreview() fails gracefully", { timeout: 300
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
 
-    const blockedUrl = "https://www.npmjs.com/package/url-metadata";
+    const blockedUrl = "https://www.npmjs.com/package/url-metadata/v/5.4.3";
 
     await expect(client.extractUrlPreview(blockedUrl)).rejects.toMatchObject({
       name: "NetworkError",

@@ -76,7 +76,7 @@ describe.sequential("x402: extractUrlContent() fails gracefully", { timeout: 300
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
 
-    const blockedUrl = "https://www.npmjs.com/package/url-metadata";
+    const blockedUrl = "https://www.npmjs.com/package/url-metadata/v/5.4.3";
 
     await expect(client.extractUrlContent(blockedUrl)).rejects.toMatchObject({
       name: "NetworkError",

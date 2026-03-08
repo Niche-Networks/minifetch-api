@@ -58,7 +58,7 @@ describe.sequential("x402: checkAndExtractUrlContent() fails gracefully", { time
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
 
-    const blockedUrl = "https://www.npmjs.com/package/url-metadata";
+    const blockedUrl = "https://www.npmjs.com/package/url-metadata/v/5.4.3";
 
     await expect(client.checkAndExtractUrlContent(blockedUrl)).rejects.toMatchObject({
       name: "RobotsBlockedError",
