@@ -37,7 +37,7 @@ describe.sequential("x402: checkAndExtractUrlPreview() e2e", { timeout: 30000 },
 
 });
 
-describe.sequential("x402: checkAndExtractUrlPreview() handles errors gracefully", { timeout: 30000 }, () => {
+describe.sequential("x402: checkAndExtractUrlPreview() fails gracefully", { timeout: 30000 }, () => {
 
   it("throws w bad private key", async () => {
     const failClient = new MinifetchClient({
