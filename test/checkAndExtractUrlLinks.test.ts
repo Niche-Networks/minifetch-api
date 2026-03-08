@@ -45,7 +45,7 @@ describe.sequential("x402: checkAndExtractUrlLinks() fails gracefully", { timeou
       privateKey: "0xDEADBEEF00000000000000000000000000000000000000000000000000FACADE" as any,
     });
 
-    const r = await expect(failClient.checkAndExtractUrlLinks("https://anthropic.com")).rejects.toMatchObject({
+    await expect(failClient.checkAndExtractUrlLinks("https://anthropic.com")).rejects.toMatchObject({
       name: "NetworkError",
       message: "Request failed: 402 Payment Required",
     });

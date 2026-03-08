@@ -49,7 +49,7 @@ describe.sequential("x402: checkAndExtractUrlMetadata() fails gracefully", { tim
       privateKey: "0xDEADBEEF00000000000000000000000000000000000000000000000000FACADE" as any,
     });
 
-    const r = await expect(failClient.checkAndExtractUrlMetadata("https://anthropic.com")).rejects.toMatchObject({
+    await expect(failClient.checkAndExtractUrlMetadata("https://anthropic.com")).rejects.toMatchObject({
       name: "NetworkError",
       message: "Request failed: 402 Payment Required",
     });

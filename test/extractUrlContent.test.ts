@@ -64,7 +64,7 @@ describe.sequential("x402: extractUrlContent() fails gracefully", { timeout: 300
       privateKey: "0xDEADBEEF00000000000000000000000000000000000000000000000000FACADE" as any,
     });
 
-    const r = await expect(failClient.extractUrlContent("https://anthropic.com")).rejects.toMatchObject({
+    await expect(failClient.extractUrlContent("https://anthropic.com")).rejects.toMatchObject({
       name: "NetworkError",
       message: "Request failed: 402 Payment Required",
     });
