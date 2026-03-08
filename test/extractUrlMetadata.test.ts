@@ -10,7 +10,8 @@ beforeEach(async () => {
   await new Promise(r => setTimeout(r, 1000));
 });
 
-describe.sequential("extractUrlMetadata() e2e", { timeout: 30000 }, () => {
+describe.sequential("x402: extractUrlMetadata() e2e", { timeout: 30000 }, () => {
+
   it("base-sepolia testnet success", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
@@ -61,6 +62,22 @@ describe.sequential("extractUrlMetadata() e2e", { timeout: 30000 }, () => {
     );
   });
 
+});
+
+describe.sequential("x402: extractUrlMetadata() fails gracefully", { timeout: 30000 }, () => {
+
+  it("throws w bad private key", async () => {
+    const failClient = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: "0xDEADBEEF00000000000000000000000000000000000000000000000000FACADE" as any,
+    });
+
+    await expect(failClient.extractUrlMetadata("https://anthropic.com")).rejects.toMatchObject({
+      name: "NetworkError",
+      message: "Request failed: 402 Payment Required",
+    });
+  });
+
   it("throws on robots.txt check = blocked URL", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
@@ -108,4 +125,5 @@ describe.sequential("extractUrlMetadata() e2e", { timeout: 30000 }, () => {
       InvalidUrlError,
     );
   });
+
 });

@@ -119,4 +119,5 @@ describe.sequential("x402: extractUrlLinks() fails gracefully", { timeout: 30000
 
     await expect(client.extractUrlLinks("http://foo.bar/baz.pdf")).rejects.toThrow(InvalidUrlError);
   });
+
 });
