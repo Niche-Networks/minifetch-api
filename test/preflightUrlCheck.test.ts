@@ -10,8 +10,9 @@ beforeEach(async () => {
   await new Promise(r => setTimeout(r, 1000));
 });
 
-describe.sequential("preflightUrlCheck() e2e", { timeout: 30000 }, () => {
-  it("success with allowed URL", async () => {
+describe.sequential("x402: preflightUrlCheck() e2e", { timeout: 30000 }, () => {
+
+  it("base-sepolia success w allowed URL", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
@@ -24,6 +25,39 @@ describe.sequential("preflightUrlCheck() e2e", { timeout: 30000 }, () => {
     expect(response.results[0].data.message).toContain("allowed by robots.txt");
     expect(response.results[0].data.crawlDelay).toBe(1);
   });
+
+  it("solana-devnet success w allowed URL", async () => {
+    const client = new MinifetchClient({
+      network: "solana-devnet",
+      privateKey: process.env.SVM_PRIVATE_KEY as any,
+    });
+    const response = await client.preflightUrlCheck("https://minifetch.com");
+
+    expect(response.success).toBe(true);
+    expect(response.results[0].data.url).toBe("https://minifetch.com");
+    expect(response.results[0].data.allowed).toBe(true);
+    expect(response.results[0].data.message).toContain("allowed by robots.txt");
+    expect(response.results[0].data.crawlDelay).toBe(1);
+  });
+
+  it("works, even w bad private key", async () => {
+    const client = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: "0xDEADBEEF00000000000000000000000000000000000000000000000000FACADE" as any,
+    });
+
+    const response = await client.preflightUrlCheck("https://minifetch.com");
+
+    expect(response.success).toBe(true);
+    expect(response.results[0].data.url).toBe("https://minifetch.com");
+    expect(response.results[0].data.allowed).toBe(true);
+    expect(response.results[0].data.message).toContain("allowed by robots.txt");
+    expect(response.results[0].data.crawlDelay).toBe(1);
+  });
+
+});
+
+describe.sequential("x402: preflightUrlCheck() fails gracefully", { timeout: 30000 }, () => {
 
   it("handles DNS lookup error", async () => {
     const client = new MinifetchClient({
@@ -59,4 +93,5 @@ describe.sequential("preflightUrlCheck() e2e", { timeout: 30000 }, () => {
       InvalidUrlError,
     );
   });
+
 });
