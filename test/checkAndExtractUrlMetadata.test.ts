@@ -10,7 +10,8 @@ beforeEach(async () => {
   await new Promise(r => setTimeout(r, 1000));
 });
 
-describe.sequential("checkAndExtractUrlMetadata() e2e", { timeout: 30000 }, () => {
+describe.sequential("x402: checkAndExtractUrlMetadata() e2e", { timeout: 30000 }, () => {
+
   it("base-sepolia success w ?verbosity=standard & ?includeResponseBody=true", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
@@ -36,6 +37,22 @@ describe.sequential("checkAndExtractUrlMetadata() e2e", { timeout: 30000 }, () =
     expect(response.payment.explorerLink).toBe(
       `https://sepolia.basescan.org/tx/${response.payment.txHash}`,
     );
+  });
+
+});
+
+describe.sequential("x402: checkAndExtractUrlPreview() handles errors gracefully", { timeout: 30000 }, () => {
+
+  it("throws w bad private key", async () => {
+    const failClient = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: "0xDEADBEEF00000000000000000000000000000000000000000000000000FACADE" as any,
+    });
+
+    const r = await expect(failClient.checkAndExtractUrlMetadata("https://anthropic.com")).rejects.toMatchObject({
+      name: "NetworkError",
+      message: "Request failed: 402 Payment Required",
+    });
   });
 
   it("throws when robots.txt check fails", async () => {
@@ -75,4 +92,5 @@ describe.sequential("checkAndExtractUrlMetadata() e2e", { timeout: 30000 }, () =
       InvalidUrlError,
     );
   });
+
 });

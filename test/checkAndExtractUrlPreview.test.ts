@@ -49,7 +49,6 @@ describe.sequential("x402: checkAndExtractUrlPreview() handles errors gracefully
       name: "NetworkError",
       message: "Request failed: 402 Payment Required",
     });
-
   });
 
   it("throws when robots.txt check fails", async () => {
