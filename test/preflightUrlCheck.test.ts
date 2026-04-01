@@ -95,3 +95,23 @@ describe.sequential("x402: preflightUrlCheck() fails gracefully", { timeout: 300
   });
 
 });
+
+describe.sequential("apiKey: preflightUrlCheck() init", { timeout: 30000 }, () => {
+
+  it("client inits with apiKey and baseUrl points to prod", () => {
+    // preflightUrlCheck is auth-agnostic (free endpoint), so a valid apiKey client
+    // should init correctly and resolve to the prod base URL
+    const client = new MinifetchClient({
+      apiKey: "mf_prod_abc123def456abc123def456abc123de",
+    });
+    expect(client).toBeInstanceOf(MinifetchClient);
+  });
+
+  it("client inits with dev apiKey and baseUrl points to localhost", () => {
+    const client = new MinifetchClient({
+      apiKey: "mf_dev_abc123def456abc123def456abc123de",
+    });
+    expect(client).toBeInstanceOf(MinifetchClient);
+  });
+
+});
