@@ -26,4 +26,9 @@ describe.sequential("package exports from index.js", { timeout: 30000 }, () => {
     expect(client2).toBeInstanceOf(MinifetchClient);
   });
 
+  it("default export -> apiKey initialized MinifetchClient", () => {
+    const client3 = new Minifetch({ apiKey: "mf_prod_abc123def456abc123def456abc123de" });
+    expect(client3).toBeInstanceOf(MinifetchClient);
+  });
+
 });

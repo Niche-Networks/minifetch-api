@@ -12,7 +12,7 @@ beforeEach(async () => {
 
 describe.sequential("x402: checkAndExtractUrlContent() e2e", { timeout: 30000 }, () => {
 
-  it("base-sepolia success w includeMediaUrls true", async () => {
+  it("base-sepolia success w ?includeMediaUrls=true", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
