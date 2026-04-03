@@ -37,7 +37,7 @@ const client = new Minifetch({
 
 try {
   const url = "example.com";
-  const response = await client.checkAndExtractPreview(url);
+  const response = await client.checkAndExtractUrlPreview(url);
   // 200 "ok" responses will return the data and x402 payment info:
   console.log("data: ", response.data);
   console.log("payment info: ", response.payment);
