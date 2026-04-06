@@ -7,7 +7,7 @@
 
 **Fetch & extract data from web pages.** [Minifetch.com](https://minifetch.com) provides composable extraction APIs for humans and AI Agents-- making web pages simple to access.
 
-- **✅ Sign up for an account and get your first 125-250 fetches for free. 🎉🎉**
+- **✅ [Sign up](https://minifetch.com/dashboard) for an account and get your first 125-250 fetches for free. 🎉🎉**
 - **✅ Always pay-as-you-go at competitive prices.**
 - **⛔ No charge for blocked pages (403 errors).**
 
