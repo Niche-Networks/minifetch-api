@@ -28,6 +28,8 @@ export async function handlePayment(url, config) {
             payer = signer.address;
         }
         else if (isSolana) {
+            if (!config.privateKey)
+                throw new PaymentFailedError('privateKey is required for Solana payments');
             const privateKeyBytes = bs58.decode(config.privateKey);
             const signer = await createKeyPairSignerFromBytes(privateKeyBytes);
             const svmSigner = signer;
