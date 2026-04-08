@@ -22,56 +22,38 @@ export async function handlePayment(
   url: string,
   config: InitializedConfig,
 ): Promise<{ response: Response; payment?: PaymentInfo }> {
-  if (!config.privateKey) {
-    throw new PaymentFailedError("Private key required for payments");
-  }
-
   try {
-    // Create x402 client and signer based on network type
     const _x402Client = new x402Client();
     let payer: string;
 
-    const isEvm = config.network.startsWith("base");
-    const isSolana = config.network.startsWith("solana");
+    const isEvm = config.network?.startsWith("base");
+    const isSolana = config.network?.startsWith("solana");
 
     if (isEvm) {
-      // Initialize EVM signer and register scheme
       const signer = privateKeyToAccount(config.privateKey as `0x${string}`);
-      const evmSigner = signer as ReturnType<typeof privateKeyToAccount>; // Type assertion for EVM
+      const evmSigner = signer as ReturnType<typeof privateKeyToAccount>;
       registerExactEvmScheme(_x402Client, { signer: evmSigner });
       payer = signer.address;
     } else if (isSolana) {
-      // Initialize Solana signer and register scheme
       const privateKeyBytes = bs58.decode(config.privateKey);
       const signer = await createKeyPairSignerFromBytes(privateKeyBytes);
-      const svmSigner = signer as KeyPairSigner<string>; // Type assertion for Solana
+      const svmSigner = signer as KeyPairSigner<string>;
       registerExactSvmScheme(_x402Client, { signer: svmSigner });
       payer = signer.address;
     } else {
       throw new PaymentFailedError(`Unsupported network: ${config.network}`);
     }
 
-    // Wrap fetch with payment capabilities
     const fetchWithPayment = wrapFetchWithPayment(fetch, _x402Client);
-
-    // Make request with payment handling
-    // console.log("Attempting to fetch w payment:", url);
-    const response = await fetchWithPayment(url, {
-      method: "GET",
-    });
+    const response = await fetchWithPayment(url, { method: "GET" });
 
     if (!response.ok) {
       throw new NetworkError(`Request failed: ${response.status} ${response.statusText}`);
     }
 
-    // Extract payment receipt from response headers
     const httpClient = new x402HTTPClient(_x402Client);
     const paymentResponse = httpClient.getPaymentSettleResponse(name => response.headers.get(name));
-    // DEBUG:
-    // console.log("Payment response:");
-    // console.log(paymentResponse);
 
-    // Build payment info for user
     const payment: PaymentInfo = {
       success: true,
       payer,
@@ -93,15 +75,40 @@ export async function handlePayment(
   }
 }
 
-// Helper fn to build explorer links
 /**
+ * Handle API key auth flow — simple Bearer token request, no crypto.
+ * No payment info is returned (not applicable for this auth mode).
+ *
+ * @param url
+ * @param config
+ */
+export async function handleApiKeyRequest(
+  url: string,
+  config: InitializedConfig,
+): Promise<{ response: Response }> {
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${config.apiKey}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new NetworkError(`Request failed: ${response.status} ${response.statusText}`);
+  }
+
+  return { response };
+}
+
+/**
+ * Build block explorer link for a transaction hash
  *
  * @param config
  * @param txHash
  */
 function getExplorerLink(config: InitializedConfig, txHash: string): string {
   if (config.network === "solana-devnet") {
-    const strArray = config.explorerUrl.split("?");
+    const strArray = config.explorerUrl!.split("?");
     return `${strArray[0]}/${txHash}?${strArray[1]}`;
   } else if (txHash) {
     return `${config.explorerUrl}/${txHash}`;
