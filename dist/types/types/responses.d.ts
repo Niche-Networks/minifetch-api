@@ -29,12 +29,12 @@ export interface PaidEndpointResponse {
     }>;
     /**
      * Payment information
-     * Only present for paid endpoints when request was successful
+     * Only present for paid x402 endpoints when request was successful
      * */
     payment?: PaymentInfo;
 }
 /**
- * Payment information included with successful paid API responses
+ * Payment information included with successful paid x402 API responses
  */
 export interface PaymentInfo {
     /** Whether the payment was successful **/

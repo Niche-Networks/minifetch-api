@@ -1,24 +1,25 @@
 import { initConfig } from "./init.js";
 import { validateAndNormalizeUrl } from "./utils/validation.js";
-import { handlePayment } from "./utils/payment.js";
+import { handlePayment, handleApiKeyRequest } from "./utils/payment.js";
 import { InvalidUrlError, RobotsBlockedError, PaymentFailedError, ExtractionFailedError, NetworkError, } from "./types/errors.js";
 /**
- * Main Minifetch API client
- * Provides methods to check URLs and extract metadata/links/preview/content
+ * Main Minifetch API client.
+ * Supports two auth modes:
+ *   - x402: crypto micropayments via Coinbase x402 (pass network + privateKey)
+ *   - apiKey: Stripe-backed credits (pass apiKey: "mf_prod_..." or "mf_dev_...")
  */
 export class MinifetchClient {
     config;
     baseUrl;
     /**
-     *
-     * @param config
+     * @param config - Either { network, privateKey } for x402 or { apiKey } for API key auth
      */
     constructor(config) {
         this.config = initConfig(config);
         this.baseUrl = this.config.apiBaseUrl;
     }
     /**
-     * Check if URL is allowed by robots.txt (free preflight check)
+     * Check if URL is allowed by robots.txt (free preflight check — no auth required)
      *
      * @param url
      * @throws {InvalidUrlError} if URL is invalid
@@ -26,17 +27,13 @@ export class MinifetchClient {
      */
     async preflightUrlCheck(url) {
         try {
-            // Validate and normalize URL
             const normalizedUrl = validateAndNormalizeUrl(url);
-            // Build request URL (free endpoint, no payment)
-            const endpoint = `/api/v1/free/preflight/url-check?url=${encodeURIComponent(normalizedUrl)}`;
-            const requestUrl = `${this.baseUrl}${endpoint}`;
+            const requestUrl = `${this.baseUrl}/api/v1/free/preflight/url-check?url=${encodeURIComponent(normalizedUrl)}`;
             const response = await fetch(requestUrl);
             if (!response.ok) {
                 throw new NetworkError(`Preflight check failed: ${response.status} ${response.statusText}`);
             }
-            const data = (await response.json());
-            return data;
+            return (await response.json());
         }
         catch (error) {
             if (error instanceof InvalidUrlError || error instanceof NetworkError) {
@@ -46,230 +43,208 @@ export class MinifetchClient {
         }
     }
     /**
-     * Extract URL metadata (paid, requires x402 payment)
+     * Extract URL metadata (paid endpoint)
      *
      * @param url
      * @param options
+     * @param options.verbosity - "standard" (default) or "full"
      * @param options.includeResponseBody
-     * @param options.verbosity - Controls response detail level: "standard" (default) or "full"
      * @throws {InvalidUrlError} if URL is invalid
      * @throws {ExtractionFailedError} various reasons, check README
-     * @throws {PaymentFailedError} if payment fails
+     * @throws {PaymentFailedError} if x402 payment fails
      * @throws {NetworkError} various reasons, check README
      */
     async extractUrlMetadata(url, options) {
         try {
-            // Validate and normalize URL
             const normalizedUrl = validateAndNormalizeUrl(url);
-            // Build request URL with optional params
             const params = new URLSearchParams({ url: normalizedUrl });
-            if (options?.verbosity) {
+            if (options?.verbosity)
                 params.set("verbosity", options.verbosity);
-            }
-            if (options?.includeResponseBody) {
+            if (options?.includeResponseBody)
                 params.set("includeResponseBody", "true");
-            }
-            // Build request URL - convert params to string
-            const endpoint = `/api/v1/x402/extract/url-metadata?${params.toString()}`;
-            const requestUrl = `${this.baseUrl}${endpoint}`;
-            // Make request with x402 payment handling
-            const { response, payment } = await handlePayment(requestUrl, this.config);
-            // Check if extraction succeeded
-            if (!response.ok) {
-                throw new ExtractionFailedError(normalizedUrl, `Metadata extraction failed: ${response.status} ${response.statusText}`);
-            }
-            const data = (await response.json());
-            return {
-                success: data.success,
-                results: data.results,
-                payment,
-            };
+            const requestUrl = `${this.baseUrl}${this._extractPath("url-metadata")}?${params.toString()}`;
+            return await this._makeRequest(requestUrl, normalizedUrl, "Metadata extraction");
         }
         catch (error) {
-            if (error instanceof InvalidUrlError ||
-                error instanceof ExtractionFailedError ||
-                error instanceof PaymentFailedError ||
-                error instanceof NetworkError) {
-                throw error;
-            }
-            throw new ExtractionFailedError(url, `Metadata extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+            return this._rethrowExtraction(error, url, "Metadata extraction");
         }
     }
     /**
-     * Extract URL links (paid, requires x402 payment)
+     * Extract URL links (paid endpoint)
      *
      * @param url
      * @throws {InvalidUrlError} if URL is invalid
      * @throws {ExtractionFailedError} various reasons, check README
-     * @throws {PaymentFailedError} if payment fails
+     * @throws {PaymentFailedError} if x402 payment fails
      * @throws {NetworkError} various reasons, check README
      */
     async extractUrlLinks(url) {
         try {
             const normalizedUrl = validateAndNormalizeUrl(url);
-            const endpoint = `/api/v1/x402/extract/url-links?url=${encodeURIComponent(normalizedUrl)}`;
-            const requestUrl = `${this.baseUrl}${endpoint}`;
-            // Make request with x402 payment handling
-            const { response, payment } = await handlePayment(requestUrl, this.config);
-            if (!response.ok) {
-                throw new ExtractionFailedError(normalizedUrl, `Links extraction failed: ${response.status} ${response.statusText}`);
-            }
-            const data = (await response.json());
-            return {
-                success: data.success,
-                results: data.results,
-                payment,
-            };
+            const requestUrl = `${this.baseUrl}${this._extractPath("url-links")}?url=${encodeURIComponent(normalizedUrl)}`;
+            return await this._makeRequest(requestUrl, normalizedUrl, "Links extraction");
         }
         catch (error) {
-            if (error instanceof InvalidUrlError ||
-                error instanceof ExtractionFailedError ||
-                error instanceof PaymentFailedError ||
-                error instanceof NetworkError) {
-                throw error;
-            }
-            throw new ExtractionFailedError(url, `Links extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+            return this._rethrowExtraction(error, url, "Links extraction");
         }
     }
     /**
-     * Extract URL preview (paid, requires x402 payment)
+     * Extract URL preview (paid endpoint)
      *
      * @param url
      * @throws {InvalidUrlError} if URL is invalid
      * @throws {ExtractionFailedError} various reasons, check README
-     * @throws {PaymentFailedError} if payment fails
+     * @throws {PaymentFailedError} if x402 payment fails
      * @throws {NetworkError} various reasons, check README
      */
     async extractUrlPreview(url) {
         try {
-            // Validate and normalize URL
             const normalizedUrl = validateAndNormalizeUrl(url);
-            // Build request URL
-            const endpoint = `/api/v1/x402/extract/url-preview?url=${encodeURIComponent(normalizedUrl)}`;
-            const requestUrl = `${this.baseUrl}${endpoint}`;
-            // Make request with x402 payment handling
-            const { response, payment } = await handlePayment(requestUrl, this.config);
-            // Check if extraction succeeded
-            if (!response.ok) {
-                throw new ExtractionFailedError(normalizedUrl, `Preview extraction failed: ${response.status} ${response.statusText}`);
-            }
-            const data = (await response.json());
-            return {
-                success: data.success,
-                results: data.results,
-                payment,
-            };
+            const requestUrl = `${this.baseUrl}${this._extractPath("url-preview")}?url=${encodeURIComponent(normalizedUrl)}`;
+            return await this._makeRequest(requestUrl, normalizedUrl, "Preview extraction");
         }
         catch (error) {
-            if (error instanceof InvalidUrlError ||
-                error instanceof ExtractionFailedError ||
-                error instanceof PaymentFailedError ||
-                error instanceof NetworkError) {
-                throw error;
-            }
-            throw new ExtractionFailedError(url, `Preview extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+            return this._rethrowExtraction(error, url, "Preview extraction");
         }
     }
     /**
-     * Extract URL content as markdown (paid, requires x402 payment)
+     * Extract URL content as markdown (paid endpoint)
      *
      * @param url
      * @param options
      * @param options.includeMediaUrls
      * @throws {InvalidUrlError} if URL is invalid
      * @throws {ExtractionFailedError} various reasons, check README
-     * @throws {PaymentFailedError} if payment fails
+     * @throws {PaymentFailedError} if x402 payment fails
      * @throws {NetworkError} various reasons, check README
      */
     async extractUrlContent(url, options) {
         try {
-            // Validate and normalize URL
             const normalizedUrl = validateAndNormalizeUrl(url);
-            // Build request URL with optional params
             const params = new URLSearchParams({ url: normalizedUrl });
-            if (options?.includeMediaUrls) {
+            if (options?.includeMediaUrls)
                 params.set("includeMediaUrls", "true");
-            }
-            const endpoint = `/api/v1/x402/extract/url-content?${params.toString()}`;
-            const requestUrl = `${this.baseUrl}${endpoint}`;
-            // Make request with x402 payment handling
-            const { response, payment } = await handlePayment(requestUrl, this.config);
-            // Check if extraction succeeded
-            if (!response.ok) {
-                throw new ExtractionFailedError(normalizedUrl, `Content extraction failed: ${response.status} ${response.statusText}`);
-            }
-            const data = (await response.json());
-            return {
-                success: data.success,
-                results: data.results,
-                payment,
-            };
+            const requestUrl = `${this.baseUrl}${this._extractPath("url-content")}?${params.toString()}`;
+            return await this._makeRequest(requestUrl, normalizedUrl, "Content extraction");
         }
         catch (error) {
-            if (error instanceof InvalidUrlError ||
-                error instanceof ExtractionFailedError ||
-                error instanceof PaymentFailedError ||
-                error instanceof NetworkError) {
-                throw error;
-            }
-            throw new ExtractionFailedError(url, `Content extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+            return this._rethrowExtraction(error, url, "Content extraction");
         }
     }
     /**
-     * Check URL and extract metadata in one call
-     * Throws RobotsBlockedError if robots.txt blocks the URL
+     * Check URL then extract metadata in one call.
+     * Throws RobotsBlockedError if robots.txt blocks the URL.
      *
      * @param url
      * @param options
-     * @param options.verbosity - Controls response detail level: "standard" (default) or "full"
-     * @param options.includeResponseBody - Include raw response body in result
+     * @param options.verbosity - "standard" (default) or "full"
+     * @param options.includeResponseBody
      */
     async checkAndExtractUrlMetadata(url, options) {
-        const checkResponse = await this.preflightUrlCheck(url);
-        if (!checkResponse.results[0]?.data?.allowed) {
-            throw new RobotsBlockedError(url, checkResponse.results[0]?.data?.message || "URL is blocked by robots.txt");
-        }
+        await this._preflightOrThrow(url);
         return this.extractUrlMetadata(url, options);
     }
     /**
-     * Check URL and extract links in one call
-     * Throws RobotsBlockedError if robots.txt blocks the URL
+     * Check URL then extract links in one call.
+     * Throws RobotsBlockedError if robots.txt blocks the URL.
      *
      * @param url
      */
     async checkAndExtractUrlLinks(url) {
-        const checkResponse = await this.preflightUrlCheck(url);
-        if (!checkResponse.results[0]?.data?.allowed) {
-            throw new RobotsBlockedError(url, checkResponse.results[0]?.data?.message || "URL is blocked by robots.txt");
-        }
+        await this._preflightOrThrow(url);
         return this.extractUrlLinks(url);
     }
     /**
-     * Check URL and extract preview in one call
-     * Throws RobotsBlockedError if robots.txt blocks the URL
+     * Check URL then extract preview in one call.
+     * Throws RobotsBlockedError if robots.txt blocks the URL.
      *
      * @param url
      */
     async checkAndExtractUrlPreview(url) {
-        const checkResponse = await this.preflightUrlCheck(url);
-        if (!checkResponse.results[0]?.data?.allowed) {
-            throw new RobotsBlockedError(url, checkResponse.results[0]?.data?.message || "URL is blocked by robots.txt");
-        }
+        await this._preflightOrThrow(url);
         return this.extractUrlPreview(url);
     }
     /**
-     * Check URL and extract content in one call
-     * Throws RobotsBlockedError if robots.txt blocks the URL
+     * Check URL then extract content in one call.
+     * Throws RobotsBlockedError if robots.txt blocks the URL.
      *
      * @param url
      * @param options
      * @param options.includeMediaUrls
      */
     async checkAndExtractUrlContent(url, options) {
+        await this._preflightOrThrow(url);
+        return this.extractUrlContent(url, options);
+    }
+    // ---------------------------------------------------------------------------
+    // Private helpers
+    // ---------------------------------------------------------------------------
+    /**
+     * Returns the correct extract path segment based on auth mode.
+     * x402 → /api/v1/x402/extract/<endpoint>
+     * apiKey → /api/v1/extract/<endpoint>
+     *
+     * @param endpoint
+     */
+    _extractPath(endpoint) {
+        return this.config.authMode === "x402"
+            ? `/api/v1/x402/extract/${endpoint}`
+            : `/api/v1/extract/${endpoint}`;
+    }
+    /**
+     * Dispatch to the correct request handler based on auth mode, then
+     * normalize the response into PaidEndpointResponse.
+     * Note: payment field is only present for x402 responses.
+     *
+     * @param requestUrl
+     * @param normalizedUrl
+     * @param label - used in error messages
+     */
+    async _makeRequest(requestUrl, normalizedUrl, label) {
+        if (this.config.authMode === "x402") {
+            const { response, payment } = await handlePayment(requestUrl, this.config);
+            if (!response.ok) {
+                throw new ExtractionFailedError(normalizedUrl, `${label} failed: ${response.status} ${response.statusText}`);
+            }
+            const data = (await response.json());
+            return { success: data.success, results: data.results, payment };
+        }
+        else {
+            const { response } = await handleApiKeyRequest(requestUrl, this.config);
+            if (!response.ok) {
+                throw new ExtractionFailedError(normalizedUrl, `${label} failed: ${response.status} ${response.statusText}`);
+            }
+            const data = (await response.json());
+            // payment field intentionally omitted for apiKey auth — not applicable
+            return { success: data.success, results: data.results };
+        }
+    }
+    /**
+     * Preflight check helper — throws RobotsBlockedError if not allowed
+     *
+     * @param url
+     */
+    async _preflightOrThrow(url) {
         const checkResponse = await this.preflightUrlCheck(url);
         if (!checkResponse.results[0]?.data?.allowed) {
             throw new RobotsBlockedError(url, checkResponse.results[0]?.data?.message || "URL is blocked by robots.txt");
         }
-        return this.extractUrlContent(url, options);
+    }
+    /**
+     * Re-throw known error types, wrapping unknowns in ExtractionFailedError
+     *
+     * @param error
+     * @param url
+     * @param label
+     */
+    _rethrowExtraction(error, url, label) {
+        if (error instanceof InvalidUrlError ||
+            error instanceof ExtractionFailedError ||
+            error instanceof PaymentFailedError ||
+            error instanceof NetworkError ||
+            error instanceof RobotsBlockedError) {
+            throw error;
+        }
+        throw new ExtractionFailedError(url, `${label} failed: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
 }

@@ -14,3 +14,13 @@ export declare function handlePayment(url: string, config: InitializedConfig): P
     response: Response;
     payment?: PaymentInfo;
 }>;
+/**
+ * Handle API key auth flow — simple Bearer token request, no crypto.
+ * No payment info is returned (not applicable for this auth mode).
+ *
+ * @param url
+ * @param config
+ */
+export declare function handleApiKeyRequest(url: string, config: InitializedConfig): Promise<{
+    response: Response;
+}>;

@@ -1,6 +1,6 @@
 import type { ClientConfig, InitializedConfig, Network } from "./types/config.js";
 /**
- * Default configuration values
+ * Default configuration values for x402 mode
  * Exported for testing purposes
  */
 export declare const DEFAULTS: {
@@ -19,7 +19,8 @@ export declare const DEFAULTS: {
     };
 };
 /**
- * Validate & initialize client configuration
+ * Validate & initialize client configuration.
+ * Accepts either X402Config (network + privateKey) or ApiKeyConfig (apiKey).
  *
  * @param config
  */
