@@ -12,7 +12,9 @@
 - ⛔ No charge for blocked pages (403 errors).
 
 ---
-**[👉 Full API docs](https://minifetch.com/docs/api) | [LLMs.txt](https://minifetch.com/llms.txt) | [Dashboard](https://minifetch.com/dashboard)**
+**👉 [Dashboard](https://minifetch.com/dashboard) | [Full API docs](https://minifetch.com/docs/api) | [LLMs.txt](https://minifetch.com/llms.txt) | Questions? Join our [Discord]([Discord](https://discord.gg/EM6ET8Dshm))**
+
+
 
 ---
 **Payments.** Two ways to pay:
@@ -92,10 +94,10 @@ client.checkAndExtractUrlLinks(url);
 // { includeResponseBody: true }, defaults to false
 client.checkAndExtractUrlMetadata(url, options);
 
-// For max control, you can also use the following methods directly:
+// For max control, you can also use the following methods directly.
 // Free - check robots.txt:
 client.preflightCheck(url);
-// Extract:
+// Extract data:
 client.extractUrlPreview(url);
 client.extractUrlContent(url, options); // same options as above
 client.extractUrlLinks(url);
@@ -118,7 +120,6 @@ When you wrap the functions above in a try/catch, here are the errors you may en
   - Likely encountering upstream timeout errors on the target URL.
 - **"InvalidURLError: Invalid url ${url}"**
   - The URL is malformed in some way, correct it and try again.
-
 ---
 ### Service Limitations
 Minifetch only extracts publicly available metadata and content from pages accessible without authentication and javascript execution.
