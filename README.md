@@ -8,16 +8,16 @@
 **Fetch & extract data from web pages.** [Minifetch.com](https://minifetch.com) provides composable extraction APIs for humans and AI Agents-- making web pages simple to access.
 
 - **✅ [Sign up](https://minifetch.com/dashboard) for an account and get your first 125-250 fetches for free. 🎉🎉**
-- **✅ Always pay-as-you-go at competitive prices.**
-- **⛔ No charge for blocked pages (403 errors).**
+- ✅ Always pay-as-you-go at competitive prices.
+- ⛔ No charge for blocked pages (403 errors).
 
 ---
-**[👉 Full API docs are here](https://minifetch.com/docs/api)**, includes example queries, response data & prices. For AI Agents, read the [LLMs.txt](https://minifetch.com/llms.txt) instead.
+**[👉 Full API docs](https://minifetch.com/docs/api) | [LLMs.txt](https://minifetch.com/llms.txt) | [Dashboard](https://minifetch.com/dashboard)**
 
 ---
 **Payments.** Two ways to pay:
-1. Credit card & API key. [Get started free by visiting our dashboard to Sign Up](https://minifetch.com/dashboard). Your account will be auto-loaded with 125–250 API calls. Top up with your credit card later.
-2. x402. USDC stablecoin micropayments on Coinbase's Base & Solana blockchain networks.
+1. Credit card + API key. Get started free - [visit our dashboard to Sign Up](https://minifetch.com/dashboard). Your account will be auto-loaded with 125–250 API calls. Top up with your credit card later.
+2. x402. USDC stablecoin micropayments on Coinbase's Base & Solana networks.
 
 ## Prerequisites
 
@@ -34,16 +34,16 @@
 ```js
 import Minifetch from "minifetch-api";
 
-// First, init the client with your choice of two payment methods:
+// First, initialize the client with your payment choice:
 
-// 1. API Key Payments: Inititialize the client with your API key.
+// 1. API Key Payments:
 const client = new Minifetch({
   apiKey: process.env.MINIFETCH_API_KEY
 });
 
-// 2. x402 Payments: Inititialize the client with your network choice & private key.
+// 2. x402 Payments:
 //   - Network options: "base" or "solana"
-//   - Use private key from account that has a small amt of USDC
+//   - Private key from wallet that has a small amt of USDC
 const client = new Minifetch({
   network: "base",
   privateKey: process.env.BASE_PRIVATE_KEY,
@@ -61,15 +61,11 @@ try {
 }
 ```
 
-### Client Methods Available
+### Data Extraction Methods
 
-After you initialize the client (above), you have the following methods available to use. The "checkAndExtract" API methods provided help you avoid paying for blocked URLs and return more granular info about why a URL may or may not return data.
+After the Quick Start, you have the following methods to use. The "checkAndExtract" methods help to avoid paying for blocked URLs. **Price list** & example data [is here.](https://minifetch.com/docs/api#example-data)
 
-**Price list** and example data for each method [is here.](https://minifetch.com/docs/api#example-data)
-
-**Rate limits.** Requests exceeding Minifetch rate limits return `429` errors. This is intentional — back off and retry, max 5-10 queries per second. We'll add bulk fetch and extract in the future. Sign up for the [waitlist](https://forms.gle/rkMi7T23bHJc8XFw9).
-
-**Wrap** the following methods in a **try/catch** just like in the Quickstart example above. **Code examples** can be also found in the [Github repository](https://github.com/Niche-Networks/minifetch-api/) in the /example- and /test directories.
+**Wrap** these in a **try/catch** just like in the Quickstart example above. **Code examples** can be also found in the [Github repository](https://github.com/Niche-Networks/minifetch-api/) in the /example- directories.
 
 ```js
 // Extracts a light, token-efficient preview of a URL:
@@ -87,8 +83,8 @@ client.checkAndExtractUrlContent(url, options);
 client.checkAndExtractUrlLinks(url);
 
 // Extracts rich structured metadata from a URL:
-// title, description, og/twitter tags, json-ld, images, headings, response headers,
-// and more. Perfect for SEO research or metadata indexing & analysis. Largest
+// meta tags, json-ld, images, headings, response headers, + more.
+// Perfect for SEO research or metadata indexing & analysis. Largest
 // response size of client methods. Setting verbosity to "full" is the drop-in
 // replacement for the [`url-metadata`](https://www.npmjs.com/package/url-metadata) package.
 // Options:
@@ -97,22 +93,18 @@ client.checkAndExtractUrlLinks(url);
 client.checkAndExtractUrlMetadata(url, options);
 
 // For max control, you can also use the following methods directly:
-
-// Standalone call to check if a URL is allowed to be fetched according to the
-// website's robots.txt file. Use this free endpoint before using our other paid
-// endpoints to help avoid spending extra on un-fetchable URLs.
+// Free - check robots.txt:
 client.preflightCheck(url);
-
+// Extract:
 client.extractUrlPreview(url);
 client.extractUrlContent(url, options); // same options as above
 client.extractUrlLinks(url);
 client.extractUrlMetadata(url, options) // same options as above
 
 ```
-
+---
 ### Error Types
-When you wrap the functions above in a try/catch, here are the errors you may encounter.
-You are never charged for errors.
+When you wrap the functions above in a try/catch, here are the errors you may encounter. You are never charged for errors.
 
 - **"RobotsBlockedError: URL is blocked by robots.txt"**
   - URL is explicitly blocked by the website's robots.txt, cannot be fetched.
