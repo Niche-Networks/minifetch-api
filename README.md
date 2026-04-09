@@ -56,7 +56,7 @@ try {
   const url = "example.com";
   const response = await client.checkAndExtractUrlPreview(url);
   // 200 "ok" responses
-  console.log("data: ", response.data);
+  console.log(response);
 } catch (err) {
   // No charge for errors or 403 blocked urls!
   console.log(err);
@@ -76,8 +76,7 @@ client.checkAndExtractUrlPreview(url);
 
 // Extracts a clean, token-efficient content summary as markdown from a URL.
 // Removes ads, nav, scripts. More efficient than raw HTML fetches for LLMs.
-// Options:
-// { includeMediaUrls: true }, defaults to false.
+// Options: { includeMediaUrls: true } - defaults to false.
 client.checkAndExtractUrlContent(url, options);
 
 // Extracts all links from a URL categorized by type (internal/external/anchor).
@@ -86,12 +85,11 @@ client.checkAndExtractUrlLinks(url);
 
 // Extracts rich structured metadata from a URL:
 // meta tags, json-ld, images, headings, response headers, + more.
-// Perfect for SEO research or metadata indexing & analysis. Largest
-// response size of client methods. Setting verbosity to "full" is the drop-in
-// replacement for the [`url-metadata`](https://www.npmjs.com/package/url-metadata) package.
+// Setting verbosity to "full" is the drop-in replacement for the
+// [`url-metadata`](https://www.npmjs.com/package/url-metadata) package.
 // Options:
-// { verbosity: "full" }, defaults to "standard"
-// { includeResponseBody: true }, defaults to false
+// { verbosity: "full" } - defaults to "standard"
+// { includeResponseBody: true } - defaults to false
 client.checkAndExtractUrlMetadata(url, options);
 
 // For max control, you can also use the following methods directly.
