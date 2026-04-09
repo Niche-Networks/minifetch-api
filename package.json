@@ -37,7 +37,7 @@
   "homepage": "https://minifetch.com",
   "repository": {
     "type": "git",
-    "url": "git@github.com:Niche-Networks/minifetch-api.git"
+    "url": "git+ssh://git@github.com/Niche-Networks/minifetch-api.git"
   },
   "scripts": {
     "dist:clean": "rm -rf dist",
