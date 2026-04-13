@@ -5,9 +5,9 @@
   </a>
 </div>
 
-**Fetch & extract data from web pages.** [Minifetch.com](https://minifetch.com) provides composable extraction APIs for humans and AI Agents-- making web pages simple to access.
+**Fetch & extract metadata and data from web pages.** [Minifetch.com](https://minifetch.com) provides composable extraction APIs for humans and AI Agents-- making web pages simple to access.
 
-- ✅ **[Sign up](https://minifetch.com/dashboard) for an account and get your first 125-250 fetches for free. 🎉🎉**
+- ✅ **[Sign up](https://minifetch.com/dashboard) for an account and get your first fetches free. 🎉🎉**
 - ✅ Always pay-as-you-go at competitive prices.
 - ⛔ No charge for blocked pages (403 errors).
 
@@ -67,39 +67,39 @@ try {
 
 After the Quick Start, you have the following methods to use. The "checkAndExtract" methods help to avoid paying for blocked URLs. **Price list** & example data [is here.](https://minifetch.com/docs/api#example-data)
 
-**Wrap** these in a **try/catch** just like in the Quickstart example above. **Code examples** can be also found in the [Github repository](https://github.com/Niche-Networks/minifetch-api/) in the /example- directories.
+**Wrap** these in a **try/catch** just like in the Quickstart example above. **Code examples** can be also found in the [Github repository](https://github.com/Niche-Networks/minifetch-api/) /example- directories.
 
 ```js
 // Extracts a light, token-efficient preview of a URL:
 // title, description, and image (only).
-client.checkAndExtractUrlPreview(url);
+await client.checkAndExtractUrlPreview(url);
 
 // Extracts a clean, token-efficient content summary as markdown from a URL.
 // Removes ads, nav, scripts. More efficient than raw HTML fetches for LLMs.
 // Options: { includeMediaUrls: true } - defaults to false.
-client.checkAndExtractUrlContent(url, options);
+await client.checkAndExtractUrlContent(url, options);
 
 // Extracts all links from a URL categorized by type (internal/external/anchor).
 // Detects image links, nofollow attributes, analyzes external domain distribution.
-client.checkAndExtractUrlLinks(url);
+await client.checkAndExtractUrlLinks(url);
 
 // Extracts rich structured metadata from a URL:
 // meta tags, json-ld, images, headings, response headers, + more.
 // Setting verbosity to "full" is the drop-in replacement for the
-// [`url-metadata`](https://www.npmjs.com/package/url-metadata) package.
+// `url-metadata` package.
 // Options:
 // { verbosity: "full" } - defaults to "standard"
 // { includeResponseBody: true } - defaults to false
-client.checkAndExtractUrlMetadata(url, options);
+await client.checkAndExtractUrlMetadata(url, options);
 
 // For max control, you can also use the following methods directly.
 // Free - check robots.txt:
-client.preflightCheck(url);
+await client.preflightCheck(url);
 // Extract data:
-client.extractUrlPreview(url);
-client.extractUrlContent(url, options); // same options as above
-client.extractUrlLinks(url);
-client.extractUrlMetadata(url, options) // same options as above
+await client.extractUrlPreview(url);
+await client.extractUrlContent(url, options); // same options as above
+await client.extractUrlLinks(url);
+await client.extractUrlMetadata(url, options) // same options as above
 
 ```
 ---

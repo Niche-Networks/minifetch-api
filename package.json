@@ -1,7 +1,7 @@
 {
   "name": "minifetch-api",
-  "version": "1.2.2",
-  "description": "Minifetch.com API Client. Fetch & extract data from web pages. For AI Agents & SEO research.",
+  "version": "1.2.3",
+  "description": "Minifetch.com API Client. Fetch & extract metadata and data from web pages. For SEO research & AI Agents.",
   "type": "module",
   "main": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
