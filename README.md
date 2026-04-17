@@ -9,6 +9,7 @@
 
 - ✅ **[Sign up](https://minifetch.com/dashboard) for an account and get your first fetches free. 🎉🎉**
 - ✅ Always pay-as-you-go at competitive prices.
+- ✅ Transparent user-agent identification — site owners know who we are
 - ⛔ No charge for blocked pages (403 errors).
 
 ---
