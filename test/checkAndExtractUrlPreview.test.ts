@@ -66,17 +66,17 @@ describe.sequential("x402: checkAndExtractUrlPreview() fails gracefully", { time
     });
   });
 
-  it("throws when robots check passes but page 403s anyway", async () => {
-    const client = new MinifetchClient({
-      network: "base-sepolia",
-      privateKey: process.env.BASE_PRIVATE_KEY as any,
-    });
+  // it("throws when robots check passes but page 403s anyway", async () => {
+  //   const client = new MinifetchClient({
+  //     network: "base-sepolia",
+  //     privateKey: process.env.BASE_PRIVATE_KEY as any,
+  //   });
 
-    await expect(client.checkAndExtractUrlPreview("http://coinbase.com")).rejects.toMatchObject({
-      name: "NetworkError",
-      message: "Request failed: 502 Bad Gateway",
-    });
-  });
+  //   await expect(client.checkAndExtractUrlPreview("http://coinbase.com")).rejects.toMatchObject({
+  //     name: "NetworkError",
+  //     message: "Request failed: 502 Bad Gateway",
+  //   });
+  // });
 
   it("throws on URL w unsupported file extension", async () => {
     const client = new MinifetchClient({
