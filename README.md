@@ -5,7 +5,7 @@
   </a>
 </div>
 
-**Pay-per-URL SEO audits. Composable toolkit for AI agents and pipelines.** [Minifetch.com](https://minifetch.com) is an SEO toolkit of composable extraction primitives. Run them as a full technical audit or call one at a time for a fraction of the price — and a fraction of the LLM tokens. No subscription.
+**Pay-per-URL SEO audits. Composable toolkit for AI agents and automation pipelines.** [Minifetch.com](https://minifetch.com) is an SEO toolkit of composable extraction primitives. Run them as a full technical audit or call one at a time for a fraction of the price — and a fraction of the LLM tokens. No subscription.
 
 - ✅ **[Sign up](https://minifetch.com/dashboard) for an account and get free starter credits. 🎉🎉**
 - ✅ Always pay-per-fetch at competitive prices.
