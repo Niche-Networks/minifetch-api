@@ -35,4 +35,27 @@ describe.sequential("x402: runSeoPageAudit() e2e", { timeout: 30000 }, () => {
     );
   });
 
+  it("solana-devnet success", async () => {
+    const client = new MinifetchClient({
+      network: "solana-devnet",
+      privateKey: process.env.SVM_PRIVATE_KEY as any,
+    });
+    const response = await client.runSeoPageAudit("https://minifetch.com");
+
+    expect(response.success).toBe(true);
+    expect(response.results).toHaveLength(1);
+    expect(response.results[0].data.url).toContain("minifetch.com");
+    expect(response.results[0].data.compliance.robotsTxt.status).toBe("pass");
+    expect(response.results[0].data.metadata.title.value).toContain("SEO");
+    expect(response.results[0].data.content.wordCount).toBeGreaterThan(1);
+
+    expect(response.payment.success).toBe(true);
+    expect(typeof response.payment.payer).toBe("string");
+    expect(response.payment.network).toBe("solana-devnet");
+    expect(typeof response.payment.txHash).toBe("string");
+    expect(response.payment.explorerLink).toBe(
+      `https://explorer.solana.com/tx/${response.payment.txHash}?cluster=devnet`,
+    );
+  });
+
 });
