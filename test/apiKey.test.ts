@@ -237,8 +237,8 @@ describe.sequential("apiKey: checkAndExtractUrlMetadata() e2e (prod)", { timeout
     });
     expect(response.success).toBe(true);
     expect(response.results[0].data.url).toContain("minifetch.com");
-    expect(response.results[0].data.title).toContain("Minifetch.com");
-    expect(response.results[0].data["og:title"]).toContain("Minifetch.com");
+    expect(response.results[0].data.title).toContain("SEO");
+    expect(response.results[0].data["og:title"]).toContain("SEO");
     expect(response.results[0].data.responseBody).toContain("<!DOCTYPE html>");
     // verbosity = "full"
     expect(typeof response.results[0].data.headings).toBe("object");
