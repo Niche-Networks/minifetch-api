@@ -59,3 +59,55 @@ describe.sequential("x402: runSeoPageAudit() e2e", { timeout: 30000 }, () => {
   });
 
 });
+
+describe.sequential("x402: runSeoPageAudit() fails gracefully", { timeout: 30000 }, () => {
+
+  it("throws w bad private key", async () => {
+    const failClient = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: "0xDEADBEEF00000000000000000000000000000000000000000000000000FACADE" as any,
+    });
+
+    await expect(failClient.runSeoPageAudit("https://anthropic.com")).rejects.toMatchObject({
+      name: "NetworkError",
+      message: "Request failed: 402 Payment Required",
+    });
+  });
+
+  it("throws on robots.txt check = blocked URL", async () => {
+    const client = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: process.env.BASE_PRIVATE_KEY as any,
+    });
+
+    const blockedUrl = "https://www.npmjs.com/package/url-metadata/v/5.4.3";
+
+    await expect(client.runSeoPageAudit(blockedUrl)).rejects.toMatchObject({
+      name: "NetworkError",
+      message: "Request failed: 502 Bad Gateway",
+    });
+  });
+
+  it("throws on URL w unsupported file extension", async () => {
+    const client = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: process.env.BASE_PRIVATE_KEY as any,
+    });
+
+    await expect(client.runSeoPageAudit("http://foo.bar/baz.pdf")).rejects.toThrow(
+      InvalidUrlError,
+    );
+  });
+
+  it("throws on malformed url", async () => {
+    const client = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: process.env.BASE_PRIVATE_KEY as any,
+    });
+
+    await expect(client.runSeoPageAudit("http://poo")).rejects.toThrow(
+      InvalidUrlError,
+    );
+  });
+
+});
