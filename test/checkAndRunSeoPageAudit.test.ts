@@ -10,22 +10,21 @@ beforeEach(async () => {
   await new Promise(r => setTimeout(r, 1000));
 });
 
-describe.sequential("x402: extractUrlMetadata() e2e", { timeout: 30000 }, () => {
+describe.sequential("x402: checkAndRunSeoPageAudit() e2e", { timeout: 30000 }, () => {
 
-  it("base-sepolia testnet success", async () => {
+  it("base-sepolia success", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
-    const response = await client.extractUrlMetadata("https://minifetch.com");
+    const response = await client.checkAndRunSeoPageAudit("https://minifetch.com");
 
     expect(response.success).toBe(true);
+    expect(response.results).toHaveLength(1);
     expect(response.results[0].data.url).toContain("minifetch.com");
-    expect(response.results[0].data.title).toContain("SEO");
-    expect(response.results[0].data["og:title"]).toContain("SEO");
-    // verbosity = "standard" (default):
-    expect(typeof response.results[0].data.headings).toBe("undefined");
-    expect(typeof response.results[0].data.imgTags).toBe("undefined");
+    expect(response.results[0].data.compliance.robotsTxt.status).toBe("pass");
+    expect(response.results[0].data.metadata.title.value).toContain("SEO");
+    expect(response.results[0].data.content.wordCount).toBeGreaterThan(1);
 
     expect(response.payment.success).toBe(true);
     expect(response.payment.payer).toContain("0x");
@@ -36,22 +35,19 @@ describe.sequential("x402: extractUrlMetadata() e2e", { timeout: 30000 }, () => 
     );
   });
 
-  it("solana-devnet success w ?verbosity=full", async () => {
+  it("solana-devnet success", async () => {
     const client = new MinifetchClient({
       network: "solana-devnet",
       privateKey: process.env.SVM_PRIVATE_KEY as any,
     });
-    const response = await client.extractUrlMetadata("https://minifetch.com", {
-      verbosity: "full"
-    });
+    const response = await client.checkAndRunSeoPageAudit("https://minifetch.com");
 
     expect(response.success).toBe(true);
+    expect(response.results).toHaveLength(1);
     expect(response.results[0].data.url).toContain("minifetch.com");
-    expect(response.results[0].data.title).toContain("SEO");
-    expect(response.results[0].data["og:title"]).toContain("SEO");
-    // verbosity = "full":
-    expect(typeof response.results[0].data.headings).toBe("object");
-    expect(typeof response.results[0].data.imgTags).toBe("object");
+    expect(response.results[0].data.compliance.robotsTxt.status).toBe("pass");
+    expect(response.results[0].data.metadata.title.value).toContain("SEO");
+    expect(response.results[0].data.content.wordCount).toBeGreaterThan(1);
 
     expect(response.payment.success).toBe(true);
     expect(typeof response.payment.payer).toBe("string");
@@ -64,7 +60,8 @@ describe.sequential("x402: extractUrlMetadata() e2e", { timeout: 30000 }, () => 
 
 });
 
-describe.sequential("x402: extractUrlMetadata() fails gracefully", { timeout: 30000 }, () => {
+
+describe.sequential("x402: checkAndRunSeoPageAudit() fails gracefully", { timeout: 30000 }, () => {
 
   it("throws w bad private key", async () => {
     const failClient = new MinifetchClient({
@@ -72,13 +69,13 @@ describe.sequential("x402: extractUrlMetadata() fails gracefully", { timeout: 30
       privateKey: "0xDEADBEEF00000000000000000000000000000000000000000000000000FACADE" as any,
     });
 
-    await expect(failClient.extractUrlMetadata("https://anthropic.com")).rejects.toMatchObject({
+    await expect(failClient.checkAndRunSeoPageAudit("https://anthropic.com")).rejects.toMatchObject({
       name: "NetworkError",
       message: "Request failed: 402 Payment Required",
     });
   });
 
-  it("throws on robots.txt check = blocked URL", async () => {
+  it("throws when robots.txt check fails", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
@@ -86,33 +83,11 @@ describe.sequential("x402: extractUrlMetadata() fails gracefully", { timeout: 30
 
     const blockedUrl = "https://www.npmjs.com/package/url-metadata/v/5.4.3";
 
-    await expect(client.extractUrlMetadata(blockedUrl)).rejects.toMatchObject({
-      name: "NetworkError",
-      message: "Request failed: 502 Bad Gateway",
+    await expect(client.checkAndRunSeoPageAudit(blockedUrl)).rejects.toMatchObject({
+      name: "RobotsBlockedError",
+      message: expect.stringContaining("URL is blocked by robots.txt"),
+      url: blockedUrl,
     });
-  });
-
-  it("throws on DNS lookup error", async () => {
-    const client = new MinifetchClient({
-      network: "base-sepolia",
-      privateKey: process.env.BASE_PRIVATE_KEY as any,
-    });
-
-    const dnsErrUrl = "https://mydns2.errrrrr";
-
-    await expect(client.extractUrlMetadata(dnsErrUrl)).rejects.toMatchObject({
-      name: "NetworkError",
-      message: "Request failed: 502 Bad Gateway",
-    });
-  });
-
-  it("throws on malformed URL", async () => {
-    const client = new MinifetchClient({
-      network: "base-sepolia",
-      privateKey: process.env.BASE_PRIVATE_KEY as any,
-    });
-
-    await expect(client.extractUrlMetadata("vvv")).rejects.toThrow(InvalidUrlError);
   });
 
   it("throws on URL w unsupported file extension", async () => {
@@ -121,7 +96,18 @@ describe.sequential("x402: extractUrlMetadata() fails gracefully", { timeout: 30
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
 
-    await expect(client.extractUrlMetadata("http://foo.bar/baz.pdf")).rejects.toThrow(
+    await expect(client.checkAndRunSeoPageAudit("http://foo.bar/baz.pdf")).rejects.toThrow(
+      InvalidUrlError,
+    );
+  });
+
+  it("throws on malformed url", async () => {
+    const client = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: process.env.BASE_PRIVATE_KEY as any,
+    });
+
+    await expect(client.checkAndRunSeoPageAudit("http://poo")).rejects.toThrow(
       InvalidUrlError,
     );
   });

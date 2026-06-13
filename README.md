@@ -5,7 +5,7 @@
   </a>
 </div>
 
-**Pay-per-URL SEO audits. Composable toolkit for AI agents and pipelines.** [Minifetch.com](https://minifetch.com) is an SEO toolkit of composable extraction primitives. Run them as a full technical audit or call one at a time for a fraction of the price — and a fraction of the LLM tokens. No subscription.
+**Pay-per-URL SEO audits. Composable toolkit for AI agents and automation pipelines.** [Minifetch.com](https://minifetch.com) is an SEO toolkit of composable extraction primitives. Run them as a full technical audit or call one at a time for a fraction of the price — and a fraction of the LLM tokens. No subscription.
 
 - ✅ **[Sign up](https://minifetch.com/dashboard) for an account and get free starter credits. 🎉🎉**
 - ✅ Always pay-per-fetch at competitive prices.
@@ -34,7 +34,7 @@
 ```js
 import Minifetch from "minifetch-api";
 
-// First, initialize the client with your payment choice:
+// First, initialize the client with your payment choice-
 // pick option 1 or 2:
 
 // 1. API Key Payments:
@@ -53,8 +53,8 @@ const client = new Minifetch({
 // Now you're ready to call the API methods:
 try {
   const url = "example.com";
-  const response = await client.checkAndExtractUrlPreview(url);
-  // 200 "ok" responses
+  const response = await client.checkAndRunSeoPageAudit(url);
+  // 200 "ok" responses:
   console.log(response);
 } catch (err) {
   // No charge for errors or 403 blocked urls!
@@ -64,11 +64,24 @@ try {
 
 ### API Methods
 
-After the Quick Start, you have the following methods to use. The "checkAndExtract" methods help to avoid paying for blocked URLs. [Full api docs here.](https://minifetch.com/docs/api)
+After the Quick Start, you have the following methods to use.
 
-**Wrap** these in a **try/catch** just like in the Quickstart example above. **Code examples** can be also found in the [Github repository](https://github.com/Niche-Networks/minifetch-api/) /example- directories.
+**Wrap** these methods in a **try/catch** just like in the Quickstart example above. **Code examples** can be also found in the [Github repository](https://github.com/Niche-Networks/minifetch-api/) /example- directories.
+
+The "checkAndExtract" methods check the target URL's `robots.txt` file to ensure its not blocked and tell us your preferred crawl delay (defaults to 1 second between requests to your domain). So fetching 10 URLs takes at least 10 seconds to complete. This is by design, so Minifetch never hammers your server or slows it down for your real users. [Full api docs here.](https://minifetch.com/docs/api)
 
 ```js
+await client.checkAndRunSeoPageAudit(url);
+// Price: $0.01
+// Runs a full technical SEO audit on your URL. It combines data from
+// the other API endpoints and runs checks that each return a PASS/
+// WARN/ FAIL result with no black-box scoring — just deterministic,
+// composable signal you can act on or pipe into an agent.
+// Audit rules are documented in the in the audit skill file:
+// https://minifetch.com/skills/seo-page-audit/SKILL.md
+
+await client.checkAndExtractUrlMetadata(url, options);
+// Price: $0.002
 // Fetches & extracts rich structured metadata from your URL: meta tags,
 // hreflang, json-ld, images, headings, response headers, + more.
 // Setting verbosity to "full" is the drop-in replacement for the npm
@@ -76,36 +89,35 @@ After the Quick Start, you have the following methods to use. The "checkAndExtra
 // Options:
 // { verbosity: "full" } - defaults to "standard"
 // { includeResponseBody: true } - defaults to false
-// Price: $0.002
-await client.checkAndExtractUrlMetadata(url, options);
 
+await client.checkAndExtractUrlLinks(url);
+// Price: $0.002
 // Fetches & extracts all links from your URL categorized by type
 // (internal/ external/ anchor). Detects image links, `rel` attributes
 // (nofollow, sponsored, ugc, etc), `title` and `target`, plus image
 // detection. Summary stats include the most-linked-to internal pages
 // (with anchor text variants used for each) and top external domains
 // by link count.
-// Price: $0.002
-await client.checkAndExtractUrlLinks(url);
 
+await client.checkAndExtractUrlPreview(url);
+// Price: $0.001
 // For checking how your page unfurls when shared: Extracts the title,
 // meta description, and preview image (only) - the lightweight card
 // social platforms and chat apps render for a link.
-// Price: $0.001
-await client.checkAndExtractUrlPreview(url);
 
+await client.checkAndExtractUrlContent(url, options);
+// Price: $0.002
 // For site owners auditing AI readability: returns the clean markdown
 // an LLM extracts from your page after nav, ads, & scripts are stripped.
 // See what survives for AEO and AI search; respects robots.txt.
 // Options: { includeMediaUrls: true } - defaults to false.
-// Price: $0.002
-await client.checkAndExtractUrlContent(url, options);
 
 // For max control, you can also use the following methods directly.
 // Free - check robots.txt:
 await client.preflightCheck(url);
 // Paid methods:
-await client.extractUrlMetadata(url, options) // same options as above
+await client.runSeoPageAudit(url);
+await client.extractUrlMetadata(url, options); // same options as above
 await client.extractUrlLinks(url);
 await client.extractUrlPreview(url);
 await client.extractUrlContent(url, options); // same options as above
@@ -115,7 +127,7 @@ await client.extractUrlContent(url, options); // same options as above
 When you wrap the functions above in a try/catch, here are the errors you may encounter. You are never charged for URLs that are blocked or error.
 
 - **"RobotsBlockedError: URL is blocked by robots.txt"**
-  - Minifetch is explicitly blocked by the website's robots.txt, cannot be fetched. If this is your site, read our tutorial [How To Unblock Minifetch](https://minifetch.com/tutorials/unblock-minifetch)
+  - Minifetch is explicitly blocked by the website's `robots.txt`, cannot be fetched. If this is your site, read our tutorial [How To Unblock Minifetch](https://minifetch.com/tutorials/unblock-minifetch)
 - **"Network Error: 402 Payment Required"**
   - Check your wallet -- likely you ran out of USDC to pay!
 - **"Network Error: 429 Too Many Requests"**

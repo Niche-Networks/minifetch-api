@@ -58,6 +58,30 @@ export class MinifetchClient {
   }
 
   /**
+   * Run SEO page audit (paid endpoint)
+   *
+   * @param url
+   * @throws {InvalidUrlError} if URL is invalid
+   * @throws {ExtractionFailedError} various reasons, check README
+   * @throws {PaymentFailedError} if x402 payment fails
+   * @throws {NetworkError} various reasons, check README
+   */
+  async runSeoPageAudit(
+    url: string
+  ): Promise<PaidEndpointResponse> {
+    try {
+      const normalizedUrl = validateAndNormalizeUrl(url);
+
+      const params = new URLSearchParams({ url: normalizedUrl });
+      const requestUrl = `${this.baseUrl}${this._paidPath("/run/seo-page-audit")}?${params.toString()}`;
+
+      return await this._makeRequest(requestUrl, normalizedUrl, "Run SEO page audit");
+    } catch (error) {
+      return this._rethrowError(error, url, "Run SEO page audit");
+    }
+  }
+
+  /**
    * Extract URL metadata (paid endpoint)
    *
    * @param url
@@ -83,11 +107,11 @@ export class MinifetchClient {
       if (options?.verbosity) params.set("verbosity", options.verbosity);
       if (options?.includeResponseBody) params.set("includeResponseBody", "true");
 
-      const requestUrl = `${this.baseUrl}${this._extractPath("url-metadata")}?${params.toString()}`;
+      const requestUrl = `${this.baseUrl}${this._paidPath("/extract/url-metadata")}?${params.toString()}`;
 
       return await this._makeRequest(requestUrl, normalizedUrl, "Metadata extraction");
     } catch (error) {
-      return this._rethrowExtraction(error, url, "Metadata extraction");
+      return this._rethrowError(error, url, "Metadata extraction");
     }
   }
 
@@ -103,10 +127,10 @@ export class MinifetchClient {
   async extractUrlLinks(url: string): Promise<PaidEndpointResponse> {
     try {
       const normalizedUrl = validateAndNormalizeUrl(url);
-      const requestUrl = `${this.baseUrl}${this._extractPath("url-links")}?url=${encodeURIComponent(normalizedUrl)}`;
+      const requestUrl = `${this.baseUrl}${this._paidPath("/extract/url-links")}?url=${encodeURIComponent(normalizedUrl)}`;
       return await this._makeRequest(requestUrl, normalizedUrl, "Links extraction");
     } catch (error) {
-      return this._rethrowExtraction(error, url, "Links extraction");
+      return this._rethrowError(error, url, "Links extraction");
     }
   }
 
@@ -122,10 +146,10 @@ export class MinifetchClient {
   async extractUrlPreview(url: string): Promise<PaidEndpointResponse> {
     try {
       const normalizedUrl = validateAndNormalizeUrl(url);
-      const requestUrl = `${this.baseUrl}${this._extractPath("url-preview")}?url=${encodeURIComponent(normalizedUrl)}`;
+      const requestUrl = `${this.baseUrl}${this._paidPath("/extract/url-preview")}?url=${encodeURIComponent(normalizedUrl)}`;
       return await this._makeRequest(requestUrl, normalizedUrl, "Preview extraction");
     } catch (error) {
-      return this._rethrowExtraction(error, url, "Preview extraction");
+      return this._rethrowError(error, url, "Preview extraction");
     }
   }
 
@@ -150,11 +174,22 @@ export class MinifetchClient {
       const params = new URLSearchParams({ url: normalizedUrl });
       if (options?.includeMediaUrls) params.set("includeMediaUrls", "true");
 
-      const requestUrl = `${this.baseUrl}${this._extractPath("url-content")}?${params.toString()}`;
+      const requestUrl = `${this.baseUrl}${this._paidPath("/extract/url-content")}?${params.toString()}`;
       return await this._makeRequest(requestUrl, normalizedUrl, "Content extraction");
     } catch (error) {
-      return this._rethrowExtraction(error, url, "Content extraction");
+      return this._rethrowError(error, url, "Content extraction");
     }
+  }
+
+  /**
+   * Check URL then run SEO page audit in one call.
+   * Throws RobotsBlockedError if robots.txt blocks the URL.
+   *
+   * @param url
+   */
+  async checkAndRunSeoPageAudit(url: string): Promise<PaidEndpointResponse> {
+    await this._preflightOrThrow(url);
+    return this.runSeoPageAudit(url);
   }
 
   /**
@@ -217,16 +252,16 @@ export class MinifetchClient {
   // ---------------------------------------------------------------------------
 
   /**
-   * Returns the correct extract path segment based on auth mode.
-   * x402 → /api/v1/x402/extract/<endpoint>
-   * apiKey → /api/v1/extract/<endpoint>
+   * Returns the correct paid path segment based on auth mode.
+   * x402 → /api/v1/x402/<endpoint>
+   * apiKey → /api/v1/<endpoint>
    *
    * @param endpoint
    */
-  private _extractPath(endpoint: string): string {
+  private _paidPath(endpoint: string): string {
     return this.config.authMode === "x402"
-      ? `/api/v1/x402/extract/${endpoint}`
-      : `/api/v1/extract/${endpoint}`;
+      ? `/api/v1/x402${endpoint}`
+      : `/api/v1${endpoint}`;
   }
 
   /**
@@ -283,7 +318,7 @@ export class MinifetchClient {
    * @param url
    * @param label
    */
-  private _rethrowExtraction(error: unknown, url: string, label: string): never {
+  private _rethrowError(error: unknown, url: string, label: string): never {
     if (
       error instanceof InvalidUrlError ||
       error instanceof ExtractionFailedError ||
