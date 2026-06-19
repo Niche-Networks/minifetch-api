@@ -5,7 +5,7 @@
   </a>
 </div>
 
-**Pay-per-URL SEO audits. Composable toolkit for AI agents and automation pipelines.** [Minifetch.com](https://minifetch.com) is an SEO toolkit of composable extraction primitives. Run them as a full technical audit or call one at a time for a fraction of the price — and a fraction of the LLM tokens. No subscription.
+**Pay-per-fetch SEO audits. Composable toolkit for AI agents and automation pipelines.** [Minifetch](https://minifetch.com) is an SEO toolkit of extraction primitives. Run them as a full technical audit or call one at a time for a fraction of the price — and a fraction of the LLM tokens. No subscription.
 
 - ✅ **[Sign up](https://minifetch.com/dashboard) for an account and get free starter credits. 🎉🎉**
 - ✅ Always pay-per-fetch at competitive prices.
@@ -17,7 +17,7 @@
 ---
 **Payments.** Two ways to pay:
 1. Credit card + API key. Get started free - [visit our dashboard to Sign Up](https://minifetch.com/dashboard). Your account will be auto-loaded with 25 free technical SEO page audits. Top up with your credit card later.
-2. x402. USDC stablecoin micropayments on Coinbase's Base & Solana networks.
+2. USDC on Base or Solana. Just load your wallet with USDC and you're ready. No "gas token" (ETH or SOL) required.
 
 ## Prerequisites
 
@@ -66,7 +66,7 @@ try {
 
 After the Quick Start, you have the following methods to use.
 
-**Wrap** these methods in a **try/catch** just like in the Quickstart example above. **Code examples** can be also found in the [Github repository](https://github.com/Niche-Networks/minifetch-api/) /example- directories.
+**Wrap** these methods in a **try/catch** just like in the Quick Start example above. **Code examples** can be also found in the [Github repository](https://github.com/Niche-Networks/minifetch-api/) /example- directories.
 
 The "checkAndExtract" methods check the target URL's `robots.txt` file to ensure its not blocked and tell us your preferred crawl delay (defaults to 1 second between requests to your domain). So fetching 10 URLs takes at least 10 seconds to complete. This is by design, so Minifetch never hammers your server or slows it down for your real users. [Full api docs here.](https://minifetch.com/docs/api)
 
@@ -153,11 +153,12 @@ What Minifetch does NOT do *currently* but may offer in the future as an add-on:
 - Javascript execution
 
 ---
-### x402 Micropayments Best Practices
+### USDC Best Practices
+- Uses the [x402 Protocol](https://www.x402.org/). No "gas token" (ETH or SOL) required, just load your wallet with USDC on Base or Solana network.
 - LLMs & Agents should *never* have direct access to your private key. They *will* expose it!
-- Only keep a small amount of USDC in the account whose private key you use.
-- Keep that account separate from the rest of your onchain funds.
-- Pass your private key into the Minifetch API Client via an [environment variable](https://developer.vonage.com/en/blog/how-to-use-environment-variables-in-javascript-with-dotenv).
+- Only keep a small amount of USDC in the wallet whose private key you use.
+- Keep that wallet/ account separate from the rest of your onchain funds.
+- Pass your private key into the Minifetch API Client with an [environment variable](https://developer.vonage.com/en/blog/how-to-use-environment-variables-in-javascript-with-dotenv).
 
 ---
 **License**
