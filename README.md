@@ -5,7 +5,7 @@
   </a>
 </div>
 
-**[Minifetch](https://minifetch.com) is a hosted SEO toolkit of extraction primitives.** Run them as a full technical audit or call one at a time for a fraction of the price — and a fraction of the LLM tokens. No subscription.
+**[Minifetch](https://minifetch.com) is a hosted toolkit of SEO extraction primitives.** Run them as a full technical audit or call one at a time for a fraction of the price — and a fraction of the LLM tokens. No subscription.
 
 - ✅ **Always pay-per-fetch at competitive prices.**
 - ✅ [Sign up](https://minifetch.com/dashboard) for an account & get free starter credits. 🎉🎉

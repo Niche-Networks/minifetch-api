@@ -22,6 +22,16 @@ export declare class MinifetchClient {
      */
     preflightUrlCheck(url: string): Promise<PreflightCheckResponse>;
     /**
+     * Run SEO page audit (paid endpoint)
+     *
+     * @param url
+     * @throws {InvalidUrlError} if URL is invalid
+     * @throws {ExtractionFailedError} various reasons, check README
+     * @throws {PaymentFailedError} if x402 payment fails
+     * @throws {NetworkError} various reasons, check README
+     */
+    runSeoPageAudit(url: string): Promise<PaidEndpointResponse>;
+    /**
      * Extract URL metadata (paid endpoint)
      *
      * @param url
@@ -72,6 +82,13 @@ export declare class MinifetchClient {
         includeMediaUrls?: boolean;
     }): Promise<PaidEndpointResponse>;
     /**
+     * Check URL then run SEO page audit in one call.
+     * Throws RobotsBlockedError if robots.txt blocks the URL.
+     *
+     * @param url
+     */
+    checkAndRunSeoPageAudit(url: string): Promise<PaidEndpointResponse>;
+    /**
      * Check URL then extract metadata in one call.
      * Throws RobotsBlockedError if robots.txt blocks the URL.
      *
@@ -110,13 +127,13 @@ export declare class MinifetchClient {
         includeMediaUrls?: boolean;
     }): Promise<PaidEndpointResponse>;
     /**
-     * Returns the correct extract path segment based on auth mode.
-     * x402 → /api/v1/x402/extract/<endpoint>
-     * apiKey → /api/v1/extract/<endpoint>
+     * Returns the correct paid path segment based on auth mode.
+     * x402 → /api/v1/x402/<endpoint>
+     * apiKey → /api/v1/<endpoint>
      *
      * @param endpoint
      */
-    private _extractPath;
+    private _paidPath;
     /**
      * Dispatch to the correct request handler based on auth mode, then
      * normalize the response into PaidEndpointResponse.
@@ -140,5 +157,5 @@ export declare class MinifetchClient {
      * @param url
      * @param label
      */
-    private _rethrowExtraction;
+    private _rethrowError;
 }
