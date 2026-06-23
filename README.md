@@ -5,10 +5,10 @@
   </a>
 </div>
 
-**Pay-per-fetch SEO audits. Composable toolkit for AI agents and automation pipelines.** [Minifetch](https://minifetch.com) is an SEO toolkit of extraction primitives. Run them as a full technical audit or call one at a time for a fraction of the price — and a fraction of the LLM tokens. No subscription.
+**[Minifetch](https://minifetch.com) is a hosted SEO toolkit of extraction primitives.** Run them as a full technical audit or call one at a time for a fraction of the price — and a fraction of the LLM tokens. No subscription.
 
-- ✅ **[Sign up](https://minifetch.com/dashboard) for an account and get free starter credits. 🎉🎉**
-- ✅ Always pay-per-fetch at competitive prices.
+- ✅ **Always pay-per-fetch at competitive prices.**
+- ✅ [Sign up](https://minifetch.com/dashboard) for an account & get free starter credits. 🎉🎉
 - ⛔ No charge for blocked pages (403 errors).
 
 ---
