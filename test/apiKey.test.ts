@@ -29,7 +29,7 @@ describe.sequential("apiKey: preflightUrlCheck() e2e (prod)", { timeout: 30000 }
     expect(response.results[0].data.url).toBe("https://minifetch.com");
     expect(response.results[0].data.allowed).toBe(true);
     expect(response.results[0].data.message).toContain("allowed by robots.txt");
-    expect(response.results[0].data.crawlDelay).toBe(1);
+    expect(response.results[0].data.crawlDelay).toBe(0.25);
   });
 
     it("works, even w bad api key (has correct prefix tho)", async () => {
@@ -42,7 +42,7 @@ describe.sequential("apiKey: preflightUrlCheck() e2e (prod)", { timeout: 30000 }
     expect(response.results[0].data.url).toBe("https://minifetch.com");
     expect(response.results[0].data.allowed).toBe(true);
     expect(response.results[0].data.message).toContain("allowed by robots.txt");
-    expect(response.results[0].data.crawlDelay).toBe(1);
+    expect(response.results[0].data.crawlDelay).toBe(0.25);
   });
 
 });
