@@ -68,24 +68,27 @@ After the Quick Start, you have the following methods to use.
 
 **Wrap** these methods in a **try/catch** just like in the Quick Start example above. **Code examples** can be also found in the [Github repository](https://github.com/Niche-Networks/minifetch-api/) /example- directories.
 
-The "checkAndExtract" methods check the target URL's `robots.txt` file to ensure its not blocked and tell us your preferred crawl delay (defaults to 1 second between requests to your domain). So fetching 10 URLs takes at least 10 seconds to complete. This is by design, so Minifetch never hammers your server or slows it down for your real users. [Full api docs here.](https://minifetch.com/docs/api)
+The "checkAndExtract" methods check the target URL's `robots.txt` file to ensure its not blocked and tell us your preferred crawl delay (defaults to 1 second between requests to your domain). So fetching 10 URLs takes at least 10 seconds to complete by default. This is by design, so Minifetch never hammers your server or slows it down for your real users. [Full api docs here.](https://minifetch.com/docs/api)
 
 ```js
 await client.checkAndRunSeoPageAudit(url);
 // Price: $0.01
-// Runs a full technical SEO audit on your URL. It combines data from
+// Runs a full technical SEO audit on your URL. Combines data from
 // the other API endpoints and runs checks that each return a PASS/
-// WARN/ FAIL result with no black-box scoring — just deterministic,
+// WARN/ FAIL result with no black-box scoring. Just deterministic,
 // composable signal you can act on or pipe into an agent.
-// Audit rules are documented in the in the audit skill file:
+// Audit rules are documented in the skill file:
 // https://minifetch.com/skills/seo-page-audit/SKILL.md
 
 await client.checkAndExtractUrlMetadata(url, options);
 // Price: $0.002
-// Fetches & extracts rich structured metadata from your URL: meta tags,
-// hreflang, json-ld, images, headings, response headers, + more.
-// Setting verbosity to "full" is the drop-in replacement for the npm
-// `url-metadata` package.
+// Extracts rich structured metadata from your URL: favicons, title,
+// description, canonical, SEO-related meta tags, Open Graph and
+// Twitter card tags, JSON-LD and more.
+// Set verbosity option to full for more fields: redirect chain,
+// relevant response headers, performance metrics, headings, images
+// and every meta tag found on the page; verbosity "full" is the
+// drop-in replacement for the npm `url-metadata` package.
 // Options:
 // { verbosity: "full" } - defaults to "standard"
 // { includeResponseBody: true } - defaults to false

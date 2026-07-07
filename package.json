@@ -1,6 +1,6 @@
 {
   "name": "minifetch-api",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Minifetch.com API Client. Pay-per-URL SEO audits. Composable toolkit for AI agents and automation pipelines.",
   "type": "module",
   "main": "./dist/esm/index.js",
