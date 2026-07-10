@@ -5,25 +5,25 @@
   </a>
 </div>
 
-**[Minifetch](https://minifetch.com) is a hosted toolkit of SEO extraction primitives.** Run them as a full technical audit or call one at a time for a fraction of the price — and a fraction of the LLM tokens. No subscription.
+**[Minifetch](https://minifetch.com) is a hosted toolkit of extraction primitives for SEO/ GEO/ AEO.** Run them as a full technical audit or call one at a time for a fraction of the price — and a fraction of the LLM tokens. No subscription.
 
 - ✅ **Always pay-per-fetch at competitive prices.**
 - ✅ [Sign up](https://minifetch.com/dashboard) for an account & get free starter credits. 🎉🎉
 - ⛔ No charge for blocked pages (403 errors).
 
 ---
-**👉 [Dashboard](https://minifetch.com/dashboard) | [Full API docs](https://minifetch.com/docs/api) | [LLMs.txt](https://minifetch.com/llms.txt) | Questions? Join our [Discord](https://discord.gg/EM6ET8Dshm)**
+**👉 [Full API docs](https://minifetch.com/docs/api) | [LLMs.txt](https://minifetch.com/llms.txt) and [SKILL.md](https://minifetch.com/SKILL.md) for agents | Questions? Join our [Discord](https://discord.gg/EM6ET8Dshm)**
 
 ---
 **Payments.** Two ways to pay:
-1. Credit card + API key. Get started free - [visit our dashboard to Sign Up](https://minifetch.com/dashboard). Your account will be auto-loaded with 25 free technical SEO page audits. Top up with your credit card later.
-2. USDC on Base or Solana. Just load your wallet with USDC and you're ready. No "gas token" (ETH or SOL) required.
+1. Credit card + API key. Get started free - [visit our dashboard to Sign Up](https://minifetch.com/dashboard). Create a Minifetch account and it will be auto-loaded with 25 free technical SEO page audits. Top up with your credit card later.
+2. USDC on Base or Solana. Just load your wallet with USDC, you're ready. No "gas token" (ETH or SOL) required. You don't need a Minifetch account either, just load your wallet and go!
 
 ## Prerequisites
 
 - Node.js v18+ & NPM
 - A valid API key from our [dashboard](https://minifetch.com/dashboard)
-- *Or* an Ethereum or Solana private key for making USDC payments on Base or Solana networks.
+- ***Or*** an Ethereum or Solana private key for making USDC payments on Base or Solana networks.
 
 ## Install
 
@@ -68,7 +68,7 @@ After the Quick Start, you have the following methods to use.
 
 **Wrap** these methods in a **try/catch** just like in the Quick Start example above. **Code examples** can be also found in the [Github repository](https://github.com/Niche-Networks/minifetch-api/) /example- directories.
 
-The "checkAndExtract" methods check the target URL's `robots.txt` file to ensure its not blocked and tell us your preferred crawl delay (defaults to 1 second between requests to your domain). So fetching 10 URLs takes at least 10 seconds to complete by default. This is by design, so Minifetch never hammers your server or slows it down for your real users. [Full api docs here.](https://minifetch.com/docs/api)
+The `checkAndExtract` methods check the target URL's `robots.txt` file to ensure its not blocked and tell us your preferred crawl delay (defaults to 1 second between requests to your domain). So fetching 10 URLs takes at least 10 seconds to complete by default. This is by design, so Minifetch never hammers your server or slows it down for your real users. If the URL is blocked, read [How To Unblock Minifetch](https://minifetch.com/tutorials/unblock-minifetch).
 
 ```js
 await client.checkAndRunSeoPageAudit(url);
@@ -95,18 +95,18 @@ await client.checkAndExtractUrlMetadata(url, options);
 
 await client.checkAndExtractUrlLinks(url);
 // Price: $0.002
-// Fetches & extracts all links from your URL categorized by type
-// (internal/ external/ anchor). Detects image links, `rel` attributes
-// (nofollow, sponsored, ugc, etc), `title` and `target`, plus image
-// detection. Summary stats include the most-linked-to internal pages
-// (with anchor text variants used for each) and top external domains
-// by link count.
+// Extracts all links from your URL categorized by type (internal/
+// external/ anchor). Detects image links, `rel` attributes (nofollow,
+// sponsored, ugc, etc), `title` and `target`, plus image detection.
+// Summary stats include the most-linked-to internal pages (with
+// anchor text variants used for each) and top external domains by
+// link count.
 
 await client.checkAndExtractUrlPreview(url);
-// Price: $0.001
-// For checking how your page unfurls when shared: Extracts the title,
-// meta description, and preview image (only) - the lightweight card
-// social platforms and chat apps render for a link.
+// Price: $0.002
+// For checking how your web page unfurls when shared: Extracts all
+// fields for the lightweight cards that represent your page on social
+// platforms, chat apps and AI.
 
 await client.checkAndExtractUrlContent(url, options);
 // Price: $0.002
@@ -116,7 +116,7 @@ await client.checkAndExtractUrlContent(url, options);
 // Options: { includeMediaUrls: true } - defaults to false.
 
 // For max control, you can also use the following methods directly.
-// Free - check robots.txt:
+// Free: check if `minfetch` user agent can access target via robots.txt:
 await client.preflightCheck(url);
 // Paid methods:
 await client.runSeoPageAudit(url);
@@ -147,13 +147,13 @@ Minifetch only extracts publicly available metadata and content from pages acces
 
 What Minifetch does *NOT* do:
 - Ignore robots.txt directives
-- Access authenticated or logged-in content
 - Create accounts or log into user sessions
 - Perform transactional actions (checkout, bidding, purchasing, form submissions)
 - Bypass paywalls or access restricted content
 
 What Minifetch does NOT do *currently* but may offer in the future as an add-on:
 - Javascript execution
+- Access authenticated or logged-in content
 
 ---
 ### USDC Best Practices
