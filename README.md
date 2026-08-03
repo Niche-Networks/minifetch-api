@@ -12,12 +12,10 @@
 - ⛔ No charge for blocked pages (403 errors).
 
 ---
+
 **👉 [Full API docs](https://minifetch.com/docs/api) | [LLMs.txt](https://minifetch.com/llms.txt) and [SKILL.md](https://minifetch.com/SKILL.md) for agents | Questions? Join our [Discord](https://discord.gg/EM6ET8Dshm)**
 
 ---
-**Payments.** Two ways to pay:
-1. Credit card + API key. Get started free - [visit our dashboard to Sign Up](https://minifetch.com/dashboard). Create a Minifetch account and it will be auto-loaded with 25 free technical SEO page audits. Top up with your credit card later.
-2. USDC on Base or Solana. Just load your wallet with USDC, you're ready. No "gas token" (ETH or SOL) required. You don't need a Minifetch account either, just load your wallet and go!
 
 ## Prerequisites
 
@@ -25,9 +23,15 @@
 - A valid API key from our [dashboard](https://minifetch.com/dashboard)
 - ***Or*** an Ethereum or Solana private key for making USDC payments on Base or Solana networks.
 
-## Install
+**Payments.** Two ways to pay:
+1. Credit card + API key. Get started free - [visit our dashboard to Sign Up](https://minifetch.com/dashboard). Create a Minifetch account and it will be auto-loaded with 25 free technical SEO page audits. Top up with your credit card later.
+2. USDC on Base or Solana. Just load your wallet with USDC, you're ready. No "gas token" (ETH or SOL) required. You don't need a Minifetch account either, just load your wallet and go!
 
-`npm install minifetch-api --save`
+## Install
+Add to your project:
+```
+npm install minifetch-api --save`
+```
 
 ## Quick Start
 
@@ -66,7 +70,7 @@ try {
 
 After the Quick Start, you have the following methods to use.
 
-**Wrap** these methods in a **try/catch** just like in the Quick Start example above. **Code examples** can be also found in the [Github repository](https://github.com/Niche-Networks/minifetch-api/) /example- directories.
+**Wrap** these methods in a **try/catch** just like in the Quick Start example above. **Code examples** can be also found in the [Github repository /example- directories](https://github.com/Niche-Networks/minifetch-api/).
 
 The `checkAndExtract` methods check the target URL's `robots.txt` file to ensure its not blocked and tell us your preferred crawl delay (defaults to 1 second between requests to your domain). So fetching 10 URLs takes at least 10 seconds to complete by default. This is by design, so Minifetch never hammers your server or slows it down for your real users. If the URL is blocked, read [How To Unblock Minifetch](https://minifetch.com/tutorials/unblock-minifetch).
 
