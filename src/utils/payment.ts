@@ -49,7 +49,10 @@ export async function handlePayment(
     const response = await fetchWithPayment(url, { method: "GET" });
 
     if (!response.ok) {
-      throw new NetworkError(`Request failed: ${response.status} ${response.statusText}`);
+      const serverMessage = await readServerErrorMessage(response);
+      throw new NetworkError(
+        `Request failed: ${response.status} ${response.statusText}${serverMessage ? ` — ${serverMessage}` : ""}`,
+      );
     }
 
     const httpClient = new x402HTTPClient(_x402Client);
@@ -95,7 +98,10 @@ export async function handleApiKeyRequest(
   });
 
   if (!response.ok) {
-    throw new NetworkError(`Request failed: ${response.status} ${response.statusText}`);
+    const serverMessage = await readServerErrorMessage(response);
+    throw new NetworkError(
+      `Request failed: ${response.status} ${response.statusText}${serverMessage ? ` — ${serverMessage}` : ""}`,
+    );
   }
 
   return { response };
@@ -115,5 +121,23 @@ function getExplorerLink(config: InitializedConfig, txHash: string): string {
     return `${config.explorerUrl}/${txHash}`;
   } else {
     return "";
+  }
+}
+
+/**
+ * Best-effort read of the rich server error message from a non-ok response.
+ * Minifetch error bodies carry it at results[0].error.message.
+ *
+ * @param response - non-ok Response (body is consumed)
+ */
+async function readServerErrorMessage(response: Response): Promise<string | undefined> {
+  try {
+    const body = (await response.json()) as {
+      results?: Array<{ error?: { message?: string } }>;
+    };
+    // TODO: revisit this approach when we scale up to multiple results per request
+    return body?.results?.[0]?.error?.message;
+  } catch {
+    return undefined;
   }
 }
