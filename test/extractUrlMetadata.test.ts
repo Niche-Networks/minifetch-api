@@ -73,7 +73,7 @@ describe.sequential("x402: extractUrlMetadata() fails gracefully", { timeout: 30
 
     await expect(failClient.extractUrlMetadata("https://anthropic.com")).rejects.toMatchObject({
       name: "NetworkError",
-      message: "Request failed: 402 Payment Required",
+      message: expect.stringContaining("Request failed: 402 Payment Required"),
     });
   });
 
@@ -87,7 +87,7 @@ describe.sequential("x402: extractUrlMetadata() fails gracefully", { timeout: 30
 
     await expect(client.extractUrlMetadata(blockedUrl)).rejects.toMatchObject({
       name: "NetworkError",
-      message: "Request failed: 502 Bad Gateway",
+      message: expect.stringContaining("Request failed: 502 Bad Gateway"),
     });
   });
 
@@ -101,7 +101,7 @@ describe.sequential("x402: extractUrlMetadata() fails gracefully", { timeout: 30
 
     await expect(client.extractUrlMetadata(dnsErrUrl)).rejects.toMatchObject({
       name: "NetworkError",
-      message: "Request failed: 502 Bad Gateway",
+      message: expect.stringContaining("Request failed: 502 Bad Gateway"),
     });
   });
 

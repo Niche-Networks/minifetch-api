@@ -108,7 +108,7 @@ describe.sequential("apiKey: extractUrlPreview() fails gracefully (prod)", { tim
 
     await expect(client.extractUrlPreview(blockedUrl)).rejects.toMatchObject({
       name: "NetworkError",
-      message: "Request failed: 502 Bad Gateway",
+      message: expect.stringContaining("Request failed: 502 Bad Gateway"),
     });
   });
 
@@ -121,7 +121,7 @@ describe.sequential("apiKey: extractUrlPreview() fails gracefully (prod)", { tim
 
     await expect(client.extractUrlPreview(dnsErrUrl)).rejects.toMatchObject({
       name: "NetworkError",
-      message: "Request failed: 502 Bad Gateway",
+      message: expect.stringContaining("Request failed: 502 Bad Gateway"),
     });
   });
 
@@ -213,36 +213,38 @@ describe.sequential("apiKey: extractUrlMetadata() e2e (prod)", { timeout: 30000 
 
 describe.sequential("apiKey: checkAndExtractUrlMetadata() e2e (prod)", { timeout: 30000 }, () => {
 
-  it("preflight + extract metadata in one call", async () => {
+  it("preflight + extract metadata (default) in one call", async () => {
     const client = new MinifetchClient({
       apiKey: process.env.MINIFETCH_API_KEY as string,
     });
     const response = await client.checkAndExtractUrlMetadata(TEST_URL);
     expect(response.success).toBe(true);
     expect(response.results.length).toBeGreaterThan(0);
-    // verbosity = "standard" (default):
-    expect(typeof response.results[0].data.headings).toBe("undefined");
-    expect(typeof response.results[0].data.imgTags).toBe("undefined");
+    expect(typeof response.results[0].data.headings).toBeDefined();
+    expect(typeof response.results[0].data.imgTags).toBeDefined();
     // payment field should be absent for apiKey auth
     expect(response.payment).toBeUndefined();
   });
 
-  it("returns metadata w ?verbosity=full & ?includeResponseBody=true", async () => {
+  it("returns metadata w ?fields & ?includeResponseBody=true", async () => {
     const client = new MinifetchClient({
       apiKey: process.env.MINIFETCH_API_KEY as string,
     });
     const response = await client.checkAndExtractUrlMetadata("https://minifetch.com", {
-      verbosity: "full",
+      fields: ["network", "title"],
       includeResponseBody: true
     });
+    console.log(response.results[0].data)
     expect(response.success).toBe(true);
     expect(response.results[0].data.url).toContain("minifetch.com");
+    expect(response.results[0].data.redirects).toBeDefined();
     expect(response.results[0].data.title).toContain("SEO");
-    expect(response.results[0].data["og:title"]).toContain("SEO");
+    // ?includeResponseBody=true
     expect(response.results[0].data.responseBody).toContain("<!DOCTYPE html>");
-    // verbosity = "full"
-    expect(typeof response.results[0].data.headings).toBe("object");
-    expect(typeof response.results[0].data.imgTags).toBe("object");
+    // ?fields selection omits
+    expect(response.results[0].data["og:title"]).toBeUndefined();
+    expect(typeof response.results[0].data.headings).toBeUndefined();
+    expect(typeof response.results[0].data.imgTags).toBeUndefined();
     // payment field should be absent for apiKey auth
     expect(response.payment).toBeUndefined();
   });

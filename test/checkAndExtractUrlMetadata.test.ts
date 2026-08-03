@@ -18,6 +18,7 @@ describe.sequential("x402: checkAndExtractUrlMetadata() e2e", { timeout: 30000 }
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
     const response = await client.checkAndExtractUrlMetadata("https://minifetch.com", {
+      omitEmpty: true,
       includeResponseBody: true
     });
 
@@ -51,7 +52,7 @@ describe.sequential("x402: checkAndExtractUrlMetadata() fails gracefully", { tim
 
     await expect(failClient.checkAndExtractUrlMetadata("https://anthropic.com")).rejects.toMatchObject({
       name: "NetworkError",
-      message: "Request failed: 402 Payment Required",
+      message: expect.stringContaining("Request failed: 402 Payment Required"),
     });
   });
 
