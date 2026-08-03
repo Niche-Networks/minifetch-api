@@ -86,7 +86,8 @@ export class MinifetchClient {
    *
    * @param url
    * @param options
-   * @param options.verbosity - "standard" (default) or "full"
+   * @param options.fields
+   * @param options.omitEmpty
    * @param options.includeResponseBody
    * @throws {InvalidUrlError} if URL is invalid
    * @throws {ExtractionFailedError} various reasons, check README
@@ -96,7 +97,8 @@ export class MinifetchClient {
   async extractUrlMetadata(
     url: string,
     options?: {
-      verbosity?: "standard" | "full";
+      fields?: string[];
+      omitEmpty?: boolean;
       includeResponseBody?: boolean;
     },
   ): Promise<PaidEndpointResponse> {
@@ -104,7 +106,8 @@ export class MinifetchClient {
       const normalizedUrl = validateAndNormalizeUrl(url);
 
       const params = new URLSearchParams({ url: normalizedUrl });
-      if (options?.verbosity) params.set("verbosity", options.verbosity);
+      if (options?.fields?.length) params.set("fields", options.fields.join(","));
+      if (options?.omitEmpty) params.set("omitEmpty", "true");
       if (options?.includeResponseBody) params.set("includeResponseBody", "true");
 
       const requestUrl = `${this.baseUrl}${this._paidPath("/extract/url-metadata")}?${params.toString()}`;
@@ -198,12 +201,13 @@ export class MinifetchClient {
    *
    * @param url
    * @param options
-   * @param options.verbosity - "standard" (default) or "full"
+   * @param options.fields
+   * @param options.omitEmpty
    * @param options.includeResponseBody
    */
   async checkAndExtractUrlMetadata(
     url: string,
-    options?: { verbosity?: "standard" | "full"; includeResponseBody?: boolean },
+    options?: { fields?: string[]; omitEmpty?: boolean; includeResponseBody?: boolean; },
   ): Promise<PaidEndpointResponse> {
     await this._preflightOrThrow(url);
     return this.extractUrlMetadata(url, options);

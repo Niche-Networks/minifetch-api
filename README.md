@@ -5,7 +5,7 @@
   </a>
 </div>
 
-**[Minifetch](https://minifetch.com) is a hosted toolkit of extraction primitives for SEO/ GEO/ AEO.** Run them as a full technical audit or call one at a time for a fraction of the price — and a fraction of the LLM tokens. No subscription.
+**[Minifetch](https://minifetch.com) is a hosted toolkit of web page extraction primitives.** Run them as a full technical SEO audit or call one at a time for a fraction of the price — and a fraction of the LLM tokens. No subscription.
 
 - ✅ **Always pay-per-fetch at competitive prices.**
 - ✅ [Sign up](https://minifetch.com/dashboard) for an account & get free starter credits. 🎉🎉
@@ -82,15 +82,15 @@ await client.checkAndRunSeoPageAudit(url);
 
 await client.checkAndExtractUrlMetadata(url, options);
 // Price: $0.002
-// Extracts rich structured metadata from your URL: favicons, title,
-// description, canonical, SEO-related meta tags, Open Graph and
-// Twitter card tags, JSON-LD and more.
-// Set verbosity option to full for more fields: redirect chain,
-// relevant response headers, performance metrics, headings, images
-// and every meta tag found on the page; verbosity "full" is the
-// drop-in replacement for the npm `url-metadata` package.
+// Extracts rich structured metadata from your URL: redirects, favicons,
+// title, description, canonical, SEO-related meta tags, Open Graph and
+// Twitter card tags, JSON-LD and more. Returns everything by default;
+// narrow the response with the `fields` query param (pass atomic field
+// names, ex: ?fields=title,description or the named groups: network,meta,
+// og,twitter and/or meta:<name> for a specific page meta tag)
 // Options:
-// { verbosity: "full" } - defaults to "standard"
+// { fields: ['canonical', 'og:url'] } - narrows to custom selected fields
+// { omitEmpty: true } - defaults to false
 // { includeResponseBody: true } - defaults to false
 
 await client.checkAndExtractUrlLinks(url);
@@ -125,10 +125,14 @@ await client.extractUrlLinks(url);
 await client.extractUrlPreview(url);
 await client.extractUrlContent(url, options); // same options as above
 ```
----
-### Error Types
-When you wrap the functions above in a try/catch, here are the errors you may encounter. You are never charged for URLs that are blocked or error.
 
+---
+
+### Error Types
+When you wrap the functions above in a try/catch, here are some of the errors you may encounter. You are never charged for URLs that are blocked or error.
+
+- **"InvalidURLError: Invalid url ${url}"**
+  - The URL is malformed in some way, correct it and try again.
 - **"RobotsBlockedError: URL is blocked by robots.txt"**
   - Minifetch is explicitly blocked by the website's `robots.txt`, cannot be fetched. If this is your site, read our tutorial [How To Unblock Minifetch](https://minifetch.com/tutorials/unblock-minifetch)
 - **"Network Error: 402 Payment Required"**
@@ -139,9 +143,9 @@ When you wrap the functions above in a try/catch, here are the errors you may en
   - URLs that pass their robots.txt check but are blocked anyway via 403 or other tactics may error like this. No charge.
 - **"503 Service Temporarily Unavailable"**
   - Likely encountering upstream timeout errors on the target URL.
-- **"InvalidURLError: Invalid url ${url}"**
-  - The URL is malformed in some way, correct it and try again.
+
 ---
+
 ### Service Limitations
 Minifetch only extracts publicly available metadata and content from pages accessible without authentication and javascript execution.
 
@@ -156,6 +160,7 @@ What Minifetch does NOT do *currently* but may offer in the future as an add-on:
 - Access authenticated or logged-in content
 
 ---
+
 ### USDC Best Practices
 - Uses the [x402 Protocol](https://www.x402.org/). No "gas token" (ETH or SOL) required, just load your wallet with USDC on Base or Solana network.
 - LLMs & Agents should *never* have direct access to your private key. They *will* expose it!
@@ -164,6 +169,7 @@ What Minifetch does NOT do *currently* but may offer in the future as an add-on:
 - Pass your private key into the Minifetch API Client with an [environment variable](https://developer.vonage.com/en/blog/how-to-use-environment-variables-in-javascript-with-dotenv).
 
 ---
+
 **License**
 
 MIT / Copyright (c) 2026 Lauren Garcia

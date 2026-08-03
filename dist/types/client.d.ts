@@ -36,7 +36,8 @@ export declare class MinifetchClient {
      *
      * @param url
      * @param options
-     * @param options.verbosity - "standard" (default) or "full"
+     * @param options.fields
+     * @param options.omitEmpty
      * @param options.includeResponseBody
      * @throws {InvalidUrlError} if URL is invalid
      * @throws {ExtractionFailedError} various reasons, check README
@@ -44,7 +45,8 @@ export declare class MinifetchClient {
      * @throws {NetworkError} various reasons, check README
      */
     extractUrlMetadata(url: string, options?: {
-        verbosity?: "standard" | "full";
+        fields?: string[];
+        omitEmpty?: boolean;
         includeResponseBody?: boolean;
     }): Promise<PaidEndpointResponse>;
     /**
@@ -94,11 +96,13 @@ export declare class MinifetchClient {
      *
      * @param url
      * @param options
-     * @param options.verbosity - "standard" (default) or "full"
+     * @param options.fields
+     * @param options.omitEmpty
      * @param options.includeResponseBody
      */
     checkAndExtractUrlMetadata(url: string, options?: {
-        verbosity?: "standard" | "full";
+        fields?: string[];
+        omitEmpty?: boolean;
         includeResponseBody?: boolean;
     }): Promise<PaidEndpointResponse>;
     /**

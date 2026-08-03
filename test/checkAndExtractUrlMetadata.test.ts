@@ -12,7 +12,7 @@ beforeEach(async () => {
 
 describe.sequential("x402: checkAndExtractUrlMetadata() e2e", { timeout: 30000 }, () => {
 
-  it("base-sepolia success w ?verbosity=standard & ?includeResponseBody=true", async () => {
+  it("base-sepolia success w ?omitEmpty=true & ?includeResponseBody=true", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
@@ -25,9 +25,9 @@ describe.sequential("x402: checkAndExtractUrlMetadata() e2e", { timeout: 30000 }
     expect(response.results[0].data.url).toContain("minifetch.com");
     expect(response.results[0].data.title).toContain("SEO");
     expect(response.results[0].data["og:title"]).toContain("SEO");
+    // ?includeResponseBody=true
     expect(response.results[0].data.responseBody).toContain("<!DOCTYPE html>");
-    // verbosity = "standard" (default):
-    expect(typeof response.results[0].data.headings).toBe("undefined");
+    // ?omitEmpty=true
     expect(typeof response.results[0].data.imgTags).toBe("undefined");
 
     expect(response.payment.success).toBe(true);
@@ -79,6 +79,20 @@ describe.sequential("x402: checkAndExtractUrlMetadata() fails gracefully", { tim
     await expect(client.checkAndExtractUrlMetadata("http://foo.bar/baz.pdf")).rejects.toThrow(
       InvalidUrlError,
     );
+  });
+
+  it("throws on unknown fields", async () => {
+    const client = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: process.env.BASE_PRIVATE_KEY as any,
+    });
+
+    await expect(client.checkAndExtractUrlMetadata("https://minifetch.com", {
+      fields: ['network', 'invalid'] // one good key, one bad one produces 400 error
+    })).rejects.toMatchObject({
+      name: "NetworkError",
+      message: expect.stringContaining("400 Bad Request"),
+    });
   });
 
 });
