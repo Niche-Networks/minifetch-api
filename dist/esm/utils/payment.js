@@ -42,7 +42,8 @@ export async function handlePayment(url, config) {
         const fetchWithPayment = wrapFetchWithPayment(fetch, _x402Client);
         const response = await fetchWithPayment(url, { method: "GET" });
         if (!response.ok) {
-            throw new NetworkError(`Request failed: ${response.status} ${response.statusText}`);
+            const serverMessage = await readServerErrorMessage(response);
+            throw new NetworkError(`Request failed: ${response.status} ${response.statusText}${serverMessage ? ` — ${serverMessage}` : ""}`);
         }
         const httpClient = new x402HTTPClient(_x402Client);
         const paymentResponse = httpClient.getPaymentSettleResponse(name => response.headers.get(name));
@@ -79,7 +80,8 @@ export async function handleApiKeyRequest(url, config) {
         },
     });
     if (!response.ok) {
-        throw new NetworkError(`Request failed: ${response.status} ${response.statusText}`);
+        const serverMessage = await readServerErrorMessage(response);
+        throw new NetworkError(`Request failed: ${response.status} ${response.statusText}${serverMessage ? ` — ${serverMessage}` : ""}`);
     }
     return { response };
 }
@@ -99,5 +101,21 @@ function getExplorerLink(config, txHash) {
     }
     else {
         return "";
+    }
+}
+/**
+ * Best-effort read of the rich server error message from a non-ok response.
+ * Minifetch error bodies carry it at results[0].error.message.
+ *
+ * @param response - non-ok Response (body is consumed)
+ */
+async function readServerErrorMessage(response) {
+    try {
+        const body = (await response.json());
+        // TODO: revisit this approach when we scale up to multiple results per request
+        return body?.results?.[0]?.error?.message;
+    }
+    catch {
+        return undefined;
     }
 }
