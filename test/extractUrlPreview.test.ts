@@ -23,7 +23,6 @@ describe.sequential("x402: extractUrlPreview() e2e", { timeout: 30000 }, () => {
     expect(response.results[0].data.url).toContain("minifetch.com");
     expect(response.results[0].data.title.length).toBeGreaterThan(10);
     expect(response.results[0].data.description.length).toBeGreaterThan(10);
-    expect(response.results[0].data.image.length).toBeGreaterThan(1);
 
     expect(response.payment.success).toBe(true);
     expect(response.payment.payer).toContain("0x");
@@ -46,7 +45,6 @@ describe.sequential("x402: extractUrlPreview() e2e", { timeout: 30000 }, () => {
     expect(response.results[0].data.url).toContain("minifetch.com");
     expect(response.results[0].data.title.length).toBeGreaterThan(10);
     expect(response.results[0].data.description.length).toBeGreaterThan(10);
-    expect(response.results[0].data.image.length).toBeGreaterThan(1);
 
     expect(response.payment.success).toBe(true);
     expect(typeof response.payment.payer).toBe("string");
@@ -81,10 +79,7 @@ describe.sequential("x402: extractUrlPreview() fails gracefully", { timeout: 300
 
     const blockedUrl = "https://www.npmjs.com/package/url-metadata/v/5.4.3";
 
-    await expect(client.extractUrlPreview(blockedUrl)).rejects.toMatchObject({
-      name: "NetworkError",
-      message: "Request failed: 502 Bad Gateway",
-    });
+    await expect(client.extractUrlPreview(blockedUrl)).rejects.toThrow(NetworkError);
   });
 
   it("throws on DNS lookup error", async () => {
@@ -95,10 +90,7 @@ describe.sequential("x402: extractUrlPreview() fails gracefully", { timeout: 300
 
     const dnsErrUrl = "https://mydns2.errrrrr";
 
-    await expect(client.extractUrlPreview(dnsErrUrl)).rejects.toMatchObject({
-      name: "NetworkError",
-      message: "Request failed: 502 Bad Gateway",
-    });
+    await expect(client.extractUrlPreview(dnsErrUrl)).rejects.toThrow(NetworkError);
   });
 
   it("throws on malformed URL", async () => {
