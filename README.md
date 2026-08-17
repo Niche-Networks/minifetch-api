@@ -72,7 +72,7 @@ After the Quick Start, you have the following methods to use.
 
 **Wrap** these methods in a **try/catch** just like in the Quick Start example above. **Code examples** can be also found in the [Github repository /example- directories](https://github.com/Niche-Networks/minifetch-api/).
 
-The `checkAndExtract` methods check the target URL's `robots.txt` file to ensure its not blocked and tell us your preferred crawl delay (defaults to 1 second between requests to your domain). So fetching 10 URLs takes at least 10 seconds to complete by default. This is by design, so Minifetch never hammers your server or slows it down for your real users. If the URL is blocked, read [How To Unblock Minifetch](https://minifetch.com/tutorials/unblock-minifetch).
+The `checkAndExtract` methods check the target URL's `robots.txt` file to ensure its not blocked and tell us your preferred crawl delay (defaults to 1 second between requests to your domain). So fetching 10 URLs takes at least 10 seconds to complete by default. This is by design, so Minifetch never hammers your server or slows it down for your real users. If you own the site and want to allow Minifetch access or to set custom rules for it, read [How To Unblock Minifetch](https://minifetch.com/tutorials/unblock-minifetch).
 
 ```js
 await client.checkAndRunSeoPageAudit(url);
@@ -108,9 +108,8 @@ await client.checkAndExtractUrlLinks(url);
 
 await client.checkAndExtractUrlPreview(url);
 // Price: $0.002
-// For checking how your web page unfurls when shared: Extracts all
-// fields for the lightweight cards that represent your page on social
-// platforms, chat apps and AI.
+// Extracts all fields used for a page's share previews: the lightweight
+// cards that represent the page on social platforms, chat apps, and AI.
 
 await client.checkAndExtractUrlContent(url, options);
 // Price: $0.002
@@ -118,10 +117,14 @@ await client.checkAndExtractUrlContent(url, options);
 // an LLM extracts from your page after nav, ads, & scripts are stripped.
 // See what survives for AEO and AI search; respects robots.txt.
 // Options: { includeMediaUrls: true } - defaults to false.
+```
 
-// For max control, you can also use the following methods directly.
-// Free: check if `minfetch` user agent can access target via robots.txt:
-await client.preflightCheck(url);
+For max control, you can also use the following methods directly:
+```js
+await client.preflightCheck(url, options);
+// Free: check if `minfetch` user agent can access target via robots.txt
+// Options: { "fresh": true } - bypass 24hr robots.txt cache, defaults to false
+
 // Paid methods:
 await client.runSeoPageAudit(url);
 await client.extractUrlMetadata(url, options); // same options as above
@@ -129,7 +132,6 @@ await client.extractUrlLinks(url);
 await client.extractUrlPreview(url);
 await client.extractUrlContent(url, options); // same options as above
 ```
-
 ---
 
 ### Error Types
