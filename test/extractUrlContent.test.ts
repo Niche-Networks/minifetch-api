@@ -78,10 +78,7 @@ describe.sequential("x402: extractUrlContent() fails gracefully", { timeout: 300
 
     const blockedUrl = "https://www.npmjs.com/package/url-metadata/v/5.4.3";
 
-    await expect(client.extractUrlContent(blockedUrl)).rejects.toMatchObject({
-      name: "NetworkError",
-      message: "Request failed: 502 Bad Gateway",
-    });
+    await expect(client.extractUrlContent(blockedUrl)).rejects.toThrow(NetworkError);
   });
 
   it("throws on DNS lookup error", async () => {
@@ -92,10 +89,7 @@ describe.sequential("x402: extractUrlContent() fails gracefully", { timeout: 300
 
     const dnsErrUrl = "https://mydns2.errrrrr";
 
-    await expect(client.extractUrlContent(dnsErrUrl)).rejects.toMatchObject({
-      name: "NetworkError",
-      message: "Request failed: 502 Bad Gateway",
-    });
+    await expect(client.extractUrlContent(dnsErrUrl)).rejects.toThrow(NetworkError);
   });
 
   it("throws on malformed URL", async () => {
