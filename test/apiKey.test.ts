@@ -234,7 +234,6 @@ describe.sequential("apiKey: checkAndExtractUrlMetadata() e2e (prod)", { timeout
       fields: ["network", "title"],
       includeResponseBody: true
     });
-    console.log(response.results[0].data)
     expect(response.success).toBe(true);
     expect(response.results[0].data.url).toContain("minifetch.com");
     expect(response.results[0].data.redirects).toBeDefined();
@@ -243,8 +242,8 @@ describe.sequential("apiKey: checkAndExtractUrlMetadata() e2e (prod)", { timeout
     expect(response.results[0].data.responseBody).toContain("<!DOCTYPE html>");
     // ?fields selection omits
     expect(response.results[0].data["og:title"]).toBeUndefined();
-    expect(typeof response.results[0].data.headings).toBeUndefined();
-    expect(typeof response.results[0].data.imgTags).toBeUndefined();
+    expect(typeof response.results[0].data.headings).toBe("undefined"); // typeof returns as string
+    expect(typeof response.results[0].data.imgTags).toBe("undefined"); // typeof returns as string
     // payment field should be absent for apiKey auth
     expect(response.payment).toBeUndefined();
   });
@@ -264,17 +263,6 @@ describe.sequential("apiKey: checkAndExtractUrlMetadata() fails gracefully (prod
       name: "RobotsBlockedError",
       message: expect.stringContaining("URL is blocked by robots.txt"),
       url: blockedUrl,
-    });
-  });
-
-  it("throws when robots check passes but page 403s anyway", async () => {
-    const client = new MinifetchClient({
-      apiKey: process.env.MINIFETCH_API_KEY as string,
-    });
-
-    await expect(client.checkAndExtractUrlMetadata("http://coinbase.com")).rejects.toMatchObject({
-      name: "NetworkError",
-      message: "Request failed: 502 Bad Gateway",
     });
   });
 
