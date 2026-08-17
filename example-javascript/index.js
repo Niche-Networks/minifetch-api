@@ -12,7 +12,6 @@ const URL_TO_FETCH1 = "https://en.wikipedia.org/wiki/API_key";
 const URL_TO_FETCH2 = "https://x402.org";
 
 async function main() {
-
   console.log("🔧 1. Initializing MinifetchClient with API key...\n");
   const client1 = new Minifetch({
     apiKey: process.env.MINIFETCH_API_KEY,
@@ -63,7 +62,6 @@ async function main() {
     console.error("❌ Error:", err);
     process.exit(1);
   }
-
 }
 
 main();

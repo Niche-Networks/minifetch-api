@@ -17,10 +17,14 @@ export declare class MinifetchClient {
      * Check if URL is allowed by robots.txt (free preflight check — no auth required)
      *
      * @param url
+     * @param options
+     * @param options.fresh
      * @throws {InvalidUrlError} if URL is invalid
      * @throws {NetworkError} if request fails
      */
-    preflightUrlCheck(url: string): Promise<PreflightCheckResponse>;
+    preflightUrlCheck(url: string, options?: {
+        fresh?: boolean;
+    }): Promise<PreflightCheckResponse>;
     /**
      * Run SEO page audit (paid endpoint)
      *

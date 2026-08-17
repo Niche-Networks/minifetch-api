@@ -11,7 +11,6 @@ beforeEach(async () => {
 });
 
 describe.sequential("x402: checkAndExtractUrlLinks() e2e", { timeout: 30000 }, () => {
-
   it("base-sepolia success", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
@@ -34,21 +33,21 @@ describe.sequential("x402: checkAndExtractUrlLinks() e2e", { timeout: 30000 }, (
       `https://sepolia.basescan.org/tx/${response.payment.txHash}`,
     );
   });
-
 });
 
 describe.sequential("x402: checkAndExtractUrlLinks() fails gracefully", { timeout: 30000 }, () => {
-
   it("throws w bad private key", async () => {
     const failClient = new MinifetchClient({
       network: "base-sepolia",
       privateKey: "0xDEADBEEF00000000000000000000000000000000000000000000000000FACADE" as any,
     });
 
-    await expect(failClient.checkAndExtractUrlLinks("https://anthropic.com")).rejects.toMatchObject({
-      name: "NetworkError",
-      message: "Request failed: 402 Payment Required",
-    });
+    await expect(failClient.checkAndExtractUrlLinks("https://anthropic.com")).rejects.toMatchObject(
+      {
+        name: "NetworkError",
+        message: "Request failed: 402 Payment Required",
+      },
+    );
   });
 
   it("throws when robots.txt check fails", async () => {
@@ -76,5 +75,4 @@ describe.sequential("x402: checkAndExtractUrlLinks() fails gracefully", { timeou
       InvalidUrlError,
     );
   });
-
 });

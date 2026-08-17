@@ -11,7 +11,6 @@ beforeEach(async () => {
 });
 
 describe.sequential("x402: extractUrlContent() e2e", { timeout: 30000 }, () => {
-
   it("base-sepolia testnet success", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
@@ -53,11 +52,9 @@ describe.sequential("x402: extractUrlContent() e2e", { timeout: 30000 }, () => {
       `https://explorer.solana.com/tx/${response.payment.txHash}?cluster=devnet`,
     );
   });
-
 });
 
 describe.sequential("x402: extractUrlContent() fails gracefully", { timeout: 30000 }, () => {
-
   it("throws w bad private key", async () => {
     const failClient = new MinifetchClient({
       network: "base-sepolia",

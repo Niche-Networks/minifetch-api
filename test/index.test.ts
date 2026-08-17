@@ -8,7 +8,6 @@ import { ConfigurationError } from "../src/types/errors.js";
 config({ path: ".env-dev" });
 
 describe.sequential("package exports from index.js", { timeout: 30000 }, () => {
-
   it("default export -> x402 initialized MinifetchClient", () => {
     const client1 = new Minifetch({
       network: "base-sepolia",
@@ -30,5 +29,4 @@ describe.sequential("package exports from index.js", { timeout: 30000 }, () => {
     const client3 = new Minifetch({ apiKey: "mf_prod_abc123def456abc123def456abc123de" });
     expect(client3).toBeInstanceOf(MinifetchClient);
   });
-
 });

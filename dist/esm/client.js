@@ -22,13 +22,18 @@ export class MinifetchClient {
      * Check if URL is allowed by robots.txt (free preflight check — no auth required)
      *
      * @param url
+     * @param options
+     * @param options.fresh
      * @throws {InvalidUrlError} if URL is invalid
      * @throws {NetworkError} if request fails
      */
-    async preflightUrlCheck(url) {
+    async preflightUrlCheck(url, options) {
         try {
             const normalizedUrl = validateAndNormalizeUrl(url);
-            const requestUrl = `${this.baseUrl}/api/v1/free/preflight/url-check?url=${encodeURIComponent(normalizedUrl)}`;
+            const params = new URLSearchParams({ url: normalizedUrl });
+            if (options?.fresh)
+                params.set("fresh", "true");
+            const requestUrl = `${this.baseUrl}/api/v1/free/preflight/url-check?${params.toString()}`;
             const response = await fetch(requestUrl);
             if (!response.ok) {
                 throw new NetworkError(`Preflight check failed: ${response.status} ${response.statusText}`);

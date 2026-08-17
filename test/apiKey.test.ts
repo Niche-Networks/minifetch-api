@@ -19,7 +19,6 @@ beforeEach(async () => {
 });
 
 describe.sequential("apiKey: preflightUrlCheck() e2e (prod)", { timeout: 30000 }, () => {
-
   it("preflight success w allowed URL", async () => {
     const client = new MinifetchClient({
       apiKey: process.env.MINIFETCH_API_KEY as string,
@@ -32,9 +31,9 @@ describe.sequential("apiKey: preflightUrlCheck() e2e (prod)", { timeout: 30000 }
     expect(response.results[0].data.crawlDelay).toBe(0.25);
   });
 
-    it("works, even w bad api key (has correct prefix tho)", async () => {
+  it("works, even w bad api key (has correct prefix tho)", async () => {
     const client = new MinifetchClient({
-      apiKey: 'mf_prod_badkeynowork'
+      apiKey: "mf_prod_badkeynowork",
     });
 
     const response = await client.preflightUrlCheck("https://minifetch.com");
@@ -44,11 +43,9 @@ describe.sequential("apiKey: preflightUrlCheck() e2e (prod)", { timeout: 30000 }
     expect(response.results[0].data.message).toContain("allowed by robots.txt");
     expect(response.results[0].data.crawlDelay).toBe(0.25);
   });
-
 });
 
 describe.sequential("apiKey: preflightUrlCheck() fails gracefully", { timeout: 30000 }, () => {
-
   it("handles DNS lookup error", async () => {
     const client = new MinifetchClient({
       apiKey: process.env.MINIFETCH_API_KEY as string,
@@ -80,11 +77,9 @@ describe.sequential("apiKey: preflightUrlCheck() fails gracefully", { timeout: 3
       InvalidUrlError,
     );
   });
-
 });
 
 describe.sequential("apiKey: extractUrlPreview() e2e (prod)", { timeout: 30000 }, () => {
-
   it("returns preview for allowed URL", async () => {
     const client = new MinifetchClient({
       apiKey: process.env.MINIFETCH_API_KEY as string,
@@ -94,60 +89,60 @@ describe.sequential("apiKey: extractUrlPreview() e2e (prod)", { timeout: 30000 }
     expect(response.results.length).toBeGreaterThan(0);
     expect(response.payment).toBeUndefined();
   });
-
 });
 
-describe.sequential("apiKey: extractUrlPreview() fails gracefully (prod)", { timeout: 30000 }, () => {
+describe.sequential(
+  "apiKey: extractUrlPreview() fails gracefully (prod)",
+  { timeout: 30000 },
+  () => {
+    it("throws on robots.txt check = blocked URL", async () => {
+      const client = new MinifetchClient({
+        apiKey: process.env.MINIFETCH_API_KEY as string,
+      });
 
-  it("throws on robots.txt check = blocked URL", async () => {
-    const client = new MinifetchClient({
-      apiKey: process.env.MINIFETCH_API_KEY as string,
+      const blockedUrl = "https://www.npmjs.com/package/url-metadata/v/5.4.3";
+
+      await expect(client.extractUrlPreview(blockedUrl)).rejects.toMatchObject({
+        name: "NetworkError",
+        message: expect.stringContaining("Request failed: 502 Bad Gateway"),
+      });
     });
 
-    const blockedUrl = "https://www.npmjs.com/package/url-metadata/v/5.4.3";
+    it("throws on DNS lookup error", async () => {
+      const client = new MinifetchClient({
+        apiKey: process.env.MINIFETCH_API_KEY as string,
+      });
 
-    await expect(client.extractUrlPreview(blockedUrl)).rejects.toMatchObject({
-      name: "NetworkError",
-      message: expect.stringContaining("Request failed: 502 Bad Gateway"),
-    });
-  });
+      const dnsErrUrl = "https://mydns2.errrrrr";
 
-  it("throws on DNS lookup error", async () => {
-    const client = new MinifetchClient({
-      apiKey: process.env.MINIFETCH_API_KEY as string,
-    });
-
-    const dnsErrUrl = "https://mydns2.errrrrr";
-
-    await expect(client.extractUrlPreview(dnsErrUrl)).rejects.toMatchObject({
-      name: "NetworkError",
-      message: expect.stringContaining("Request failed: 502 Bad Gateway"),
-    });
-  });
-
-  it("throws on malformed URL", async () => {
-    const client = new MinifetchClient({
-      apiKey: process.env.MINIFETCH_API_KEY as string,
+      await expect(client.extractUrlPreview(dnsErrUrl)).rejects.toMatchObject({
+        name: "NetworkError",
+        message: expect.stringContaining("Request failed: 502 Bad Gateway"),
+      });
     });
 
-    await expect(client.extractUrlPreview("vvv")).rejects.toThrow(InvalidUrlError);
-  });
+    it("throws on malformed URL", async () => {
+      const client = new MinifetchClient({
+        apiKey: process.env.MINIFETCH_API_KEY as string,
+      });
 
-  it("throws on URL w unsupported file extension", async () => {
-    const client = new MinifetchClient({
-      network: "base-sepolia",
-      privateKey: process.env.BASE_PRIVATE_KEY as any,
+      await expect(client.extractUrlPreview("vvv")).rejects.toThrow(InvalidUrlError);
     });
 
-    await expect(client.extractUrlPreview("http://foo.bar/baz.pdf")).rejects.toThrow(
-      InvalidUrlError,
-    );
-  });
+    it("throws on URL w unsupported file extension", async () => {
+      const client = new MinifetchClient({
+        network: "base-sepolia",
+        privateKey: process.env.BASE_PRIVATE_KEY as any,
+      });
 
-});
+      await expect(client.extractUrlPreview("http://foo.bar/baz.pdf")).rejects.toThrow(
+        InvalidUrlError,
+      );
+    });
+  },
+);
 
 describe.sequential("apiKey: extractUrlContent() e2e (prod)", { timeout: 30000 }, () => {
-
   it("returns content for allowed URL", async () => {
     const client = new MinifetchClient({
       apiKey: process.env.MINIFETCH_API_KEY as string,
@@ -157,11 +152,9 @@ describe.sequential("apiKey: extractUrlContent() e2e (prod)", { timeout: 30000 }
     expect(response.results.length).toBeGreaterThan(0);
     expect(response.payment).toBeUndefined();
   });
-
 });
 
 describe.sequential("apiKey: checkAndExtractUrlContent() e2e (prod)", { timeout: 30000 }, () => {
-
   it("success w ?includeMediaUrls=true", async () => {
     const client = new MinifetchClient({
       apiKey: process.env.MINIFETCH_API_KEY as string,
@@ -178,11 +171,9 @@ describe.sequential("apiKey: checkAndExtractUrlContent() e2e (prod)", { timeout:
     // payment field should be absent for apiKey auth
     expect(response.payment).toBeUndefined();
   });
-
 });
 
 describe.sequential("apiKey: extractUrlLinks() e2e (prod)", { timeout: 30000 }, () => {
-
   it("returns links for allowed URL", async () => {
     const client = new MinifetchClient({
       apiKey: process.env.MINIFETCH_API_KEY as string,
@@ -192,11 +183,9 @@ describe.sequential("apiKey: extractUrlLinks() e2e (prod)", { timeout: 30000 }, 
     expect(response.results.length).toBeGreaterThan(0);
     expect(response.payment).toBeUndefined();
   });
-
 });
 
 describe.sequential("apiKey: extractUrlMetadata() e2e (prod)", { timeout: 30000 }, () => {
-
   it("returns metadata for allowed URL", async () => {
     const client = new MinifetchClient({
       apiKey: process.env.MINIFETCH_API_KEY as string,
@@ -208,11 +197,9 @@ describe.sequential("apiKey: extractUrlMetadata() e2e (prod)", { timeout: 30000 
     // payment field should be absent for apiKey auth
     expect(response.payment).toBeUndefined();
   });
-
 });
 
 describe.sequential("apiKey: checkAndExtractUrlMetadata() e2e (prod)", { timeout: 30000 }, () => {
-
   it("preflight + extract metadata (default) in one call", async () => {
     const client = new MinifetchClient({
       apiKey: process.env.MINIFETCH_API_KEY as string,
@@ -232,7 +219,7 @@ describe.sequential("apiKey: checkAndExtractUrlMetadata() e2e (prod)", { timeout
     });
     const response = await client.checkAndExtractUrlMetadata("https://minifetch.com", {
       fields: ["network", "title"],
-      includeResponseBody: true
+      includeResponseBody: true,
     });
     expect(response.success).toBe(true);
     expect(response.results[0].data.url).toContain("minifetch.com");
@@ -247,33 +234,34 @@ describe.sequential("apiKey: checkAndExtractUrlMetadata() e2e (prod)", { timeout
     // payment field should be absent for apiKey auth
     expect(response.payment).toBeUndefined();
   });
-
 });
 
-describe.sequential("apiKey: checkAndExtractUrlMetadata() fails gracefully (prod)", { timeout: 30000 }, () => {
+describe.sequential(
+  "apiKey: checkAndExtractUrlMetadata() fails gracefully (prod)",
+  { timeout: 30000 },
+  () => {
+    it("throws when robots.txt check fails", async () => {
+      const client = new MinifetchClient({
+        apiKey: process.env.MINIFETCH_API_KEY as string,
+      });
 
-  it("throws when robots.txt check fails", async () => {
-    const client = new MinifetchClient({
-      apiKey: process.env.MINIFETCH_API_KEY as string,
+      const blockedUrl = "https://www.npmjs.com/package/url-metadata/v/5.4.3";
+
+      await expect(client.checkAndExtractUrlMetadata(blockedUrl)).rejects.toMatchObject({
+        name: "RobotsBlockedError",
+        message: expect.stringContaining("URL is blocked by robots.txt"),
+        url: blockedUrl,
+      });
     });
 
-    const blockedUrl = "https://www.npmjs.com/package/url-metadata/v/5.4.3";
+    it("throws on URL w unsupported file extension", async () => {
+      const client = new MinifetchClient({
+        apiKey: process.env.MINIFETCH_API_KEY as string,
+      });
 
-    await expect(client.checkAndExtractUrlMetadata(blockedUrl)).rejects.toMatchObject({
-      name: "RobotsBlockedError",
-      message: expect.stringContaining("URL is blocked by robots.txt"),
-      url: blockedUrl,
+      await expect(client.checkAndExtractUrlMetadata("http://foo.bar/baz.pdf")).rejects.toThrow(
+        InvalidUrlError,
+      );
     });
-  });
-
-  it("throws on URL w unsupported file extension", async () => {
-    const client = new MinifetchClient({
-      apiKey: process.env.MINIFETCH_API_KEY as string,
-    });
-
-    await expect(client.checkAndExtractUrlMetadata("http://foo.bar/baz.pdf")).rejects.toThrow(
-      InvalidUrlError,
-    );
-  });
-
-});;
+  },
+);

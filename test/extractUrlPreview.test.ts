@@ -54,11 +54,9 @@ describe.sequential("x402: extractUrlPreview() e2e", { timeout: 30000 }, () => {
       `https://explorer.solana.com/tx/${response.payment.txHash}?cluster=devnet`,
     );
   });
-
 });
 
 describe.sequential("x402: extractUrlPreview() fails gracefully", { timeout: 30000 }, () => {
-
   it("throws w bad private key", async () => {
     const failClient = new MinifetchClient({
       network: "base-sepolia",
@@ -112,5 +110,4 @@ describe.sequential("x402: extractUrlPreview() fails gracefully", { timeout: 300
       InvalidUrlError,
     );
   });
-
 });

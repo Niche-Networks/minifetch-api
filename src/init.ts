@@ -1,4 +1,10 @@
-import type { ClientConfig, InitializedConfig, Network, X402Config, ApiKeyConfig } from "./types/config.js";
+import type {
+  ClientConfig,
+  InitializedConfig,
+  Network,
+  X402Config,
+  ApiKeyConfig,
+} from "./types/config.js";
 import { VALID_NETWORKS } from "./types/config.js";
 import { ConfigurationError } from "./types/errors.js";
 

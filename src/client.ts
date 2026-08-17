@@ -75,9 +75,7 @@ export class MinifetchClient {
    * @throws {PaymentFailedError} if x402 payment fails
    * @throws {NetworkError} various reasons, check README
    */
-  async runSeoPageAudit(
-    url: string
-  ): Promise<PaidEndpointResponse> {
+  async runSeoPageAudit(url: string): Promise<PaidEndpointResponse> {
     try {
       const normalizedUrl = validateAndNormalizeUrl(url);
 
@@ -216,7 +214,7 @@ export class MinifetchClient {
    */
   async checkAndExtractUrlMetadata(
     url: string,
-    options?: { fields?: string[]; omitEmpty?: boolean; includeResponseBody?: boolean; },
+    options?: { fields?: string[]; omitEmpty?: boolean; includeResponseBody?: boolean },
   ): Promise<PaidEndpointResponse> {
     await this._preflightOrThrow(url);
     return this.extractUrlMetadata(url, options);
@@ -272,9 +270,7 @@ export class MinifetchClient {
    * @param endpoint
    */
   private _paidPath(endpoint: string): string {
-    return this.config.authMode === "x402"
-      ? `/api/v1/x402${endpoint}`
-      : `/api/v1${endpoint}`;
+    return this.config.authMode === "x402" ? `/api/v1/x402${endpoint}` : `/api/v1${endpoint}`;
   }
 
   /**
@@ -294,14 +290,20 @@ export class MinifetchClient {
     if (this.config.authMode === "x402") {
       const { response, payment } = await handlePayment(requestUrl, this.config);
       if (!response.ok) {
-        throw new ExtractionFailedError(normalizedUrl, `${label} failed: ${response.status} ${response.statusText}`);
+        throw new ExtractionFailedError(
+          normalizedUrl,
+          `${label} failed: ${response.status} ${response.statusText}`,
+        );
       }
       const data = (await response.json()) as PaidEndpointResponse;
       return { success: data.success, results: data.results, payment };
     } else {
       const { response } = await handleApiKeyRequest(requestUrl, this.config);
       if (!response.ok) {
-        throw new ExtractionFailedError(normalizedUrl, `${label} failed: ${response.status} ${response.statusText}`);
+        throw new ExtractionFailedError(
+          normalizedUrl,
+          `${label} failed: ${response.status} ${response.statusText}`,
+        );
       }
       const data = (await response.json()) as PaidEndpointResponse;
       // payment field intentionally omitted for apiKey auth — not applicable

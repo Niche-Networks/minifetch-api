@@ -2,17 +2,19 @@ import { config } from "dotenv";
 import { resolve } from "path";
 import { fileURLToPath } from "url";
 
+import Minifetch from "minifetch-api";
+
 // Load .env-dev from the project root (one level up)
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 config({ path: resolve(__dirname, "../.env-dev") });
 
-import Minifetch from "minifetch-api";
-
 const URL_TO_FETCH1 = "https://en.wikipedia.org/wiki/API_key";
 const URL_TO_FETCH2 = "https://x402.org";
 
+/**
+ *
+ */
 async function main() {
-
   console.log("🔧 1. Initializing MinifetchClient with API key...\n");
   const client1 = new Minifetch({
     apiKey: process.env.MINIFETCH_API_KEY,
@@ -37,7 +39,7 @@ async function main() {
   console.log("🔧 2. Initializing MinifetchClient on base network...\n");
   const client2 = new Minifetch({
     network: "base",
-    privateKey: process.env.BASE_PRIVATE_KEY
+    privateKey: process.env.BASE_PRIVATE_KEY,
   });
 
   console.log(`🌐 Fetching metadata for: ${URL_TO_FETCH2}\n`);

@@ -11,7 +11,6 @@ beforeEach(async () => {
 });
 
 describe.sequential("x402: preflightUrlCheck() e2e", { timeout: 30000 }, () => {
-
   it("base-sepolia success w allowed URL", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
@@ -54,27 +53,27 @@ describe.sequential("x402: preflightUrlCheck() e2e", { timeout: 30000 }, () => {
     expect(response.results[0].data.message).toContain("allowed by robots.txt");
     expect(response.results[0].data.crawlDelay).toBe(1);
   });
-
 });
 
-describe.sequential("x402: preflightUrlCheck() e2e on base w ?fresh=true option", { timeout: 30000 }, () => {
+describe.sequential(
+  "x402: preflightUrlCheck() e2e on base w ?fresh=true option",
+  { timeout: 30000 },
+  () => {
+    it("?fresh=true cache option", async () => {
+      const client = new MinifetchClient({
+        network: "base-sepolia",
+        privateKey: process.env.BASE_PRIVATE_KEY as any,
+      });
 
-  it("?fresh=true cache option", async () => {
-    const client = new MinifetchClient({
-      network: "base-sepolia",
-      privateKey: process.env.BASE_PRIVATE_KEY as any,
+      const response = await client.preflightUrlCheck("https://minifetch.com", { fresh: true });
+      expect(response.success).toBe(true);
+      expect(response.results[0].data.allowed).toBe(true);
+      expect(response.results[0].data.minifetchCache.hit).toBe(false);
     });
-
-    const response = await client.preflightUrlCheck("https://minifetch.com", { "fresh": true});
-    expect(response.success).toBe(true);
-    expect(response.results[0].data.allowed).toBe(true);
-    expect(response.results[0].data.minifetchCache.hit).toBe(false);
-  });
-
-});
+  },
+);
 
 describe.sequential("x402: preflightUrlCheck() fails gracefully", { timeout: 30000 }, () => {
-
   it("handles DNS lookup error", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
@@ -109,11 +108,9 @@ describe.sequential("x402: preflightUrlCheck() fails gracefully", { timeout: 300
       InvalidUrlError,
     );
   });
-
 });
 
 describe.sequential("apiKey: preflightUrlCheck() init", { timeout: 30000 }, () => {
-
   it("client inits with apiKey and baseUrl points to prod", () => {
     // preflightUrlCheck is auth-agnostic (free endpoint), so a valid apiKey client
     // should init correctly and resolve to the prod base URL
@@ -129,5 +126,4 @@ describe.sequential("apiKey: preflightUrlCheck() init", { timeout: 30000 }, () =
     });
     expect(client).toBeInstanceOf(MinifetchClient);
   });
-
 });

@@ -11,7 +11,6 @@ beforeEach(async () => {
 });
 
 describe.sequential("x402: extractUrlMetadata() e2e", { timeout: 30000 }, () => {
-
   it("base-sepolia testnet success", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
@@ -42,7 +41,7 @@ describe.sequential("x402: extractUrlMetadata() e2e", { timeout: 30000 }, () => 
       privateKey: process.env.SVM_PRIVATE_KEY as any,
     });
     const response = await client.extractUrlMetadata("https://minifetch.com", {
-      fields: ['title', 'description']
+      fields: ["title", "description"],
     });
 
     expect(response.success).toBe(true);
@@ -60,11 +59,9 @@ describe.sequential("x402: extractUrlMetadata() e2e", { timeout: 30000 }, () => 
       `https://explorer.solana.com/tx/${response.payment.txHash}?cluster=devnet`,
     );
   });
-
 });
 
 describe.sequential("x402: extractUrlMetadata() fails gracefully", { timeout: 30000 }, () => {
-
   it("throws w bad private key", async () => {
     const failClient = new MinifetchClient({
       network: "base-sepolia",
@@ -124,5 +121,4 @@ describe.sequential("x402: extractUrlMetadata() fails gracefully", { timeout: 30
       InvalidUrlError,
     );
   });
-
 });

@@ -11,7 +11,6 @@ beforeEach(async () => {
 });
 
 describe.sequential("x402: runSeoPageAudit() e2e", { timeout: 30000 }, () => {
-
   it("base-sepolia success", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
@@ -57,11 +56,9 @@ describe.sequential("x402: runSeoPageAudit() e2e", { timeout: 30000 }, () => {
       `https://explorer.solana.com/tx/${response.payment.txHash}?cluster=devnet`,
     );
   });
-
 });
 
 describe.sequential("x402: runSeoPageAudit() fails gracefully", { timeout: 30000 }, () => {
-
   it("throws w bad private key", async () => {
     const failClient = new MinifetchClient({
       network: "base-sepolia",
@@ -82,9 +79,7 @@ describe.sequential("x402: runSeoPageAudit() fails gracefully", { timeout: 30000
 
     const blockedUrl = "https://www.npmjs.com/package/url-metadata/v/5.4.3";
 
-    await expect(client.runSeoPageAudit(blockedUrl)).rejects.toThrow(
-      NetworkError
-    );
+    await expect(client.runSeoPageAudit(blockedUrl)).rejects.toThrow(NetworkError);
   });
 
   it("throws on URL w unsupported file extension", async () => {
@@ -93,9 +88,7 @@ describe.sequential("x402: runSeoPageAudit() fails gracefully", { timeout: 30000
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
 
-    await expect(client.runSeoPageAudit("http://foo.bar/baz.pdf")).rejects.toThrow(
-      InvalidUrlError,
-    );
+    await expect(client.runSeoPageAudit("http://foo.bar/baz.pdf")).rejects.toThrow(InvalidUrlError);
   });
 
   it("throws on malformed url", async () => {
@@ -104,9 +97,6 @@ describe.sequential("x402: runSeoPageAudit() fails gracefully", { timeout: 30000
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
 
-    await expect(client.runSeoPageAudit("http://poo")).rejects.toThrow(
-      InvalidUrlError,
-    );
+    await expect(client.runSeoPageAudit("http://poo")).rejects.toThrow(InvalidUrlError);
   });
-
 });

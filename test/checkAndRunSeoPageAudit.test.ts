@@ -11,7 +11,6 @@ beforeEach(async () => {
 });
 
 describe.sequential("x402: checkAndRunSeoPageAudit() e2e", { timeout: 30000 }, () => {
-
   it("base-sepolia success", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
@@ -57,22 +56,21 @@ describe.sequential("x402: checkAndRunSeoPageAudit() e2e", { timeout: 30000 }, (
       `https://explorer.solana.com/tx/${response.payment.txHash}?cluster=devnet`,
     );
   });
-
 });
 
-
 describe.sequential("x402: checkAndRunSeoPageAudit() fails gracefully", { timeout: 30000 }, () => {
-
   it("throws w bad private key", async () => {
     const failClient = new MinifetchClient({
       network: "base-sepolia",
       privateKey: "0xDEADBEEF00000000000000000000000000000000000000000000000000FACADE" as any,
     });
 
-    await expect(failClient.checkAndRunSeoPageAudit("https://anthropic.com")).rejects.toMatchObject({
-      name: "NetworkError",
-      message: "Request failed: 402 Payment Required",
-    });
+    await expect(failClient.checkAndRunSeoPageAudit("https://anthropic.com")).rejects.toMatchObject(
+      {
+        name: "NetworkError",
+        message: "Request failed: 402 Payment Required",
+      },
+    );
   });
 
   it("throws when robots.txt check fails", async () => {
@@ -107,9 +105,6 @@ describe.sequential("x402: checkAndRunSeoPageAudit() fails gracefully", { timeou
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
 
-    await expect(client.checkAndRunSeoPageAudit("http://poo")).rejects.toThrow(
-      InvalidUrlError,
-    );
+    await expect(client.checkAndRunSeoPageAudit("http://poo")).rejects.toThrow(InvalidUrlError);
   });
-
 });

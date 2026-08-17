@@ -7,7 +7,6 @@ import { ConfigurationError } from "../src/types/errors.js";
 config({ path: ".env-dev" });
 
 describe.sequential("x402: MinifetchClient", { timeout: 30000 }, () => {
-
   it("client should init instanceof MinifetchClient", () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
@@ -44,11 +43,9 @@ describe.sequential("x402: MinifetchClient", { timeout: 30000 }, () => {
       });
     }).toThrow(ConfigurationError);
   });
-
 });
 
 describe.sequential("apiKey: MinifetchClient", { timeout: 30000 }, () => {
-
   it("client should init with mf_prod_ key", () => {
     const client = new MinifetchClient({ apiKey: "mf_prod_abc123def456abc123def456abc123de" });
     expect(client).toBeInstanceOf(MinifetchClient);
@@ -65,9 +62,6 @@ describe.sequential("apiKey: MinifetchClient", { timeout: 30000 }, () => {
 
   it("throws ConfigurationError if apiKey has wrong prefix", () => {
     expect(() => new MinifetchClient({ apiKey: "sk_live_abc123" })).toThrow(ConfigurationError);
-    expect(() => new MinifetchClient({ apiKey: "sk_live_abc123" })).toThrow(
-      "must start with",
-    );
+    expect(() => new MinifetchClient({ apiKey: "sk_live_abc123" })).toThrow("must start with");
   });
-
 });
