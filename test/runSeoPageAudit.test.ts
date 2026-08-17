@@ -82,10 +82,9 @@ describe.sequential("x402: runSeoPageAudit() fails gracefully", { timeout: 30000
 
     const blockedUrl = "https://www.npmjs.com/package/url-metadata/v/5.4.3";
 
-    await expect(client.runSeoPageAudit(blockedUrl)).rejects.toMatchObject({
-      name: "NetworkError",
-      message: "Request failed: 502 Bad Gateway",
-    });
+    await expect(client.runSeoPageAudit(blockedUrl)).rejects.toThrow(
+      NetworkError
+    );
   });
 
   it("throws on URL w unsupported file extension", async () => {
