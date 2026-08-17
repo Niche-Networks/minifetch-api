@@ -7,7 +7,7 @@ import { InvalidUrlError } from "../src/types/errors.js";
 config({ path: ".env-dev" });
 
 beforeEach(async () => {
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise(r => setTimeout(r, 2500)); // floor on ?fresh option = 2s
 });
 
 describe.sequential("x402: preflightUrlCheck() e2e", { timeout: 30000 }, () => {
@@ -53,6 +53,22 @@ describe.sequential("x402: preflightUrlCheck() e2e", { timeout: 30000 }, () => {
     expect(response.results[0].data.allowed).toBe(true);
     expect(response.results[0].data.message).toContain("allowed by robots.txt");
     expect(response.results[0].data.crawlDelay).toBe(1);
+  });
+
+});
+
+describe.sequential("x402: preflightUrlCheck() e2e on base w ?fresh=true option", { timeout: 30000 }, () => {
+
+  it("?fresh=true cache option", async () => {
+    const client = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: process.env.BASE_PRIVATE_KEY as any,
+    });
+
+    const response = await client.preflightUrlCheck("https://minifetch.com", { "fresh": true});
+    expect(response.success).toBe(true);
+    expect(response.results[0].data.allowed).toBe(true);
+    expect(response.results[0].data.minifetchCache.hit).toBe(false);
   });
 
 });
