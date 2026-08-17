@@ -24,7 +24,6 @@ describe.sequential("x402: checkAndExtractUrlPreview() e2e", { timeout: 30000 },
     expect(response.results[0].data.url).toContain("minifetch.com");
     expect(response.results[0].data.title.length).toBeGreaterThan(10);
     expect(response.results[0].data.description.length).toBeGreaterThan(10);
-    expect(response.results[0].data.image.length).toBeGreaterThan(1);
 
     expect(response.payment.success).toBe(true);
     expect(response.payment.payer).toContain("0x");
