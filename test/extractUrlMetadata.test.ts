@@ -22,6 +22,7 @@ describe.sequential("x402: extractUrlMetadata() e2e", { timeout: 30000 }, () => 
     expect(response.results[0].data.url).toContain("minifetch.com");
     expect(response.results[0].data.title).toContain("SEO");
     expect(response.results[0].data["og:title"]).toContain("SEO");
+
     // default = all fields present even if empty
     expect(typeof response.results[0].data.headings).toBeDefined();
     expect(typeof response.results[0].data.imgTags).toBeDefined();
@@ -41,13 +42,16 @@ describe.sequential("x402: extractUrlMetadata() e2e", { timeout: 30000 }, () => 
       privateKey: process.env.SVM_PRIVATE_KEY as any,
     });
     const response = await client.extractUrlMetadata("https://minifetch.com", {
-      fields: ["title", "description"],
+      fields: ["title", "description", "meta:application-name"],
     });
 
+    // custom ?fields selected
     expect(response.success).toBe(true);
     expect(response.results[0].data.title).toContain("SEO");
     expect(response.results[0].data.description).toContain("SEO");
+    expect(response.results[0].data["application-name"]).toContain("Minifetch");
 
+    // excludes fields not selected
     expect(typeof response.results[0].data.headings).toBe("undefined");
     expect(typeof response.results[0].data.imgTags).toBe("undefined");
 

@@ -25,8 +25,10 @@ describe.sequential("x402: checkAndExtractUrlMetadata() e2e", { timeout: 30000 }
     expect(response.results[0].data.url).toContain("minifetch.com");
     expect(response.results[0].data.title).toContain("SEO");
     expect(response.results[0].data["og:title"]).toContain("SEO");
+
     // ?includeResponseBody=true
     expect(response.results[0].data.responseBody).toContain("<!DOCTYPE html>");
+
     // ?omitEmpty=true
     expect(typeof response.results[0].data.imgTags).toBe("undefined");
 
