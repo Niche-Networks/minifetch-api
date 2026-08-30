@@ -21,7 +21,7 @@ describe.sequential("x402: checkAndRunSeoPageAudit() e2e", { timeout: 30000 }, (
     expect(response.success).toBe(true);
     expect(response.results).toHaveLength(1);
     expect(response.results[0].data.url).toContain("minifetch.com");
-    expect(response.results[0].data.compliance.robotsTxt.status).toBe("pass");
+    expect(response.results[0].data.compliance.https.status).toBe("pass");
     expect(response.results[0].data.metadata.title.value).toContain("SEO");
     expect(response.results[0].data.content.wordCount).toBeGreaterThan(1);
 
@@ -44,7 +44,7 @@ describe.sequential("x402: checkAndRunSeoPageAudit() e2e", { timeout: 30000 }, (
     expect(response.success).toBe(true);
     expect(response.results).toHaveLength(1);
     expect(response.results[0].data.url).toContain("minifetch.com");
-    expect(response.results[0].data.compliance.robotsTxt.status).toBe("pass");
+    expect(response.results[0].data.compliance.https.status).toBe("pass");
     expect(response.results[0].data.metadata.title.value).toContain("SEO");
     expect(response.results[0].data.content.wordCount).toBeGreaterThan(1);
 
