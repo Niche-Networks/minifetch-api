@@ -24,7 +24,7 @@
 - ***Or*** an Ethereum or Solana private key for making USDC payments on Base or Solana networks.
 
 **Payments.** Two ways to pay:
-1. Credit card + API key. Get started free - [visit our dashboard to Sign Up](https://minifetch.com/dashboard). Create a Minifetch account and it will be auto-loaded with 25 free technical SEO page audits. Top up with your credit card later.
+1. Credit card + API key. Get started free - [visit our dashboard to Sign Up](https://minifetch.com/dashboard). Create a Minifetch account and it will be auto-loaded with credits worth up to 25 free technical SEO page audits. Top up with your credit card later.
 2. USDC on Base or Solana. Just load your wallet with USDC, you're ready. No "gas token" (ETH or SOL) required. You don't need a Minifetch account either, just load your wallet and go!
 
 ## Install
@@ -152,18 +152,15 @@ When you wrap the functions above in a try/catch, here are some of the errors yo
 
 ---
 
-### Service Limitations
-Minifetch only extracts publicly available metadata and content from pages accessible without authentication and javascript execution.
+### How We Fetch Web Pages
+Minifetch extracts publicly available metadata and content from pages accessible without authentication or javascript execution.
 
-What Minifetch does *NOT* do:
-- Ignore robots.txt directives
-- Create accounts or log into user sessions
-- Perform transactional actions (checkout, bidding, purchasing, form submissions)
-- Bypass paywalls or access restricted content
+Every response carries a `proxy` block: the `minifetch` user agent we sent and whether robots.txt was obeyed on the fetch. Proof of how the fetch happened, not just a promise, for regulated use-cases where provenance matters.
 
-What Minifetch does NOT do *currently* but may offer in the future as an add-on:
+Future add-ons:
+- Residential proxies for hard-to-reach pages
 - Javascript execution
-- Access authenticated or logged-in content
+- Access to authenticated or logged-in content
 
 ---
 
