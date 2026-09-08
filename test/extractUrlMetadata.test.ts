@@ -36,7 +36,7 @@ describe.sequential("x402: extractUrlMetadata() e2e", { timeout: 30000 }, () => 
     );
   });
 
-  it("solana-devnet success w ?fields selections", async () => {
+  it("solana-devnet success w ?fields selections and GET method option", async () => {
     const client = new MinifetchClient({
       network: "solana-devnet",
       privateKey: process.env.SVM_PRIVATE_KEY as any,

@@ -1,5 +1,8 @@
 # CHANGELOG
 
+1.6.0
+- all methods default to POST now with optional { method: 'GET' }
+
 1.5.0
 - preflight check: { "fresh": true } cache-busting option
 

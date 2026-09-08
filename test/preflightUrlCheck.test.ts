@@ -30,7 +30,7 @@ describe.sequential("x402: preflightUrlCheck() e2e", { timeout: 30000 }, () => {
       network: "solana-devnet",
       privateKey: process.env.SVM_PRIVATE_KEY as any,
     });
-    const response = await client.preflightUrlCheck("https://minifetch.com");
+    const response = await client.preflightUrlCheck("https://minifetch.com", { method: "GET" });
 
     expect(response.success).toBe(true);
     expect(response.results[0].data.url).toBe("https://minifetch.com");

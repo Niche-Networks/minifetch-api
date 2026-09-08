@@ -1,5 +1,7 @@
 export declare const VALID_NETWORKS: readonly ["base", "base-sepolia", "solana", "solana-devnet"];
 export type Network = (typeof VALID_NETWORKS)[number];
+/** HTTP method for a request. Every endpoint accepts GET (query string) or POST (JSON body). */
+export type HttpMethod = "GET" | "POST";
 /**
  * Config for x402 crypto micropayment auth
  */
