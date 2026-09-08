@@ -15,7 +15,7 @@ import { PaymentFailedError, NetworkError } from "../types/errors.js";
  * @param url
  * @param config
  */
-export async function handlePayment(url, config) {
+export async function handlePayment(url, config, init) {
     try {
         const _x402Client = new x402Client();
         let payer;
@@ -29,7 +29,7 @@ export async function handlePayment(url, config) {
         }
         else if (isSolana) {
             if (!config.privateKey)
-                throw new PaymentFailedError('privateKey is required for Solana payments');
+                throw new PaymentFailedError("privateKey is required for Solana payments");
             const privateKeyBytes = bs58.decode(config.privateKey);
             const signer = await createKeyPairSignerFromBytes(privateKeyBytes);
             const svmSigner = signer;
@@ -40,7 +40,8 @@ export async function handlePayment(url, config) {
             throw new PaymentFailedError(`Unsupported network: ${config.network}`);
         }
         const fetchWithPayment = wrapFetchWithPayment(fetch, _x402Client);
-        const response = await fetchWithPayment(url, { method: "GET" });
+        // Default GET when no init passed; init carries method + JSON body for POST.
+        const response = await fetchWithPayment(url, init ?? { method: "GET" });
         if (!response.ok) {
             const serverMessage = await readServerErrorMessage(response);
             throw new NetworkError(`Request failed: ${response.status} ${response.statusText}${serverMessage ? ` — ${serverMessage}` : ""}`);
@@ -72,10 +73,12 @@ export async function handlePayment(url, config) {
  * @param url
  * @param config
  */
-export async function handleApiKeyRequest(url, config) {
+export async function handleApiKeyRequest(url, config, init) {
     const response = await fetch(url, {
-        method: "GET",
+        ...init,
+        method: init?.method ?? "GET",
         headers: {
+            ...init?.headers,
             Authorization: `Bearer ${config.apiKey}`,
         },
     });

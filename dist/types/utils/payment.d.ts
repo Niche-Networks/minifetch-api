@@ -10,7 +10,7 @@ import type { PaymentInfo } from "../types/responses.js";
  * @param url
  * @param config
  */
-export declare function handlePayment(url: string, config: InitializedConfig): Promise<{
+export declare function handlePayment(url: string, config: InitializedConfig, init?: RequestInit): Promise<{
     response: Response;
     payment?: PaymentInfo;
 }>;
@@ -21,6 +21,6 @@ export declare function handlePayment(url: string, config: InitializedConfig): P
  * @param url
  * @param config
  */
-export declare function handleApiKeyRequest(url: string, config: InitializedConfig): Promise<{
+export declare function handleApiKeyRequest(url: string, config: InitializedConfig, init?: RequestInit): Promise<{
     response: Response;
 }>;

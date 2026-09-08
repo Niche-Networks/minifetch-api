@@ -1,7 +1,7 @@
 import { initConfig } from "./init.js";
 import { validateAndNormalizeUrl } from "./utils/validation.js";
 import { handlePayment, handleApiKeyRequest } from "./utils/payment.js";
-import type { ClientConfig, InitializedConfig } from "./types/config.js";
+import type { ClientConfig, InitializedConfig, HttpMethod } from "./types/config.js";
 import type { PreflightCheckResponse, PaidEndpointResponse } from "./types/responses.js";
 import {
   InvalidUrlError,
@@ -11,11 +11,21 @@ import {
   NetworkError,
 } from "./types/errors.js";
 
+/** Request params before transport encoding — string or boolean values only. */
+type RequestParams = Record<string, string | boolean>;
+
+/** Every endpoint accepts GET (query string) or POST (JSON body). POST is the default. */
+const DEFAULT_METHOD: HttpMethod = "POST";
+
 /**
  * Main Minifetch API client.
  * Supports two auth modes:
  *   - x402: crypto micropayments via Coinbase x402 (pass network + privateKey)
  *   - apiKey: Stripe-backed credits (pass apiKey: "mf_prod_..." or "mf_dev_...")
+ *
+ * Every request method accepts an optional `method: "GET" | "POST"` in its
+ * options; it defaults to POST (params sent as a JSON body). Pass `method: "GET"`
+ * to send params in the query string instead.
  */
 export class MinifetchClient {
   private config: InitializedConfig;
@@ -35,21 +45,26 @@ export class MinifetchClient {
    * @param url
    * @param options
    * @param options.fresh
+   * @param options.method - "GET" or "POST" (default POST)
    * @throws {InvalidUrlError} if URL is invalid
    * @throws {NetworkError} if request fails
    */
   async preflightUrlCheck(
     url: string,
-    options?: { fresh?: boolean },
+    options?: { fresh?: boolean; method?: HttpMethod },
   ): Promise<PreflightCheckResponse> {
     try {
       const normalizedUrl = validateAndNormalizeUrl(url);
 
-      const params = new URLSearchParams({ url: normalizedUrl });
-      if (options?.fresh) params.set("fresh", "true");
+      const params: RequestParams = { url: normalizedUrl };
+      if (options?.fresh) params.fresh = true;
 
-      const requestUrl = `${this.baseUrl}/api/v1/free/preflight/url-check?${params.toString()}`;
-      const response = await fetch(requestUrl);
+      const { url: requestUrl, init } = this._buildRequest(
+        "/api/v1/free/preflight/url-check",
+        params,
+        options?.method ?? DEFAULT_METHOD,
+      );
+      const response = await fetch(requestUrl, init);
 
       if (!response.ok) {
         throw new NetworkError(`Preflight check failed: ${response.status} ${response.statusText}`);
@@ -70,19 +85,27 @@ export class MinifetchClient {
    * Run SEO page audit (paid endpoint)
    *
    * @param url
+   * @param options
+   * @param options.method - "GET" or "POST" (default POST)
    * @throws {InvalidUrlError} if URL is invalid
    * @throws {ExtractionFailedError} various reasons, check README
    * @throws {PaymentFailedError} if x402 payment fails
    * @throws {NetworkError} various reasons, check README
    */
-  async runSeoPageAudit(url: string): Promise<PaidEndpointResponse> {
+  async runSeoPageAudit(
+    url: string,
+    options?: { method?: HttpMethod },
+  ): Promise<PaidEndpointResponse> {
     try {
       const normalizedUrl = validateAndNormalizeUrl(url);
-
-      const params = new URLSearchParams({ url: normalizedUrl });
-      const requestUrl = `${this.baseUrl}${this._paidPath("/run/seo-page-audit")}?${params.toString()}`;
-
-      return await this._makeRequest(requestUrl, normalizedUrl, "Run SEO page audit");
+      const params: RequestParams = { url: normalizedUrl };
+      return await this._makeRequest(
+        "/run/seo-page-audit",
+        normalizedUrl,
+        "Run SEO page audit",
+        params,
+        options?.method,
+      );
     } catch (error) {
       return this._rethrowError(error, url, "Run SEO page audit");
     }
@@ -96,6 +119,7 @@ export class MinifetchClient {
    * @param options.fields
    * @param options.omitEmpty
    * @param options.includeResponseBody
+   * @param options.method - "GET" or "POST" (default POST)
    * @throws {InvalidUrlError} if URL is invalid
    * @throws {ExtractionFailedError} various reasons, check README
    * @throws {PaymentFailedError} if x402 payment fails
@@ -107,19 +131,24 @@ export class MinifetchClient {
       fields?: string[];
       omitEmpty?: boolean;
       includeResponseBody?: boolean;
+      method?: HttpMethod;
     },
   ): Promise<PaidEndpointResponse> {
     try {
       const normalizedUrl = validateAndNormalizeUrl(url);
 
-      const params = new URLSearchParams({ url: normalizedUrl });
-      if (options?.fields?.length) params.set("fields", options.fields.join(","));
-      if (options?.omitEmpty) params.set("omitEmpty", "true");
-      if (options?.includeResponseBody) params.set("includeResponseBody", "true");
+      const params: RequestParams = { url: normalizedUrl };
+      if (options?.fields?.length) params.fields = options.fields.join(",");
+      if (options?.omitEmpty) params.omitEmpty = true;
+      if (options?.includeResponseBody) params.includeResponseBody = true;
 
-      const requestUrl = `${this.baseUrl}${this._paidPath("/extract/url-metadata")}?${params.toString()}`;
-
-      return await this._makeRequest(requestUrl, normalizedUrl, "Metadata extraction");
+      return await this._makeRequest(
+        "/extract/url-metadata",
+        normalizedUrl,
+        "Metadata extraction",
+        params,
+        options?.method,
+      );
     } catch (error) {
       return this._rethrowError(error, url, "Metadata extraction");
     }
@@ -129,16 +158,27 @@ export class MinifetchClient {
    * Extract URL links (paid endpoint)
    *
    * @param url
+   * @param options
+   * @param options.method - "GET" or "POST" (default POST)
    * @throws {InvalidUrlError} if URL is invalid
    * @throws {ExtractionFailedError} various reasons, check README
    * @throws {PaymentFailedError} if x402 payment fails
    * @throws {NetworkError} various reasons, check README
    */
-  async extractUrlLinks(url: string): Promise<PaidEndpointResponse> {
+  async extractUrlLinks(
+    url: string,
+    options?: { method?: HttpMethod },
+  ): Promise<PaidEndpointResponse> {
     try {
       const normalizedUrl = validateAndNormalizeUrl(url);
-      const requestUrl = `${this.baseUrl}${this._paidPath("/extract/url-links")}?url=${encodeURIComponent(normalizedUrl)}`;
-      return await this._makeRequest(requestUrl, normalizedUrl, "Links extraction");
+      const params: RequestParams = { url: normalizedUrl };
+      return await this._makeRequest(
+        "/extract/url-links",
+        normalizedUrl,
+        "Links extraction",
+        params,
+        options?.method,
+      );
     } catch (error) {
       return this._rethrowError(error, url, "Links extraction");
     }
@@ -148,16 +188,27 @@ export class MinifetchClient {
    * Extract URL preview (paid endpoint)
    *
    * @param url
+   * @param options
+   * @param options.method - "GET" or "POST" (default POST)
    * @throws {InvalidUrlError} if URL is invalid
    * @throws {ExtractionFailedError} various reasons, check README
    * @throws {PaymentFailedError} if x402 payment fails
    * @throws {NetworkError} various reasons, check README
    */
-  async extractUrlPreview(url: string): Promise<PaidEndpointResponse> {
+  async extractUrlPreview(
+    url: string,
+    options?: { method?: HttpMethod },
+  ): Promise<PaidEndpointResponse> {
     try {
       const normalizedUrl = validateAndNormalizeUrl(url);
-      const requestUrl = `${this.baseUrl}${this._paidPath("/extract/url-preview")}?url=${encodeURIComponent(normalizedUrl)}`;
-      return await this._makeRequest(requestUrl, normalizedUrl, "Preview extraction");
+      const params: RequestParams = { url: normalizedUrl };
+      return await this._makeRequest(
+        "/extract/url-preview",
+        normalizedUrl,
+        "Preview extraction",
+        params,
+        options?.method,
+      );
     } catch (error) {
       return this._rethrowError(error, url, "Preview extraction");
     }
@@ -169,6 +220,7 @@ export class MinifetchClient {
    * @param url
    * @param options
    * @param options.includeMediaUrls
+   * @param options.method - "GET" or "POST" (default POST)
    * @throws {InvalidUrlError} if URL is invalid
    * @throws {ExtractionFailedError} various reasons, check README
    * @throws {PaymentFailedError} if x402 payment fails
@@ -176,16 +228,21 @@ export class MinifetchClient {
    */
   async extractUrlContent(
     url: string,
-    options?: { includeMediaUrls?: boolean },
+    options?: { includeMediaUrls?: boolean; method?: HttpMethod },
   ): Promise<PaidEndpointResponse> {
     try {
       const normalizedUrl = validateAndNormalizeUrl(url);
 
-      const params = new URLSearchParams({ url: normalizedUrl });
-      if (options?.includeMediaUrls) params.set("includeMediaUrls", "true");
+      const params: RequestParams = { url: normalizedUrl };
+      if (options?.includeMediaUrls) params.includeMediaUrls = true;
 
-      const requestUrl = `${this.baseUrl}${this._paidPath("/extract/url-content")}?${params.toString()}`;
-      return await this._makeRequest(requestUrl, normalizedUrl, "Content extraction");
+      return await this._makeRequest(
+        "/extract/url-content",
+        normalizedUrl,
+        "Content extraction",
+        params,
+        options?.method,
+      );
     } catch (error) {
       return this._rethrowError(error, url, "Content extraction");
     }
@@ -196,10 +253,15 @@ export class MinifetchClient {
    * Throws RobotsBlockedError if robots.txt blocks the URL.
    *
    * @param url
+   * @param options
+   * @param options.method - "GET" or "POST" (default POST)
    */
-  async checkAndRunSeoPageAudit(url: string): Promise<PaidEndpointResponse> {
+  async checkAndRunSeoPageAudit(
+    url: string,
+    options?: { method?: HttpMethod },
+  ): Promise<PaidEndpointResponse> {
     await this._preflightOrThrow(url);
-    return this.runSeoPageAudit(url);
+    return this.runSeoPageAudit(url, options);
   }
 
   /**
@@ -211,10 +273,16 @@ export class MinifetchClient {
    * @param options.fields
    * @param options.omitEmpty
    * @param options.includeResponseBody
+   * @param options.method - "GET" or "POST" (default POST)
    */
   async checkAndExtractUrlMetadata(
     url: string,
-    options?: { fields?: string[]; omitEmpty?: boolean; includeResponseBody?: boolean },
+    options?: {
+      fields?: string[];
+      omitEmpty?: boolean;
+      includeResponseBody?: boolean;
+      method?: HttpMethod;
+    },
   ): Promise<PaidEndpointResponse> {
     await this._preflightOrThrow(url);
     return this.extractUrlMetadata(url, options);
@@ -225,10 +293,15 @@ export class MinifetchClient {
    * Throws RobotsBlockedError if robots.txt blocks the URL.
    *
    * @param url
+   * @param options
+   * @param options.method - "GET" or "POST" (default POST)
    */
-  async checkAndExtractUrlLinks(url: string): Promise<PaidEndpointResponse> {
+  async checkAndExtractUrlLinks(
+    url: string,
+    options?: { method?: HttpMethod },
+  ): Promise<PaidEndpointResponse> {
     await this._preflightOrThrow(url);
-    return this.extractUrlLinks(url);
+    return this.extractUrlLinks(url, options);
   }
 
   /**
@@ -236,10 +309,15 @@ export class MinifetchClient {
    * Throws RobotsBlockedError if robots.txt blocks the URL.
    *
    * @param url
+   * @param options
+   * @param options.method - "GET" or "POST" (default POST)
    */
-  async checkAndExtractUrlPreview(url: string): Promise<PaidEndpointResponse> {
+  async checkAndExtractUrlPreview(
+    url: string,
+    options?: { method?: HttpMethod },
+  ): Promise<PaidEndpointResponse> {
     await this._preflightOrThrow(url);
-    return this.extractUrlPreview(url);
+    return this.extractUrlPreview(url, options);
   }
 
   /**
@@ -249,10 +327,11 @@ export class MinifetchClient {
    * @param url
    * @param options
    * @param options.includeMediaUrls
+   * @param options.method - "GET" or "POST" (default POST)
    */
   async checkAndExtractUrlContent(
     url: string,
-    options?: { includeMediaUrls?: boolean },
+    options?: { includeMediaUrls?: boolean; method?: HttpMethod },
   ): Promise<PaidEndpointResponse> {
     await this._preflightOrThrow(url);
     return this.extractUrlContent(url, options);
@@ -274,21 +353,57 @@ export class MinifetchClient {
   }
 
   /**
-   * Dispatch to the correct request handler based on auth mode, then
-   * normalize the response into PaidEndpointResponse.
+   * Encode a request for the wire. GET → params in the query string, no body.
+   * POST → params as a JSON body with a Content-Type header. Auth headers
+   * (Bearer / x402 payment) are added downstream, not here.
+   *
+   * @param path - absolute API path (already includes /api/v1[/x402])
+   * @param params - request params (string or boolean values)
+   * @param method - "GET" or "POST"
+   * @returns the full request URL and the fetch init (method + optional body/headers)
+   */
+  private _buildRequest(
+    path: string,
+    params: RequestParams,
+    method: HttpMethod,
+  ): { url: string; init: RequestInit } {
+    if (method === "GET") {
+      const qs = new URLSearchParams();
+      for (const [key, value] of Object.entries(params)) qs.set(key, String(value));
+      return { url: `${this.baseUrl}${path}?${qs.toString()}`, init: { method: "GET" } };
+    }
+    return {
+      url: `${this.baseUrl}${path}`,
+      init: {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params),
+      },
+    };
+  }
+
+  /**
+   * Build the request, dispatch to the correct auth handler, then normalize the
+   * response into PaidEndpointResponse.
    * Note: payment field is only present for x402 responses.
    *
-   * @param requestUrl
+   * @param endpoint - endpoint path segment, e.g. "/extract/url-metadata"
    * @param normalizedUrl
    * @param label - used in error messages
+   * @param params - request params (string or boolean values)
+   * @param method - "GET" or "POST" (default POST)
    */
   private async _makeRequest(
-    requestUrl: string,
+    endpoint: string,
     normalizedUrl: string,
     label: string,
+    params: RequestParams,
+    method: HttpMethod = DEFAULT_METHOD,
   ): Promise<PaidEndpointResponse> {
+    const { url, init } = this._buildRequest(this._paidPath(endpoint), params, method);
+
     if (this.config.authMode === "x402") {
-      const { response, payment } = await handlePayment(requestUrl, this.config);
+      const { response, payment } = await handlePayment(url, this.config, init);
       if (!response.ok) {
         throw new ExtractionFailedError(
           normalizedUrl,
@@ -298,7 +413,7 @@ export class MinifetchClient {
       const data = (await response.json()) as PaidEndpointResponse;
       return { success: data.success, results: data.results, payment };
     } else {
-      const { response } = await handleApiKeyRequest(requestUrl, this.config);
+      const { response } = await handleApiKeyRequest(url, this.config, init);
       if (!response.ok) {
         throw new ExtractionFailedError(
           normalizedUrl,

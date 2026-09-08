@@ -21,6 +21,7 @@ import { PaymentFailedError, NetworkError } from "../types/errors.js";
 export async function handlePayment(
   url: string,
   config: InitializedConfig,
+  init?: RequestInit,
 ): Promise<{ response: Response; payment?: PaymentInfo }> {
   try {
     const _x402Client = new x402Client();
@@ -47,7 +48,8 @@ export async function handlePayment(
     }
 
     const fetchWithPayment = wrapFetchWithPayment(fetch, _x402Client);
-    const response = await fetchWithPayment(url, { method: "GET" });
+    // Default GET when no init passed; init carries method + JSON body for POST.
+    const response = await fetchWithPayment(url, init ?? { method: "GET" });
 
     if (!response.ok) {
       const serverMessage = await readServerErrorMessage(response);
@@ -90,10 +92,13 @@ export async function handlePayment(
 export async function handleApiKeyRequest(
   url: string,
   config: InitializedConfig,
+  init?: RequestInit,
 ): Promise<{ response: Response }> {
   const response = await fetch(url, {
-    method: "GET",
+    ...init,
+    method: init?.method ?? "GET",
     headers: {
+      ...(init?.headers as Record<string, string> | undefined),
       Authorization: `Bearer ${config.apiKey}`,
     },
   });

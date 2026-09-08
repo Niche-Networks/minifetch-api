@@ -1,10 +1,14 @@
-import type { ClientConfig } from "./types/config.js";
+import type { ClientConfig, HttpMethod } from "./types/config.js";
 import type { PreflightCheckResponse, PaidEndpointResponse } from "./types/responses.js";
 /**
  * Main Minifetch API client.
  * Supports two auth modes:
  *   - x402: crypto micropayments via Coinbase x402 (pass network + privateKey)
  *   - apiKey: Stripe-backed credits (pass apiKey: "mf_prod_..." or "mf_dev_...")
+ *
+ * Every request method accepts an optional `method: "GET" | "POST"` in its
+ * options; it defaults to POST (params sent as a JSON body). Pass `method: "GET"`
+ * to send params in the query string instead.
  */
 export declare class MinifetchClient {
     private config;
@@ -19,22 +23,28 @@ export declare class MinifetchClient {
      * @param url
      * @param options
      * @param options.fresh
+     * @param options.method - "GET" or "POST" (default POST)
      * @throws {InvalidUrlError} if URL is invalid
      * @throws {NetworkError} if request fails
      */
     preflightUrlCheck(url: string, options?: {
         fresh?: boolean;
+        method?: HttpMethod;
     }): Promise<PreflightCheckResponse>;
     /**
      * Run SEO page audit (paid endpoint)
      *
      * @param url
+     * @param options
+     * @param options.method - "GET" or "POST" (default POST)
      * @throws {InvalidUrlError} if URL is invalid
      * @throws {ExtractionFailedError} various reasons, check README
      * @throws {PaymentFailedError} if x402 payment fails
      * @throws {NetworkError} various reasons, check README
      */
-    runSeoPageAudit(url: string): Promise<PaidEndpointResponse>;
+    runSeoPageAudit(url: string, options?: {
+        method?: HttpMethod;
+    }): Promise<PaidEndpointResponse>;
     /**
      * Extract URL metadata (paid endpoint)
      *
@@ -43,6 +53,7 @@ export declare class MinifetchClient {
      * @param options.fields
      * @param options.omitEmpty
      * @param options.includeResponseBody
+     * @param options.method - "GET" or "POST" (default POST)
      * @throws {InvalidUrlError} if URL is invalid
      * @throws {ExtractionFailedError} various reasons, check README
      * @throws {PaymentFailedError} if x402 payment fails
@@ -52,33 +63,43 @@ export declare class MinifetchClient {
         fields?: string[];
         omitEmpty?: boolean;
         includeResponseBody?: boolean;
+        method?: HttpMethod;
     }): Promise<PaidEndpointResponse>;
     /**
      * Extract URL links (paid endpoint)
      *
      * @param url
+     * @param options
+     * @param options.method - "GET" or "POST" (default POST)
      * @throws {InvalidUrlError} if URL is invalid
      * @throws {ExtractionFailedError} various reasons, check README
      * @throws {PaymentFailedError} if x402 payment fails
      * @throws {NetworkError} various reasons, check README
      */
-    extractUrlLinks(url: string): Promise<PaidEndpointResponse>;
+    extractUrlLinks(url: string, options?: {
+        method?: HttpMethod;
+    }): Promise<PaidEndpointResponse>;
     /**
      * Extract URL preview (paid endpoint)
      *
      * @param url
+     * @param options
+     * @param options.method - "GET" or "POST" (default POST)
      * @throws {InvalidUrlError} if URL is invalid
      * @throws {ExtractionFailedError} various reasons, check README
      * @throws {PaymentFailedError} if x402 payment fails
      * @throws {NetworkError} various reasons, check README
      */
-    extractUrlPreview(url: string): Promise<PaidEndpointResponse>;
+    extractUrlPreview(url: string, options?: {
+        method?: HttpMethod;
+    }): Promise<PaidEndpointResponse>;
     /**
      * Extract URL content as markdown (paid endpoint)
      *
      * @param url
      * @param options
      * @param options.includeMediaUrls
+     * @param options.method - "GET" or "POST" (default POST)
      * @throws {InvalidUrlError} if URL is invalid
      * @throws {ExtractionFailedError} various reasons, check README
      * @throws {PaymentFailedError} if x402 payment fails
@@ -86,14 +107,19 @@ export declare class MinifetchClient {
      */
     extractUrlContent(url: string, options?: {
         includeMediaUrls?: boolean;
+        method?: HttpMethod;
     }): Promise<PaidEndpointResponse>;
     /**
      * Check URL then run SEO page audit in one call.
      * Throws RobotsBlockedError if robots.txt blocks the URL.
      *
      * @param url
+     * @param options
+     * @param options.method - "GET" or "POST" (default POST)
      */
-    checkAndRunSeoPageAudit(url: string): Promise<PaidEndpointResponse>;
+    checkAndRunSeoPageAudit(url: string, options?: {
+        method?: HttpMethod;
+    }): Promise<PaidEndpointResponse>;
     /**
      * Check URL then extract metadata in one call.
      * Throws RobotsBlockedError if robots.txt blocks the URL.
@@ -103,26 +129,36 @@ export declare class MinifetchClient {
      * @param options.fields
      * @param options.omitEmpty
      * @param options.includeResponseBody
+     * @param options.method - "GET" or "POST" (default POST)
      */
     checkAndExtractUrlMetadata(url: string, options?: {
         fields?: string[];
         omitEmpty?: boolean;
         includeResponseBody?: boolean;
+        method?: HttpMethod;
     }): Promise<PaidEndpointResponse>;
     /**
      * Check URL then extract links in one call.
      * Throws RobotsBlockedError if robots.txt blocks the URL.
      *
      * @param url
+     * @param options
+     * @param options.method - "GET" or "POST" (default POST)
      */
-    checkAndExtractUrlLinks(url: string): Promise<PaidEndpointResponse>;
+    checkAndExtractUrlLinks(url: string, options?: {
+        method?: HttpMethod;
+    }): Promise<PaidEndpointResponse>;
     /**
      * Check URL then extract preview in one call.
      * Throws RobotsBlockedError if robots.txt blocks the URL.
      *
      * @param url
+     * @param options
+     * @param options.method - "GET" or "POST" (default POST)
      */
-    checkAndExtractUrlPreview(url: string): Promise<PaidEndpointResponse>;
+    checkAndExtractUrlPreview(url: string, options?: {
+        method?: HttpMethod;
+    }): Promise<PaidEndpointResponse>;
     /**
      * Check URL then extract content in one call.
      * Throws RobotsBlockedError if robots.txt blocks the URL.
@@ -130,9 +166,11 @@ export declare class MinifetchClient {
      * @param url
      * @param options
      * @param options.includeMediaUrls
+     * @param options.method - "GET" or "POST" (default POST)
      */
     checkAndExtractUrlContent(url: string, options?: {
         includeMediaUrls?: boolean;
+        method?: HttpMethod;
     }): Promise<PaidEndpointResponse>;
     /**
      * Returns the correct paid path segment based on auth mode.
@@ -143,13 +181,26 @@ export declare class MinifetchClient {
      */
     private _paidPath;
     /**
-     * Dispatch to the correct request handler based on auth mode, then
-     * normalize the response into PaidEndpointResponse.
+     * Encode a request for the wire. GET → params in the query string, no body.
+     * POST → params as a JSON body with a Content-Type header. Auth headers
+     * (Bearer / x402 payment) are added downstream, not here.
+     *
+     * @param path - absolute API path (already includes /api/v1[/x402])
+     * @param params - request params (string or boolean values)
+     * @param method - "GET" or "POST"
+     * @returns the full request URL and the fetch init (method + optional body/headers)
+     */
+    private _buildRequest;
+    /**
+     * Build the request, dispatch to the correct auth handler, then normalize the
+     * response into PaidEndpointResponse.
      * Note: payment field is only present for x402 responses.
      *
-     * @param requestUrl
+     * @param endpoint - endpoint path segment, e.g. "/extract/url-metadata"
      * @param normalizedUrl
      * @param label - used in error messages
+     * @param params - request params (string or boolean values)
+     * @param method - "GET" or "POST" (default POST)
      */
     private _makeRequest;
     /**
