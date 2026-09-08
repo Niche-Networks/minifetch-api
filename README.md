@@ -74,7 +74,7 @@ After the Quick Start, you have the following methods to use.
 
 The `checkAndExtract` methods check the target URL's `robots.txt` file to ensure its not blocked and tell us your preferred crawl delay (defaults to 1 second between requests to your domain). So fetching 10 URLs takes at least 10 seconds to complete by default. This is by design, so Minifetch never hammers your server or slows it down for your real users. If you own the site and want to allow Minifetch access or to set custom rules for it, read [How To Unblock Minifetch](https://minifetch.com/tutorials/unblock-minifetch).
 
-All API methods default to POST unless you set options to `{ method: 'GET' }`.
+All API methods default to POST unless you set options to `{ method: 'GET' }` and pass in as the second argument.
 
 ```js
 await client.checkAndRunSeoPageAudit(url);
