@@ -18,7 +18,7 @@ describe.sequential("x402: checkAndExtractUrlMetadata() e2e", { timeout: 30000 }
     });
     const response = await client.checkAndExtractUrlMetadata("https://minifetch.com", {
       omitEmpty: true,
-      includeResponseBody: true,
+      includeResponseBody: true
     });
 
     expect(response.success).toBe(true);
