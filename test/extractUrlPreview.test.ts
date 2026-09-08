@@ -38,7 +38,7 @@ describe.sequential("x402: extractUrlPreview() e2e", { timeout: 30000 }, () => {
       network: "solana-devnet",
       privateKey: process.env.SVM_PRIVATE_KEY as any,
     });
-    const response = await client.extractUrlPreview("https://minifetch.com");
+    const response = await client.extractUrlPreview("https://minifetch.com", { method: "GET" });
 
     expect(response.success).toBe(true);
     expect(response.results).toHaveLength(1);

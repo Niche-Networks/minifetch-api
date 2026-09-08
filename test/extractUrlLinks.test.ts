@@ -10,13 +10,13 @@ beforeEach(async () => {
   await new Promise(r => setTimeout(r, 1000));
 });
 
-describe.sequential("x402: extractUrlLinks() e2e with GET option", { timeout: 30000 }, () => {
+describe.sequential("x402: extractUrlLinks() e2e", { timeout: 30000 }, () => {
   it("base-sepolia testnet success", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,
     });
-    const response = await client.extractUrlLinks("https://minifetch.com", { method: "GET" });
+    const response = await client.extractUrlLinks("https://minifetch.com");
 
     expect(response.success).toBe(true);
     expect(response.results).toHaveLength(1);
@@ -34,12 +34,12 @@ describe.sequential("x402: extractUrlLinks() e2e with GET option", { timeout: 30
     );
   });
 
-  it("solana-devnet success", async () => {
+  it("solana-devnet success with GET option", async () => {
     const client = new MinifetchClient({
       network: "solana-devnet",
       privateKey: process.env.SVM_PRIVATE_KEY as any,
     });
-    const response = await client.extractUrlLinks("https://minifetch.com");
+    const response = await client.extractUrlLinks("https://minifetch.com", { method: "GET" });
 
     expect(response.success).toBe(true);
     expect(response.results).toHaveLength(1);

@@ -25,7 +25,7 @@ describe.sequential("x402: preflightUrlCheck() e2e", { timeout: 30000 }, () => {
     expect(response.results[0].data.crawlDelay).toBe(1);
   });
 
-  it("solana-devnet success w allowed URL", async () => {
+  it("solana-devnet success w allowed URL and GET option", async () => {
     const client = new MinifetchClient({
       network: "solana-devnet",
       privateKey: process.env.SVM_PRIVATE_KEY as any,

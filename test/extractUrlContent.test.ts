@@ -10,8 +10,8 @@ beforeEach(async () => {
   await new Promise(r => setTimeout(r, 1000));
 });
 
-describe.sequential("x402: extractUrlContent() e2e with GET option", { timeout: 30000 }, () => {
-  it("base-sepolia testnet success", async () => {
+describe.sequential("x402: extractUrlContent() e2e", { timeout: 30000 }, () => {
+  it("base-sepolia testnet success with GET option", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
       privateKey: process.env.BASE_PRIVATE_KEY as any,

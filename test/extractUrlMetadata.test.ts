@@ -43,6 +43,7 @@ describe.sequential("x402: extractUrlMetadata() e2e", { timeout: 30000 }, () => 
     });
     const response = await client.extractUrlMetadata("https://minifetch.com", {
       fields: ["title", "description", "meta:application-name"],
+      method: "GET"
     });
 
     // custom ?fields selected
