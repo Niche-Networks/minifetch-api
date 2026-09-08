@@ -1,7 +1,7 @@
 import { initConfig } from "./init.js";
 import { validateAndNormalizeUrl } from "./utils/validation.js";
 import { handlePayment, handleApiKeyRequest } from "./utils/payment.js";
-import { InvalidUrlError, RobotsBlockedError, PaymentFailedError, ExtractionFailedError, NetworkError, } from "./types/errors.js";
+import { InvalidUrlError, RobotsBlockedError, PaymentFailedError, ExtractionFailedError, NetworkError, ConfigurationError, } from "./types/errors.js";
 /** Every endpoint accepts GET (query string) or POST (JSON body). POST is the default. */
 const DEFAULT_METHOD = "POST";
 /**
@@ -52,6 +52,37 @@ export class MinifetchClient {
                 throw error;
             }
             throw new NetworkError(`Preflight check failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+        }
+    }
+    /**
+     * INTERNAL / UNDOCUMENTED — deliberately omitted from the README and not part
+     * of the public API. The public {@link preflightUrlCheck} hits the FREE
+     * endpoint (no payment); this hits the PAID x402 twin at
+     * `/api/v1/x402/preflight/url-check` so our own suite can generate paid
+     * traffic against it — the x402 Bazaar weights usage for ranking and this
+     * refreshes the listing. x402 auth only; there is no session/api-key route
+     * for a paid url-check.
+     *
+     * @param url
+     * @param options
+     * @param options.fresh - bypass the 24h robots.txt cache
+     * @param options.method - "GET" or "POST" (default POST)
+     * @throws {ConfigurationError} if the client is not in x402 mode
+     * @internal
+     */
+    async _exercisePaidUrlCheck(url, options) {
+        if (this.config.authMode !== "x402") {
+            throw new ConfigurationError("_exercisePaidUrlCheck requires x402 auth (network + privateKey)");
+        }
+        try {
+            const normalizedUrl = validateAndNormalizeUrl(url);
+            const params = { url: normalizedUrl };
+            if (options?.fresh)
+                params.fresh = true;
+            return await this._makeRequest("/preflight/url-check", normalizedUrl, "Paid URL check", params, options?.method);
+        }
+        catch (error) {
+            return this._rethrowError(error, url, "Paid URL check");
         }
     }
     /**

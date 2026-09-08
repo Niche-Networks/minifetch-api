@@ -32,6 +32,26 @@ export declare class MinifetchClient {
         method?: HttpMethod;
     }): Promise<PreflightCheckResponse>;
     /**
+     * INTERNAL / UNDOCUMENTED — deliberately omitted from the README and not part
+     * of the public API. The public {@link preflightUrlCheck} hits the FREE
+     * endpoint (no payment); this hits the PAID x402 twin at
+     * `/api/v1/x402/preflight/url-check` so our own suite can generate paid
+     * traffic against it — the x402 Bazaar weights usage for ranking and this
+     * refreshes the listing. x402 auth only; there is no session/api-key route
+     * for a paid url-check.
+     *
+     * @param url
+     * @param options
+     * @param options.fresh - bypass the 24h robots.txt cache
+     * @param options.method - "GET" or "POST" (default POST)
+     * @throws {ConfigurationError} if the client is not in x402 mode
+     * @internal
+     */
+    _exercisePaidUrlCheck(url: string, options?: {
+        fresh?: boolean;
+        method?: HttpMethod;
+    }): Promise<PaidEndpointResponse>;
+    /**
      * Run SEO page audit (paid endpoint)
      *
      * @param url
