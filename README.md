@@ -5,7 +5,7 @@
   </a>
 </div>
 
-**[Minifetch](https://minifetch.com) is a hosted toolkit of web page extraction primitives.** Run them as a full technical SEO audit or call one at a time for a fraction of the price — and a fraction of the LLM tokens. No subscription.
+**[Minifetch](https://minifetch.com) is a hosted toolkit for web developers and AI agents. Search, scrape, extract & SEO audit web pages.** Pay per fetch, no subscription.
 
 - ✅ **Always pay-per-fetch at competitive prices.**
 - ✅ [Sign up](https://minifetch.com/dashboard) for an account & get free starter credits. 🎉🎉
@@ -72,19 +72,15 @@ After the Quick Start, you have the following methods to use.
 
 **Wrap** these methods in a **try/catch** just like in the Quick Start example above. **Code examples** can be also found in the [Github repository /example- directories](https://github.com/Niche-Networks/minifetch-api/).
 
-The `checkAndExtract` methods check the target URL's `robots.txt` file to ensure its not blocked and tell us your preferred crawl delay (defaults to 1 second between requests to your domain). So fetching 10 URLs takes at least 10 seconds to complete by default. This is by design, so Minifetch never hammers your server or slows it down for your real users. If you own the site and want to allow Minifetch access or to set custom rules for it, read [How To Unblock Minifetch](https://minifetch.com/tutorials/unblock-minifetch).
-
 All API methods default to POST unless you set options to `{ method: 'GET' }` and pass in as the second argument.
 
+The `checkAndExtract` methods check the target URL's `robots.txt` file to ensure its not blocked and tell us your preferred crawl delay (defaults to 1 second between requests to your domain). So fetching 10 URLs takes at least 10 seconds to complete by default. This is by design, so Minifetch never hammers your server or slows it down for your real users. If you own the site and want to allow Minifetch access or to set custom rules for it, read [How To Unblock Minifetch](https://minifetch.com/tutorials/unblock-minifetch).
+
 ```js
-await client.checkAndRunSeoPageAudit(url);
-// Price: $0.01
-// Runs a full technical SEO audit on your URL. Combines data from
-// the other API endpoints and runs checks that each return a PASS/
-// WARN/ FAIL result with no black-box scoring. Just deterministic,
-// composable signal you can act on or pipe into an agent.
-// Audit rules are documented in the skill file:
-// https://minifetch.com/skills/seo-page-audit/SKILL.md
+await client.searchByKeyword("green tea");
+// Price: $0.002
+// Keyword web search by Ceramic.ai that returns ranked results as
+// structured JSON: a title, URL, and text snippet per result.
 
 await client.checkAndExtractUrlMetadata(url, options);
 // Price: $0.002
@@ -108,36 +104,45 @@ await client.checkAndExtractUrlLinks(url);
 // anchor text variants used for each) and top external domains by
 // link count.
 
-await client.checkAndExtractUrlPreview(url);
-// Price: $0.002
-// Extracts all fields used for a page's share previews: the lightweight
-// cards that represent the page on social platforms, chat apps, and AI.
-
 await client.checkAndExtractUrlContent(url, options);
 // Price: $0.002
 // For site owners auditing AI readability: returns the clean markdown
 // an LLM extracts from your page after nav, ads, & scripts are stripped.
 // See what survives for AEO and AI search; respects robots.txt.
 // Options: { includeMediaUrls: true } - defaults to false.
+
+await client.checkAndExtractUrlPreview(url);
+// Price: $0.002
+// Extracts all fields used for a page's share previews: the lightweight
+// cards that represent the page on social platforms, chat apps, and AI.
+
+await client.checkAndRunSeoPageAudit(url);
+// Price: $0.01
+// Runs a full technical SEO audit on your URL. Combines data from
+// the other API endpoints and runs checks that each return a PASS/
+// WARN/ FAIL result with no black-box scoring. Just deterministic,
+// composable signal you can act on or pipe into an agent.
+// Audit rules are documented in the skill file:
+// https://minifetch.com/skills/seo-page-audit/SKILL.md
 ```
 
 For max control, you can also use the following methods directly:
 ```js
 await client.preflightCheck(url, options);
-// Free: check if `minfetch` user agent can access target via robots.txt
+// Free: check if `minfetch` user agent can access target URL via robots.txt
 // Options: { "fresh": true } - bypass 24hr robots.txt cache, defaults to false
 
 // Paid methods:
-await client.runSeoPageAudit(url);
 await client.extractUrlMetadata(url, options); // same options as above
 await client.extractUrlLinks(url);
-await client.extractUrlPreview(url);
 await client.extractUrlContent(url, options); // same options as above
+await client.extractUrlPreview(url);
+await client.runSeoPageAudit(url);
 ```
 ---
 
 ### Error Types
-When you wrap the functions above in a try/catch, here are some of the errors you may encounter. You are never charged for URLs that are blocked or error.
+When you wrap the functions above in a try/catch, here are some of the errors you may encounter. You are never charged for target URLs that are blocked or error.
 
 - **"InvalidURLError: Invalid url ${url}"**
   - The URL is malformed in some way, correct it and try again.
