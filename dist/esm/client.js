@@ -1,7 +1,7 @@
 import { initConfig } from "./init.js";
-import { validateAndNormalizeUrl } from "./utils/validation.js";
+import { validateAndNormalizeUrl, validateAndNormalizeQuery } from "./utils/validation.js";
 import { handlePayment, handleApiKeyRequest } from "./utils/payment.js";
-import { InvalidUrlError, RobotsBlockedError, PaymentFailedError, ExtractionFailedError, NetworkError, ConfigurationError, } from "./types/errors.js";
+import { InvalidUrlError, InvalidQueryError, RobotsBlockedError, PaymentFailedError, ExtractionFailedError, SearchFailedError, NetworkError, ConfigurationError, } from "./types/errors.js";
 /** Every endpoint accepts GET (query string) or POST (JSON body). POST is the default. */
 const DEFAULT_METHOD = "POST";
 /**
@@ -23,6 +23,39 @@ export class MinifetchClient {
     constructor(config) {
         this.config = initConfig(config);
         this.baseUrl = this.config.apiBaseUrl;
+    }
+    /**
+     * Search the web by keyword (paid endpoint).
+     *
+     * Unlike the URL-based methods, this takes a search query rather than a URL and
+     * proxies to Minifetch's keyword search. Returns ranked results, each with a
+     * title, URL, and text snippet. `limit` and `descriptionLength` are convenience
+     * knobs the server clamps into range; the effective values (after clamping) are
+     * echoed back on `queryParameters`.
+     *
+     * @param query - keyword(s) to search for (1-50 characters)
+     * @param options
+     * @param options.limit - number of results, 1-10 (default 10). Out-of-range values are clamped.
+     * @param options.descriptionLength - max characters per snippet, 0-5000 (default 750, 0 = titles/URLs only). Out-of-range values are clamped.
+     * @param options.method - "GET" or "POST" (default POST)
+     * @throws {InvalidQueryError} if the query is empty or exceeds 50 characters
+     * @throws {SearchFailedError} if the search request fails
+     * @throws {PaymentFailedError} if x402 payment fails
+     * @throws {NetworkError} various reasons, check README
+     */
+    async searchByKeyword(query, options) {
+        try {
+            const cleanQuery = validateAndNormalizeQuery(query);
+            const params = { query: cleanQuery };
+            if (options?.limit !== undefined)
+                params.limit = options.limit;
+            if (options?.descriptionLength !== undefined)
+                params.descriptionLength = options.descriptionLength;
+            return await this._makeSearchRequest(params, options?.method);
+        }
+        catch (error) {
+            return this._rethrowSearchError(error, query, "Keyword search");
+        }
     }
     /**
      * Check if URL is allowed by robots.txt (free preflight check — no auth required)
@@ -83,27 +116,6 @@ export class MinifetchClient {
         }
         catch (error) {
             return this._rethrowError(error, url, "Paid URL check");
-        }
-    }
-    /**
-     * Run SEO page audit (paid endpoint)
-     *
-     * @param url
-     * @param options
-     * @param options.method - "GET" or "POST" (default POST)
-     * @throws {InvalidUrlError} if URL is invalid
-     * @throws {ExtractionFailedError} various reasons, check README
-     * @throws {PaymentFailedError} if x402 payment fails
-     * @throws {NetworkError} various reasons, check README
-     */
-    async runSeoPageAudit(url, options) {
-        try {
-            const normalizedUrl = validateAndNormalizeUrl(url);
-            const params = { url: normalizedUrl };
-            return await this._makeRequest("/run/seo-page-audit", normalizedUrl, "Run SEO page audit", params, options?.method);
-        }
-        catch (error) {
-            return this._rethrowError(error, url, "Run SEO page audit");
         }
     }
     /**
@@ -200,6 +212,27 @@ export class MinifetchClient {
         }
         catch (error) {
             return this._rethrowError(error, url, "Content extraction");
+        }
+    }
+    /**
+     * Run SEO page audit (paid endpoint)
+     *
+     * @param url
+     * @param options
+     * @param options.method - "GET" or "POST" (default POST)
+     * @throws {InvalidUrlError} if URL is invalid
+     * @throws {ExtractionFailedError} various reasons, check README
+     * @throws {PaymentFailedError} if x402 payment fails
+     * @throws {NetworkError} various reasons, check README
+     */
+    async runSeoPageAudit(url, options) {
+        try {
+            const normalizedUrl = validateAndNormalizeUrl(url);
+            const params = { url: normalizedUrl };
+            return await this._makeRequest("/run/seo-page-audit", normalizedUrl, "Run SEO page audit", params, options?.method);
+        }
+        catch (error) {
+            return this._rethrowError(error, url, "Run SEO page audit");
         }
     }
     /**
@@ -337,6 +370,45 @@ export class MinifetchClient {
         }
     }
     /**
+     * Search-specific request path. Mirrors {@link _makeRequest} but for the
+     * keyword search endpoint: there is no URL, non-OK responses surface as
+     * SearchFailedError (carrying the query), and the server's clamped
+     * `queryParameters` echo is preserved rather than dropped.
+     *
+     * @param params - request params (query + optional limit/descriptionLength)
+     * @param method - "GET" or "POST" (default POST)
+     */
+    async _makeSearchRequest(params, method = DEFAULT_METHOD) {
+        const query = String(params.query);
+        const { url, init } = this._buildRequest(this._paidPath("/search/keyword"), params, method);
+        if (this.config.authMode === "x402") {
+            const { response, payment } = await handlePayment(url, this.config, init);
+            if (!response.ok) {
+                throw new SearchFailedError(query, `Keyword search failed: ${response.status} ${response.statusText}`, response.status);
+            }
+            const data = (await response.json());
+            return {
+                success: data.success,
+                queryParameters: data.queryParameters,
+                results: data.results,
+                payment,
+            };
+        }
+        else {
+            const { response } = await handleApiKeyRequest(url, this.config, init);
+            if (!response.ok) {
+                throw new SearchFailedError(query, `Keyword search failed: ${response.status} ${response.statusText}`, response.status);
+            }
+            const data = (await response.json());
+            // payment field intentionally omitted for apiKey auth — not applicable
+            return {
+                success: data.success,
+                queryParameters: data.queryParameters,
+                results: data.results,
+            };
+        }
+    }
+    /**
      * Preflight check helper — throws RobotsBlockedError if not allowed
      *
      * @param url
@@ -363,5 +435,22 @@ export class MinifetchClient {
             throw error;
         }
         throw new ExtractionFailedError(url, `${label} failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+    /**
+     * Search sibling of {@link _rethrowError}: re-throw known search error types,
+     * wrapping anything else in SearchFailedError (which carries the query, not a URL).
+     *
+     * @param error
+     * @param query
+     * @param label
+     */
+    _rethrowSearchError(error, query, label) {
+        if (error instanceof InvalidQueryError ||
+            error instanceof SearchFailedError ||
+            error instanceof PaymentFailedError ||
+            error instanceof NetworkError) {
+            throw error;
+        }
+        throw new SearchFailedError(query, `${label} failed: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
 }

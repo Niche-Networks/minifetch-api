@@ -1,8 +1,13 @@
-import { InvalidUrlError } from "../types/errors.js";
+import { InvalidUrlError, InvalidQueryError } from "../types/errors.js";
 /**
  * Maximum allowed URL length
  */
 const MAX_URL_LENGTH = 2048;
+/**
+ * Maximum allowed search-query length. Mirrors Ceramic's hard cap on the server
+ * so we fail fast client-side instead of spending a paid call on a 400.
+ */
+const MAX_QUERY_LENGTH = 50;
 /**
  * Allowed URL protocols
  */
@@ -76,6 +81,27 @@ export function validateAndNormalizeUrl(url) {
         throw new InvalidUrlError(normalized, "Cannot fetch from localhost or private IP addresses");
     }
     return normalized;
+}
+/**
+ * Validate and normalize a keyword-search query.
+ * Mirrors the server: strips null bytes, normalizes unicode, trims, then enforces
+ * the same non-empty / 50-char rules so bad input fails before a paid call.
+ *
+ * @param query
+ * @throws {InvalidQueryError} if the query is empty or exceeds 50 characters
+ */
+export function validateAndNormalizeQuery(query) {
+    if (!query || typeof query !== "string") {
+        throw new InvalidQueryError(String(query ?? ""), "Query must be a non-empty string");
+    }
+    const cleaned = query.replace(/\0/g, "").normalize("NFC").trim();
+    if (!cleaned) {
+        throw new InvalidQueryError(query, "Query must not be empty");
+    }
+    if (cleaned.length > MAX_QUERY_LENGTH) {
+        throw new InvalidQueryError(cleaned, `Query exceeds maximum length of ${MAX_QUERY_LENGTH} characters`);
+    }
+    return cleaned;
 }
 /**
  * Check if hostname is localhost or private IP

@@ -1,5 +1,8 @@
 # CHANGELOG
 
+1.7.0
+- add `searchByKeyword('lorem ipsum')` method
+
 1.6.0
 - all methods default to POST now with optional { method: 'GET' }
 

@@ -120,3 +120,47 @@ export class NetworkError extends MinifetchError {
         Object.setPrototypeOf(this, NetworkError.prototype);
     }
 }
+/**
+ * Thrown when keyword-search query validation fails (empty, or over 50 chars).
+ * The query sibling of {@link InvalidUrlError} — searchByKeyword takes a query,
+ * not a URL, so bad input surfaces here instead.
+ */
+export class InvalidQueryError extends MinifetchError {
+    query;
+    /**
+     *
+     * @param query
+     * @param message
+     */
+    constructor(query, message) {
+        super(message || `Invalid query: ${query}`);
+        this.name = "InvalidQueryError";
+        this.query = query;
+        Object.setPrototypeOf(this, InvalidQueryError.prototype);
+    }
+}
+/**
+ * Thrown when a keyword search fails (non-OK response or unexpected error).
+ * The search sibling of {@link ExtractionFailedError}: it carries the `query`
+ * rather than a `url`, since search has no target URL.
+ */
+export class SearchFailedError extends MinifetchError {
+    query;
+    statusCode;
+    originalError;
+    /**
+     *
+     * @param query
+     * @param message
+     * @param statusCode
+     * @param originalError
+     */
+    constructor(query, message, statusCode, originalError) {
+        super(message);
+        this.name = "SearchFailedError";
+        this.query = query;
+        this.statusCode = statusCode;
+        this.originalError = originalError;
+        Object.setPrototypeOf(this, SearchFailedError.prototype);
+    }
+}

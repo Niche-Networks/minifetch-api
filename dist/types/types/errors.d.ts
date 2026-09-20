@@ -84,3 +84,35 @@ export declare class NetworkError extends MinifetchError {
      */
     constructor(message: string, originalError?: Error);
 }
+/**
+ * Thrown when keyword-search query validation fails (empty, or over 50 chars).
+ * The query sibling of {@link InvalidUrlError} — searchByKeyword takes a query,
+ * not a URL, so bad input surfaces here instead.
+ */
+export declare class InvalidQueryError extends MinifetchError {
+    readonly query: string;
+    /**
+     *
+     * @param query
+     * @param message
+     */
+    constructor(query: string, message?: string);
+}
+/**
+ * Thrown when a keyword search fails (non-OK response or unexpected error).
+ * The search sibling of {@link ExtractionFailedError}: it carries the `query`
+ * rather than a `url`, since search has no target URL.
+ */
+export declare class SearchFailedError extends MinifetchError {
+    readonly query: string;
+    readonly statusCode?: number;
+    readonly originalError?: Error;
+    /**
+     *
+     * @param query
+     * @param message
+     * @param statusCode
+     * @param originalError
+     */
+    constructor(query: string, message: string, statusCode?: number, originalError?: Error);
+}
