@@ -1,5 +1,5 @@
 import type { ClientConfig, HttpMethod } from "./types/config.js";
-import type { PreflightCheckResponse, PaidEndpointResponse } from "./types/responses.js";
+import type { PreflightCheckResponse, PaidEndpointResponse, SearchKeywordResponse } from "./types/responses.js";
 /**
  * Main Minifetch API client.
  * Supports two auth modes:
@@ -17,6 +17,30 @@ export declare class MinifetchClient {
      * @param config - Either { network, privateKey } for x402 or { apiKey } for API key auth
      */
     constructor(config: ClientConfig);
+    /**
+     * Search the web by keyword (paid endpoint).
+     *
+     * Unlike the URL-based methods, this takes a search query rather than a URL and
+     * proxies to Minifetch's keyword search. Returns ranked results, each with a
+     * title, URL, and text snippet. `limit` and `descriptionLength` are convenience
+     * knobs the server clamps into range; the effective values (after clamping) are
+     * echoed back on `queryParameters`.
+     *
+     * @param query - keyword(s) to search for (1-50 characters)
+     * @param options
+     * @param options.limit - number of results, 1-10 (default 10). Out-of-range values are clamped.
+     * @param options.descriptionLength - max characters per snippet, 0-5000 (default 750, 0 = titles/URLs only). Out-of-range values are clamped.
+     * @param options.method - "GET" or "POST" (default POST)
+     * @throws {InvalidQueryError} if the query is empty or exceeds 50 characters
+     * @throws {SearchFailedError} if the search request fails
+     * @throws {PaymentFailedError} if x402 payment fails
+     * @throws {NetworkError} various reasons, check README
+     */
+    searchByKeyword(query: string, options?: {
+        limit?: number;
+        descriptionLength?: number;
+        method?: HttpMethod;
+    }): Promise<SearchKeywordResponse>;
     /**
      * Check if URL is allowed by robots.txt (free preflight check — no auth required)
      *
@@ -49,20 +73,6 @@ export declare class MinifetchClient {
      */
     _exercisePaidUrlCheck(url: string, options?: {
         fresh?: boolean;
-        method?: HttpMethod;
-    }): Promise<PaidEndpointResponse>;
-    /**
-     * Run SEO page audit (paid endpoint)
-     *
-     * @param url
-     * @param options
-     * @param options.method - "GET" or "POST" (default POST)
-     * @throws {InvalidUrlError} if URL is invalid
-     * @throws {ExtractionFailedError} various reasons, check README
-     * @throws {PaymentFailedError} if x402 payment fails
-     * @throws {NetworkError} various reasons, check README
-     */
-    runSeoPageAudit(url: string, options?: {
         method?: HttpMethod;
     }): Promise<PaidEndpointResponse>;
     /**
@@ -127,6 +137,20 @@ export declare class MinifetchClient {
      */
     extractUrlContent(url: string, options?: {
         includeMediaUrls?: boolean;
+        method?: HttpMethod;
+    }): Promise<PaidEndpointResponse>;
+    /**
+     * Run SEO page audit (paid endpoint)
+     *
+     * @param url
+     * @param options
+     * @param options.method - "GET" or "POST" (default POST)
+     * @throws {InvalidUrlError} if URL is invalid
+     * @throws {ExtractionFailedError} various reasons, check README
+     * @throws {PaymentFailedError} if x402 payment fails
+     * @throws {NetworkError} various reasons, check README
+     */
+    runSeoPageAudit(url: string, options?: {
         method?: HttpMethod;
     }): Promise<PaidEndpointResponse>;
     /**
@@ -224,6 +248,16 @@ export declare class MinifetchClient {
      */
     private _makeRequest;
     /**
+     * Search-specific request path. Mirrors {@link _makeRequest} but for the
+     * keyword search endpoint: there is no URL, non-OK responses surface as
+     * SearchFailedError (carrying the query), and the server's clamped
+     * `queryParameters` echo is preserved rather than dropped.
+     *
+     * @param params - request params (query + optional limit/descriptionLength)
+     * @param method - "GET" or "POST" (default POST)
+     */
+    private _makeSearchRequest;
+    /**
      * Preflight check helper — throws RobotsBlockedError if not allowed
      *
      * @param url
@@ -237,4 +271,13 @@ export declare class MinifetchClient {
      * @param label
      */
     private _rethrowError;
+    /**
+     * Search sibling of {@link _rethrowError}: re-throw known search error types,
+     * wrapping anything else in SearchFailedError (which carries the query, not a URL).
+     *
+     * @param error
+     * @param query
+     * @param label
+     */
+    private _rethrowSearchError;
 }

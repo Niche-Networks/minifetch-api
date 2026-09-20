@@ -51,3 +51,40 @@ export interface PaymentInfo {
   /** Link to view transaction on block explorer **/
   explorerLink: string;
 }
+
+/**
+ * A single keyword-search result.
+ */
+export interface SearchKeywordResult {
+  /** Title of the result page */
+  title: string;
+  /** URL of the result page */
+  url: string;
+  /** Text snippet from the result page, trimmed to the requested descriptionLength */
+  description: string;
+}
+
+/**
+ * Response from the keyword search endpoint.
+ *
+ * Unlike PaidEndpointResponse, this preserves `queryParameters` — the effective
+ * request params after the server clamps `limit`/`descriptionLength` into range.
+ * That echo is how a caller learns what actually ran (no black box).
+ */
+export interface SearchKeywordResponse {
+  /** Minifetch API success (200, ok) */
+  success: boolean;
+  /** Effective params after server-side clamping. */
+  queryParameters: {
+    query: string;
+    limit: number;
+    descriptionLength: number;
+  };
+  /** Ranked search results. */
+  results: Array<{
+    data: SearchKeywordResult;
+    error?: Record<string, any>;
+  }>;
+  /** Payment information — only present for paid x402 requests. */
+  payment?: PaymentInfo;
+}
