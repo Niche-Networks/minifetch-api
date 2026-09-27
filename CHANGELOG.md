@@ -1,5 +1,8 @@
 # CHANGELOG
 
+1.7.1
+- README changes only; add search by keyword options
+
 1.7.0
 - add `searchByKeyword('lorem ipsum')` method
 

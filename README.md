@@ -5,7 +5,7 @@
   </a>
 </div>
 
-**[Minifetch](https://minifetch.com) is a hosted toolkit for web developers and AI agents. Search, scrape, extract & SEO audit web pages.** Pay per fetch, no subscription.
+**[Search, scrape, extract & SEO audit web pages. Minifetch](https://minifetch.com)** is a hosted toolkit for web developers and AI agents. Pay per fetch, no subscription.
 
 - ✅ **Always pay-per-fetch at competitive prices.**
 - ✅ [Sign up](https://minifetch.com/dashboard) for an account & get free starter credits. 🎉🎉
@@ -77,10 +77,13 @@ All API methods default to POST unless you set options to `{ method: 'GET' }` an
 The `checkAndExtract` methods check the target URL's `robots.txt` file to ensure its not blocked and tell us your preferred crawl delay (defaults to 1 second between requests to your domain). So fetching 10 URLs takes at least 10 seconds to complete by default. This is by design, so Minifetch never hammers your server or slows it down for your real users. If you own the site and want to allow Minifetch access or to set custom rules for it, read [How To Unblock Minifetch](https://minifetch.com/tutorials/unblock-minifetch).
 
 ```js
-await client.searchByKeyword("green tea");
+await client.searchByKeyword("green tea", options);
 // Price: $0.002
 // Keyword web search by Ceramic.ai that returns ranked results as
 // structured JSON: a title, URL, and text snippet per result.
+// Options:
+// { limit: 10 } - defaults to 10 results, set to 1-10
+// { descriptionLength: 750 } - defaults to 750, set to 0-5000
 
 await client.checkAndExtractUrlMetadata(url, options);
 // Price: $0.002
