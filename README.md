@@ -5,7 +5,7 @@
   </a>
 </div>
 
-**[Search, scrape, extract & SEO audit web pages. Minifetch](https://minifetch.com)** is a hosted toolkit for web developers and AI agents. Pay per fetch, no subscription.
+**Search, scrape, extract & SEO audit web pages. [Minifetch](https://minifetch.com)** is a hosted toolkit for web developers and AI agents. Pay per fetch, no subscription.
 
 - ✅ **Always pay-per-fetch at competitive prices.**
 - ✅ [Sign up](https://minifetch.com/dashboard) for an account & get free starter credits. 🎉🎉
