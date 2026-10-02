@@ -49,7 +49,7 @@ describe.sequential("x402: extractUrlMetadata() e2e", { timeout: 30000 }, () => 
     // custom ?fields selected
     expect(response.success).toBe(true);
     expect(response.results[0].data.title).toContain("SEO");
-    expect(response.results[0].data.description).toContain("SEO");
+    expect(response.results[0].data.description).toContain("Minifetch");
     expect(response.results[0].data["application-name"]).toContain("Minifetch");
 
     // excludes fields not selected
