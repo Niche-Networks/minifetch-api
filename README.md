@@ -30,7 +30,7 @@
 ## Install
 Add to your project:
 ```
-npm install minifetch-api --save`
+npm install minifetch-api --save
 ```
 
 ## Quick Start
@@ -163,14 +163,25 @@ When you wrap the functions above in a try/catch, here are some of the errors yo
 ---
 
 ### How We Fetch Web Pages
-Minifetch extracts publicly available metadata and content from pages accessible without authentication or javascript execution.
+Minifetch offers two ways to fetch a page: the native Minifetch proxy or a rotating external proxy. The native Minifetch proxy is identified, respects robots.txt and is cheapest. The external proxy reaches pages the native one can't. You choose per fetch, by choosing the API route for your use-case. Built to be orchestrated by agents and humans who want maximal control.
 
-Every response carries a `proxy` block: the `minifetch` user agent we sent and whether robots.txt was obeyed on the fetch. Proof of how the fetch happened, not just a promise, for regulated use-cases where provenance matters.
+| | Native Minifetch proxy | External proxy |
+|---|---|---|
+| Routes | `/extract` | `/proxy/extract`, `/proxy/render/extract` |
+| Fetches as | Identified `minifetch` user agent from a fixed IP | External rotating proxy (webscrapingapi.com), optional `country` |
+| robots.txt | Respected, including crawl-delay | Not checked |
+| JavaScript | Not executed | Executed on `/proxy/render` |
+| Cached | Yes | No, every call is a fresh fetch |
+| Price | Cheapest | Native price plus a surcharge |
 
-Future add-ons:
-- Residential proxies for hard-to-reach pages
-- Javascript execution
-- Access to authenticated or logged-in content
+- **No silent fallback.** A blocked native request returns an error and a tip. It is never retried through the external proxy on your behalf.
+- **Decide before you pay.** The free `preflightCheck` tells you whether the native Minifetch proxy is allowed to fetch a URL.
+- **Proof per request.** Every response carries a `proxy` block: which proxy fetched the page, the user agent sent and whether robots.txt was obeyed. For regulated use-cases where provenance matters, stay on the native Minifetch proxy.
+- **No charge** for blocked or errored pages on either.
+
+The methods in this client use the native Minifetch proxy. The external proxy routes are available on the API now, see [Proxy Routes](https://minifetch.com/docs/api#proxy-routes) in the API docs.
+
+Not currently available on either proxy: authenticated or logged-in content.
 
 ---
 
