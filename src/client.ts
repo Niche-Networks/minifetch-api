@@ -24,6 +24,51 @@ type RequestParams = Record<string, string | number | boolean>;
 /** Every endpoint accepts GET (query string) or POST (JSON body). POST is the default. */
 const DEFAULT_METHOD: HttpMethod = "POST";
 
+/** Options shared by the url-metadata methods. */
+type MetadataOptions = { fields?: string[]; omitEmpty?: boolean; includeResponseBody?: boolean };
+
+/** Options shared by the url-content methods. */
+type ContentOptions = { includeMediaUrls?: boolean };
+
+/** Options of the external proxy methods (proxyExtract*, proxyRenderExtract*). */
+type ProxyOptions = { country?: string; method?: HttpMethod };
+
+/** Options of the extract*WithProxyFallback methods. */
+type ProxyFallbackOptions = ProxyOptions & { render?: boolean };
+
+/**
+ * Which fetch path serves a request. Mirrors the server routes:
+ *   native       -> /extract/<slug>               (native Minifetch proxy, respects robots.txt)
+ *   proxy        -> /proxy/extract/<slug>         (external proxy, does not check robots.txt)
+ *   proxy-render -> /proxy/render/extract/<slug>  (external proxy + JavaScript rendering)
+ */
+type FetchTier = "native" | "proxy" | "proxy-render";
+
+const TIER_PREFIX: Record<FetchTier, string> = {
+  native: "",
+  proxy: "/proxy",
+  "proxy-render": "/proxy/render",
+};
+
+/**
+ * Server error messages meaning the target blocked the native Minifetch proxy,
+ * so the external proxy may get through. The server sends its "retry via
+ * external proxy" tip in exactly these cases.
+ */
+const BLOCKED_SERVER_MESSAGES: ReadonlySet<string> = new Set([
+  "robots blocked",
+  "upstream forbidden",
+  "upstream rate limited",
+  "upstream unavailable",
+]);
+
+/** Preflight message for a robots.txt block (vs. an invalid or non-existent domain). */
+const PREFLIGHT_ROBOTS_BLOCKED = "blocked by robots.txt";
+
+/** Appended to RobotsBlockedError on the extract methods, which have proxy versions. */
+const PROXY_HINT =
+  " To fetch it anyway, use a proxyExtract* or extract*WithProxyFallback method (external proxy, does not check robots.txt).";
+
 /**
  * Main Minifetch API client.
  * Supports two auth modes:
@@ -78,7 +123,8 @@ export class MinifetchClient {
 
       const params: RequestParams = { query: cleanQuery };
       if (options?.limit !== undefined) params.limit = options.limit;
-      if (options?.descriptionLength !== undefined) params.descriptionLength = options.descriptionLength;
+      if (options?.descriptionLength !== undefined)
+        params.descriptionLength = options.descriptionLength;
 
       return await this._makeSearchRequest(params, options?.method);
     } catch (error) {
@@ -372,7 +418,7 @@ export class MinifetchClient {
       method?: HttpMethod;
     },
   ): Promise<PaidEndpointResponse> {
-    await this._preflightOrThrow(url);
+    await this._preflightOrThrow(url, true);
     return this.extractUrlMetadata(url, options);
   }
 
@@ -388,7 +434,7 @@ export class MinifetchClient {
     url: string,
     options?: { method?: HttpMethod },
   ): Promise<PaidEndpointResponse> {
-    await this._preflightOrThrow(url);
+    await this._preflightOrThrow(url, true);
     return this.extractUrlLinks(url, options);
   }
 
@@ -404,7 +450,7 @@ export class MinifetchClient {
     url: string,
     options?: { method?: HttpMethod },
   ): Promise<PaidEndpointResponse> {
-    await this._preflightOrThrow(url);
+    await this._preflightOrThrow(url, true);
     return this.extractUrlPreview(url, options);
   }
 
@@ -421,8 +467,311 @@ export class MinifetchClient {
     url: string,
     options?: { includeMediaUrls?: boolean; method?: HttpMethod },
   ): Promise<PaidEndpointResponse> {
-    await this._preflightOrThrow(url);
+    await this._preflightOrThrow(url, true);
     return this.extractUrlContent(url, options);
+  }
+
+  // ---------------------------------------------------------------------------
+  // External proxy methods — mirror the server's /proxy/ routes 1:1.
+  //
+  // Every method with "proxy" in its name can use the external rotating proxy:
+  // it does NOT check robots.txt, is never cached, and costs the native price
+  // plus a surcharge. Methods without "proxy" in the name never do.
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Extract URL metadata via the external proxy (paid endpoint).
+   * Does not check robots.txt. `performance` and `redirects` are not available.
+   *
+   * @param url
+   * @param options
+   * @param options.fields
+   * @param options.omitEmpty
+   * @param options.includeResponseBody
+   * @param options.country - 2-letter country code to fetch from
+   * @param options.method - "GET" or "POST" (default POST)
+   * @throws {InvalidUrlError} if URL is invalid
+   * @throws {PaymentFailedError} if x402 payment fails
+   * @throws {NetworkError} various reasons, check README
+   */
+  async proxyExtractUrlMetadata(
+    url: string,
+    options?: MetadataOptions & ProxyOptions,
+  ): Promise<PaidEndpointResponse> {
+    return this._extractVia(
+      "proxy",
+      "url-metadata",
+      "Metadata extraction",
+      url,
+      this._metadataParams(options),
+      options,
+    );
+  }
+
+  /**
+   * Extract URL links via the external proxy (paid endpoint).
+   * Does not check robots.txt.
+   *
+   * @param url
+   * @param options
+   * @param options.country - 2-letter country code to fetch from
+   * @param options.method - "GET" or "POST" (default POST)
+   * @throws {InvalidUrlError} if URL is invalid
+   * @throws {PaymentFailedError} if x402 payment fails
+   * @throws {NetworkError} various reasons, check README
+   */
+  async proxyExtractUrlLinks(url: string, options?: ProxyOptions): Promise<PaidEndpointResponse> {
+    return this._extractVia("proxy", "url-links", "Links extraction", url, {}, options);
+  }
+
+  /**
+   * Extract URL preview via the external proxy (paid endpoint).
+   * Does not check robots.txt.
+   *
+   * @param url
+   * @param options
+   * @param options.country - 2-letter country code to fetch from
+   * @param options.method - "GET" or "POST" (default POST)
+   * @throws {InvalidUrlError} if URL is invalid
+   * @throws {PaymentFailedError} if x402 payment fails
+   * @throws {NetworkError} various reasons, check README
+   */
+  async proxyExtractUrlPreview(url: string, options?: ProxyOptions): Promise<PaidEndpointResponse> {
+    return this._extractVia("proxy", "url-preview", "Preview extraction", url, {}, options);
+  }
+
+  /**
+   * Extract URL content as markdown via the external proxy (paid endpoint).
+   * Does not check robots.txt.
+   *
+   * @param url
+   * @param options
+   * @param options.includeMediaUrls
+   * @param options.country - 2-letter country code to fetch from
+   * @param options.method - "GET" or "POST" (default POST)
+   * @throws {InvalidUrlError} if URL is invalid
+   * @throws {PaymentFailedError} if x402 payment fails
+   * @throws {NetworkError} various reasons, check README
+   */
+  async proxyExtractUrlContent(
+    url: string,
+    options?: ContentOptions & ProxyOptions,
+  ): Promise<PaidEndpointResponse> {
+    return this._extractVia(
+      "proxy",
+      "url-content",
+      "Content extraction",
+      url,
+      this._contentParams(options),
+      options,
+    );
+  }
+
+  /**
+   * Extract URL metadata via the external proxy with JavaScript rendering (paid endpoint).
+   * Does not check robots.txt. `performance` and `redirects` are not available.
+   *
+   * @param url
+   * @param options
+   * @param options.fields
+   * @param options.omitEmpty
+   * @param options.includeResponseBody
+   * @param options.country - 2-letter country code to fetch from
+   * @param options.method - "GET" or "POST" (default POST)
+   * @throws {InvalidUrlError} if URL is invalid
+   * @throws {PaymentFailedError} if x402 payment fails
+   * @throws {NetworkError} various reasons, check README
+   */
+  async proxyRenderExtractUrlMetadata(
+    url: string,
+    options?: MetadataOptions & ProxyOptions,
+  ): Promise<PaidEndpointResponse> {
+    return this._extractVia(
+      "proxy-render",
+      "url-metadata",
+      "Metadata extraction",
+      url,
+      this._metadataParams(options),
+      options,
+    );
+  }
+
+  /**
+   * Extract URL links via the external proxy with JavaScript rendering (paid endpoint).
+   * Does not check robots.txt.
+   *
+   * @param url
+   * @param options
+   * @param options.country - 2-letter country code to fetch from
+   * @param options.method - "GET" or "POST" (default POST)
+   * @throws {InvalidUrlError} if URL is invalid
+   * @throws {PaymentFailedError} if x402 payment fails
+   * @throws {NetworkError} various reasons, check README
+   */
+  async proxyRenderExtractUrlLinks(
+    url: string,
+    options?: ProxyOptions,
+  ): Promise<PaidEndpointResponse> {
+    return this._extractVia("proxy-render", "url-links", "Links extraction", url, {}, options);
+  }
+
+  /**
+   * Extract URL preview via the external proxy with JavaScript rendering (paid endpoint).
+   * Does not check robots.txt.
+   *
+   * @param url
+   * @param options
+   * @param options.country - 2-letter country code to fetch from
+   * @param options.method - "GET" or "POST" (default POST)
+   * @throws {InvalidUrlError} if URL is invalid
+   * @throws {PaymentFailedError} if x402 payment fails
+   * @throws {NetworkError} various reasons, check README
+   */
+  async proxyRenderExtractUrlPreview(
+    url: string,
+    options?: ProxyOptions,
+  ): Promise<PaidEndpointResponse> {
+    return this._extractVia("proxy-render", "url-preview", "Preview extraction", url, {}, options);
+  }
+
+  /**
+   * Extract URL content as markdown via the external proxy with JavaScript rendering (paid endpoint).
+   * Does not check robots.txt.
+   *
+   * @param url
+   * @param options
+   * @param options.includeMediaUrls
+   * @param options.country - 2-letter country code to fetch from
+   * @param options.method - "GET" or "POST" (default POST)
+   * @throws {InvalidUrlError} if URL is invalid
+   * @throws {PaymentFailedError} if x402 payment fails
+   * @throws {NetworkError} various reasons, check README
+   */
+  async proxyRenderExtractUrlContent(
+    url: string,
+    options?: ContentOptions & ProxyOptions,
+  ): Promise<PaidEndpointResponse> {
+    return this._extractVia(
+      "proxy-render",
+      "url-content",
+      "Content extraction",
+      url,
+      this._contentParams(options),
+      options,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Convenience: native first, external proxy as fallback.
+  //
+  // These choose the route FOR you, so unlike the methods above the price and
+  // the robots.txt behaviour are not known up front: a call costs the native
+  // price, or the proxy price when it falls back (never both). Read
+  // `results[0].data.proxy` on the response to see which path ran.
+  //   - `render: true` or a `country` skips the native attempt.
+  //   - otherwise: free preflight -> native -> external proxy if the target
+  //     blocked Minifetch (robots.txt, or a 403 / 429 / 503).
+  //   - never steps up to JavaScript rendering on its own.
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Extract URL metadata, falling back to the external proxy when the target
+   * blocks the native Minifetch proxy. May skip robots.txt; see the note above.
+   *
+   * @param url
+   * @param options
+   * @param options.fields
+   * @param options.omitEmpty
+   * @param options.includeResponseBody
+   * @param options.render - force the external proxy with JavaScript rendering
+   * @param options.country - force the external proxy, fetching from this 2-letter country code
+   * @param options.method - "GET" or "POST" (default POST)
+   * @throws {InvalidUrlError} if URL is invalid
+   * @throws {RobotsBlockedError} if the preflight rejects the domain itself (invalid or non-existent)
+   * @throws {PaymentFailedError} if x402 payment fails
+   * @throws {NetworkError} various reasons, check README
+   */
+  async extractUrlMetadataWithProxyFallback(
+    url: string,
+    options?: MetadataOptions & ProxyFallbackOptions,
+  ): Promise<PaidEndpointResponse> {
+    return this._extractWithProxyFallback(
+      "url-metadata",
+      "Metadata extraction",
+      url,
+      this._metadataParams(options),
+      options,
+    );
+  }
+
+  /**
+   * Extract URL links, falling back to the external proxy when the target
+   * blocks the native Minifetch proxy. May skip robots.txt; see the note above.
+   *
+   * @param url
+   * @param options
+   * @param options.render - force the external proxy with JavaScript rendering
+   * @param options.country - force the external proxy, fetching from this 2-letter country code
+   * @param options.method - "GET" or "POST" (default POST)
+   * @throws {InvalidUrlError} if URL is invalid
+   * @throws {RobotsBlockedError} if the preflight rejects the domain itself (invalid or non-existent)
+   * @throws {PaymentFailedError} if x402 payment fails
+   * @throws {NetworkError} various reasons, check README
+   */
+  async extractUrlLinksWithProxyFallback(
+    url: string,
+    options?: ProxyFallbackOptions,
+  ): Promise<PaidEndpointResponse> {
+    return this._extractWithProxyFallback("url-links", "Links extraction", url, {}, options);
+  }
+
+  /**
+   * Extract URL preview, falling back to the external proxy when the target
+   * blocks the native Minifetch proxy. May skip robots.txt; see the note above.
+   *
+   * @param url
+   * @param options
+   * @param options.render - force the external proxy with JavaScript rendering
+   * @param options.country - force the external proxy, fetching from this 2-letter country code
+   * @param options.method - "GET" or "POST" (default POST)
+   * @throws {InvalidUrlError} if URL is invalid
+   * @throws {RobotsBlockedError} if the preflight rejects the domain itself (invalid or non-existent)
+   * @throws {PaymentFailedError} if x402 payment fails
+   * @throws {NetworkError} various reasons, check README
+   */
+  async extractUrlPreviewWithProxyFallback(
+    url: string,
+    options?: ProxyFallbackOptions,
+  ): Promise<PaidEndpointResponse> {
+    return this._extractWithProxyFallback("url-preview", "Preview extraction", url, {}, options);
+  }
+
+  /**
+   * Extract URL content as markdown, falling back to the external proxy when
+   * the target blocks the native Minifetch proxy. May skip robots.txt; see the note above.
+   *
+   * @param url
+   * @param options
+   * @param options.includeMediaUrls
+   * @param options.render - force the external proxy with JavaScript rendering
+   * @param options.country - force the external proxy, fetching from this 2-letter country code
+   * @param options.method - "GET" or "POST" (default POST)
+   * @throws {InvalidUrlError} if URL is invalid
+   * @throws {RobotsBlockedError} if the preflight rejects the domain itself (invalid or non-existent)
+   * @throws {PaymentFailedError} if x402 payment fails
+   * @throws {NetworkError} various reasons, check README
+   */
+  async extractUrlContentWithProxyFallback(
+    url: string,
+    options?: ContentOptions & ProxyFallbackOptions,
+  ): Promise<PaidEndpointResponse> {
+    return this._extractWithProxyFallback(
+      "url-content",
+      "Content extraction",
+      url,
+      this._contentParams(options),
+      options,
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -569,14 +918,147 @@ export class MinifetchClient {
    * Preflight check helper — throws RobotsBlockedError if not allowed
    *
    * @param url
+   * @param proxyHint - append a pointer to the proxy methods on a robots.txt
+   *   block (extract methods only; the SEO page audit has no proxy version)
    */
-  private async _preflightOrThrow(url: string): Promise<void> {
+  private async _preflightOrThrow(url: string, proxyHint = false): Promise<void> {
     const checkResponse = await this.preflightUrlCheck(url);
-    if (!checkResponse.results[0]?.data?.allowed) {
-      throw new RobotsBlockedError(
-        url,
-        checkResponse.results[0]?.data?.message || "URL is blocked by robots.txt",
+    const data = checkResponse.results[0]?.data;
+    if (!data?.allowed) {
+      const message = data?.message || "URL is blocked by robots.txt";
+      const hint = proxyHint && message.includes(PREFLIGHT_ROBOTS_BLOCKED) ? PROXY_HINT : "";
+      throw new RobotsBlockedError(url, `${message}${hint}`);
+    }
+  }
+
+  /**
+   * Request params for the url-metadata endpoint (without `url`).
+   *
+   * @param options
+   */
+  private _metadataParams(options?: MetadataOptions): RequestParams {
+    const params: RequestParams = {};
+    if (options?.fields?.length) params.fields = options.fields.join(",");
+    if (options?.omitEmpty) params.omitEmpty = true;
+    if (options?.includeResponseBody) params.includeResponseBody = true;
+    return params;
+  }
+
+  /**
+   * Request params for the url-content endpoint (without `url`).
+   *
+   * @param options
+   */
+  private _contentParams(options?: ContentOptions): RequestParams {
+    const params: RequestParams = {};
+    if (options?.includeMediaUrls) params.includeMediaUrls = true;
+    return params;
+  }
+
+  /**
+   * One extract request on a given tier. The single code path behind the
+   * proxyExtract*, proxyRenderExtract* and extract*WithProxyFallback methods.
+   * `country` is sent on the external proxy tiers only.
+   *
+   * @param tier - which fetch path (and so which route) to call
+   * @param slug - endpoint slug, e.g. "url-metadata"
+   * @param label - used in error messages
+   * @param url - target url (validated here)
+   * @param endpointParams - the endpoint's own params (without `url`)
+   * @param options
+   * @param options.country - 2-letter country code (external proxy tiers only)
+   * @param options.method - "GET" or "POST" (default POST)
+   */
+  private async _extractVia(
+    tier: FetchTier,
+    slug: string,
+    label: string,
+    url: string,
+    endpointParams: RequestParams,
+    options?: ProxyOptions,
+  ): Promise<PaidEndpointResponse> {
+    try {
+      const normalizedUrl = validateAndNormalizeUrl(url);
+
+      const params: RequestParams = { url: normalizedUrl, ...endpointParams };
+      if (tier !== "native" && options?.country) params.country = options.country;
+
+      return await this._makeRequest(
+        `${TIER_PREFIX[tier]}/extract/${slug}`,
+        normalizedUrl,
+        label,
+        params,
+        options?.method,
       );
+    } catch (error) {
+      return this._rethrowError(error, url, label);
+    }
+  }
+
+  /**
+   * True when a failed native fetch means the target blocked the native
+   * Minifetch proxy (robots.txt, or an upstream 403 / 429 / 503), so the
+   * external proxy is worth trying. Anything else (404, DNS, bad url, payment)
+   * would fail there too.
+   *
+   * @param error
+   */
+  private _isBlockedError(error: unknown): boolean {
+    return (
+      error instanceof NetworkError &&
+      error.statusCode === 502 &&
+      typeof error.serverMessage === "string" &&
+      BLOCKED_SERVER_MESSAGES.has(error.serverMessage)
+    );
+  }
+
+  /**
+   * The waterfall behind the extract*WithProxyFallback methods:
+   *   1. `render: true`  -> external proxy with JavaScript rendering. No native attempt.
+   *   2. `country` set   -> external proxy. No native attempt (native can't pick a country).
+   *   3. free preflight says robots.txt blocks Minifetch -> external proxy.
+   *   4. otherwise the native Minifetch proxy; if the target blocked it -> external proxy.
+   *   5. any other failure is rethrown. Never steps up to rendering on its own.
+   * Failed attempts are not charged, so at most one fetch is paid for.
+   *
+   * @param slug - endpoint slug, e.g. "url-metadata"
+   * @param label - used in error messages
+   * @param url
+   * @param endpointParams - the endpoint's own params (without `url`)
+   * @param options
+   * @param options.render - force the external proxy with JavaScript rendering
+   * @param options.country - force the external proxy, fetching from this country
+   * @param options.method - "GET" or "POST" (default POST)
+   */
+  private async _extractWithProxyFallback(
+    slug: string,
+    label: string,
+    url: string,
+    endpointParams: RequestParams,
+    options?: ProxyFallbackOptions,
+  ): Promise<PaidEndpointResponse> {
+    if (options?.render) {
+      return this._extractVia("proxy-render", slug, label, url, endpointParams, options);
+    }
+    if (options?.country) {
+      return this._extractVia("proxy", slug, label, url, endpointParams, options);
+    }
+
+    const checkResponse = await this.preflightUrlCheck(url);
+    const check = checkResponse.results[0]?.data;
+    if (!check?.allowed) {
+      const message = check?.message || "URL is blocked by robots.txt";
+      // Only a robots.txt block is worth the external proxy. An invalid or
+      // non-existent domain fails there too, so surface it like checkAndExtract* does.
+      if (!message.includes(PREFLIGHT_ROBOTS_BLOCKED)) throw new RobotsBlockedError(url, message);
+      return this._extractVia("proxy", slug, label, url, endpointParams, options);
+    }
+
+    try {
+      return await this._extractVia("native", slug, label, url, endpointParams, options);
+    } catch (error) {
+      if (!this._isBlockedError(error)) throw error;
+      return this._extractVia("proxy", slug, label, url, endpointParams, options);
     }
   }
 

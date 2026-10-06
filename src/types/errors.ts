@@ -114,20 +114,42 @@ export class ConfigurationError extends MinifetchError {
 }
 
 /**
+ * Structured details of a non-ok API response, attached to {@link NetworkError}.
+ */
+export interface NetworkErrorDetails {
+  /** HTTP status Minifetch returned (ex: 502) */
+  statusCode?: number;
+  /** The server's `results[0].error.message`, exact (ex: "upstream forbidden") */
+  serverMessage?: string;
+  /** The target's own HTTP status, when it answered (ex: 403) */
+  upstreamStatus?: number;
+}
+
+/**
  * Thrown when network/API communication fails
  */
 export class NetworkError extends MinifetchError {
   public readonly originalError?: Error;
+  /** HTTP status Minifetch returned (ex: 502) */
+  public readonly statusCode?: number;
+  /** The server's `results[0].error.message`, exact (ex: "upstream forbidden") */
+  public readonly serverMessage?: string;
+  /** The target's own HTTP status, when it answered (ex: 403) */
+  public readonly upstreamStatus?: number;
 
   /**
    *
    * @param message
    * @param originalError
+   * @param details - structured fields from a non-ok API response
    */
-  constructor(message: string, originalError?: Error) {
+  constructor(message: string, originalError?: Error, details?: NetworkErrorDetails) {
     super(message);
     this.name = "NetworkError";
     this.originalError = originalError;
+    this.statusCode = details?.statusCode;
+    this.serverMessage = details?.serverMessage;
+    this.upstreamStatus = details?.upstreamStatus;
     Object.setPrototypeOf(this, NetworkError.prototype);
   }
 }

@@ -17,6 +17,7 @@ import { PaymentFailedError, NetworkError } from "../types/errors.js";
  *
  * @param url
  * @param config
+ * @param init
  */
 export async function handlePayment(
   url: string,
@@ -52,9 +53,11 @@ export async function handlePayment(
     const response = await fetchWithPayment(url, init ?? { method: "GET" });
 
     if (!response.ok) {
-      const serverMessage = await readServerErrorMessage(response);
+      const { serverMessage, upstreamStatus } = await readServerError(response);
       throw new NetworkError(
         `Request failed: ${response.status} ${response.statusText}${serverMessage ? ` — ${serverMessage}` : ""}`,
+        undefined,
+        { statusCode: response.status, serverMessage, upstreamStatus },
       );
     }
 
@@ -88,6 +91,7 @@ export async function handlePayment(
  *
  * @param url
  * @param config
+ * @param init
  */
 export async function handleApiKeyRequest(
   url: string,
@@ -104,9 +108,11 @@ export async function handleApiKeyRequest(
   });
 
   if (!response.ok) {
-    const serverMessage = await readServerErrorMessage(response);
+    const { serverMessage, upstreamStatus } = await readServerError(response);
     throw new NetworkError(
       `Request failed: ${response.status} ${response.statusText}${serverMessage ? ` — ${serverMessage}` : ""}`,
+      undefined,
+      { statusCode: response.status, serverMessage, upstreamStatus },
     );
   }
 
@@ -131,19 +137,29 @@ function getExplorerLink(config: InitializedConfig, txHash: string): string {
 }
 
 /**
- * Best-effort read of the rich server error message from a non-ok response.
- * Minifetch error bodies carry it at results[0].error.message.
+ * Best-effort read of the server's error from a non-ok response. Minifetch
+ * fetch-error bodies carry it at results[0].error: `message` is a fixed string
+ * (ex: "upstream forbidden") and `statusCode`, when present, is the TARGET's
+ * HTTP status. Other error shapes (auth, credits) yield nothing here.
  *
  * @param response - non-ok Response (body is consumed)
  */
-async function readServerErrorMessage(response: Response): Promise<string | undefined> {
+async function readServerError(
+  response: Response,
+): Promise<{ serverMessage?: string; upstreamStatus?: number }> {
   try {
     const body = (await response.json()) as {
-      results?: Array<{ error?: { message?: string } }>;
+      results?: Array<{ error?: { message?: string; statusCode?: number | string } }>;
     };
     // TODO: revisit this approach when we scale up to multiple results per request
-    return body?.results?.[0]?.error?.message;
+    const error = body?.results?.[0]?.error;
+    const upstreamStatus = Number(error?.statusCode);
+    return {
+      serverMessage: typeof error?.message === "string" ? error.message : undefined,
+      upstreamStatus:
+        Number.isFinite(upstreamStatus) && upstreamStatus > 0 ? upstreamStatus : undefined,
+    };
   } catch {
-    return undefined;
+    return {};
   }
 }

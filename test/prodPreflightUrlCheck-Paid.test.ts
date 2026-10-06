@@ -11,7 +11,6 @@ beforeEach(async () => {
 });
 
 describe.sequential("x402: _exercisePaidUrlCheck() e2e", { timeout: 30000 }, () => {
-
   it("base paid /url-check settles (POST default)", async () => {
     const client = new MinifetchClient({
       network: "base",
@@ -42,5 +41,4 @@ describe.sequential("x402: _exercisePaidUrlCheck() e2e", { timeout: 30000 }, () 
     expect(response.payment.success).toBe(true);
     expect(response.payment.network).toBe("base");
   });
-
 });
