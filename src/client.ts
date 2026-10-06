@@ -686,8 +686,7 @@ export class MinifetchClient {
    * @param options.render - force the external proxy with JavaScript rendering
    * @param options.country - force the external proxy, fetching from this 2-letter country code
    * @param options.method - "GET" or "POST" (default POST)
-   * @throws {InvalidUrlError} if URL is invalid
-   * @throws {RobotsBlockedError} if the preflight rejects the domain itself (invalid or non-existent)
+   * @throws {InvalidUrlError} if URL is invalid, or its domain is invalid or doesn't exist
    * @throws {PaymentFailedError} if x402 payment fails
    * @throws {NetworkError} various reasons, check README
    */
@@ -713,8 +712,7 @@ export class MinifetchClient {
    * @param options.render - force the external proxy with JavaScript rendering
    * @param options.country - force the external proxy, fetching from this 2-letter country code
    * @param options.method - "GET" or "POST" (default POST)
-   * @throws {InvalidUrlError} if URL is invalid
-   * @throws {RobotsBlockedError} if the preflight rejects the domain itself (invalid or non-existent)
+   * @throws {InvalidUrlError} if URL is invalid, or its domain is invalid or doesn't exist
    * @throws {PaymentFailedError} if x402 payment fails
    * @throws {NetworkError} various reasons, check README
    */
@@ -734,8 +732,7 @@ export class MinifetchClient {
    * @param options.render - force the external proxy with JavaScript rendering
    * @param options.country - force the external proxy, fetching from this 2-letter country code
    * @param options.method - "GET" or "POST" (default POST)
-   * @throws {InvalidUrlError} if URL is invalid
-   * @throws {RobotsBlockedError} if the preflight rejects the domain itself (invalid or non-existent)
+   * @throws {InvalidUrlError} if URL is invalid, or its domain is invalid or doesn't exist
    * @throws {PaymentFailedError} if x402 payment fails
    * @throws {NetworkError} various reasons, check README
    */
@@ -756,8 +753,7 @@ export class MinifetchClient {
    * @param options.render - force the external proxy with JavaScript rendering
    * @param options.country - force the external proxy, fetching from this 2-letter country code
    * @param options.method - "GET" or "POST" (default POST)
-   * @throws {InvalidUrlError} if URL is invalid
-   * @throws {RobotsBlockedError} if the preflight rejects the domain itself (invalid or non-existent)
+   * @throws {InvalidUrlError} if URL is invalid, or its domain is invalid or doesn't exist
    * @throws {PaymentFailedError} if x402 payment fails
    * @throws {NetworkError} various reasons, check README
    */
@@ -915,7 +911,8 @@ export class MinifetchClient {
   }
 
   /**
-   * Preflight check helper — throws RobotsBlockedError if not allowed
+   * Preflight check helper — throws RobotsBlockedError on a robots.txt block,
+   * InvalidUrlError when the domain itself is invalid or doesn't exist.
    *
    * @param url
    * @param proxyTip - set `error.tip` to a pointer to the proxy methods on a
@@ -927,8 +924,9 @@ export class MinifetchClient {
     const data = checkResponse.results[0]?.data;
     if (!data?.allowed) {
       const message = data?.message || "URL is blocked by robots.txt";
-      const tip = proxyTip && message.includes(PREFLIGHT_ROBOTS_BLOCKED) ? PROXY_TIP : undefined;
-      throw new RobotsBlockedError(url, message, tip);
+      // Not allowed, but not by robots.txt: the domain is invalid or doesn't exist.
+      if (!message.includes(PREFLIGHT_ROBOTS_BLOCKED)) throw new InvalidUrlError(url, message);
+      throw new RobotsBlockedError(url, message, proxyTip ? PROXY_TIP : undefined);
     }
   }
 
@@ -1051,7 +1049,7 @@ export class MinifetchClient {
       const message = check?.message || "URL is blocked by robots.txt";
       // Only a robots.txt block is worth the external proxy. An invalid or
       // non-existent domain fails there too, so surface it like checkAndExtract* does.
-      if (!message.includes(PREFLIGHT_ROBOTS_BLOCKED)) throw new RobotsBlockedError(url, message);
+      if (!message.includes(PREFLIGHT_ROBOTS_BLOCKED)) throw new InvalidUrlError(url, message);
       return this._extractVia("proxy", slug, label, url, endpointParams, options);
     }
 
