@@ -160,7 +160,11 @@ export class MinifetchClient {
       const response = await fetch(requestUrl, init);
 
       if (!response.ok) {
-        throw new NetworkError(`Preflight check failed: ${response.status} ${response.statusText}`);
+        throw new NetworkError(
+          `Preflight check failed: ${response.status} ${response.statusText}`,
+          undefined,
+          { statusCode: response.status },
+        );
       }
 
       return (await response.json()) as PreflightCheckResponse;
@@ -170,6 +174,7 @@ export class MinifetchClient {
       }
       throw new NetworkError(
         `Preflight check failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        error instanceof Error ? error : undefined,
       );
     }
   }
