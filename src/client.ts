@@ -65,9 +65,9 @@ const BLOCKED_SERVER_MESSAGES: ReadonlySet<string> = new Set([
 /** Preflight message for a robots.txt block (vs. an invalid or non-existent domain). */
 const PREFLIGHT_ROBOTS_BLOCKED = "blocked by robots.txt";
 
-/** Appended to RobotsBlockedError on the extract methods, which have proxy versions. */
-const PROXY_HINT =
-  " To fetch it anyway, use a proxyExtract* or extract*WithProxyFallback method (external proxy, does not check robots.txt).";
+/** `tip` on RobotsBlockedError from the checkAndExtract* methods, which have proxy versions. */
+const PROXY_TIP =
+  "To fetch it anyway, use a proxyExtract* or extract*WithProxyFallback method (external proxy, does not check robots.txt).";
 
 /**
  * Main Minifetch API client.
@@ -918,16 +918,17 @@ export class MinifetchClient {
    * Preflight check helper — throws RobotsBlockedError if not allowed
    *
    * @param url
-   * @param proxyHint - append a pointer to the proxy methods on a robots.txt
-   *   block (extract methods only; the SEO page audit has no proxy version)
+   * @param proxyTip - set `error.tip` to a pointer to the proxy methods on a
+   *   robots.txt block (extract methods only; the SEO page audit has no proxy
+   *   version). The message itself is never changed.
    */
-  private async _preflightOrThrow(url: string, proxyHint = false): Promise<void> {
+  private async _preflightOrThrow(url: string, proxyTip = false): Promise<void> {
     const checkResponse = await this.preflightUrlCheck(url);
     const data = checkResponse.results[0]?.data;
     if (!data?.allowed) {
       const message = data?.message || "URL is blocked by robots.txt";
-      const hint = proxyHint && message.includes(PREFLIGHT_ROBOTS_BLOCKED) ? PROXY_HINT : "";
-      throw new RobotsBlockedError(url, `${message}${hint}`);
+      const tip = proxyTip && message.includes(PREFLIGHT_ROBOTS_BLOCKED) ? PROXY_TIP : undefined;
+      throw new RobotsBlockedError(url, message, tip);
     }
   }
 
