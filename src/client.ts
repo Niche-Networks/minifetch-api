@@ -62,12 +62,28 @@ const BLOCKED_SERVER_MESSAGES: ReadonlySet<string> = new Set([
   "upstream unavailable",
 ]);
 
-/** Preflight message for a robots.txt block (vs. an invalid or non-existent domain). */
-const PREFLIGHT_ROBOTS_BLOCKED = "blocked by robots.txt";
+/**
+ * Marks the one preflight "not allowed" message that is NOT a robots.txt block:
+ * the domain is invalid or doesn't exist. Any other not-allowed message
+ * (including one the server adds later) is treated as a robots.txt block.
+ */
+const PREFLIGHT_BAD_DOMAIN = "non-existent domain";
 
-/** `tip` on RobotsBlockedError from the checkAndExtract* methods, which have proxy versions. */
-const PROXY_TIP =
-  "To fetch it anyway, use a proxyExtract* or extract*WithProxyFallback method (external proxy, does not check robots.txt).";
+/**
+ * `tip` for a RobotsBlockedError from a checkAndExtract* method: names the two
+ * methods that can fetch that same endpoint through the external proxy.
+ *
+ * @param slug - endpoint slug, e.g. "url-metadata"
+ * @returns e.g. "... use proxyExtractUrlMetadata or extractUrlMetadataWithProxyFallback ..."
+ */
+function proxyTipFor(slug: string): string {
+  // "url-metadata" -> "UrlMetadata"
+  const name = slug
+    .split("-")
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join("");
+  return `To fetch it anyway, use proxyExtract${name} or extract${name}WithProxyFallback (external proxy, does not check robots.txt).`;
+}
 
 /**
  * Main Minifetch API client.
@@ -423,7 +439,7 @@ export class MinifetchClient {
       method?: HttpMethod;
     },
   ): Promise<PaidEndpointResponse> {
-    await this._preflightOrThrow(url, true);
+    await this._preflightOrThrow(url, "url-metadata");
     return this.extractUrlMetadata(url, options);
   }
 
@@ -439,7 +455,7 @@ export class MinifetchClient {
     url: string,
     options?: { method?: HttpMethod },
   ): Promise<PaidEndpointResponse> {
-    await this._preflightOrThrow(url, true);
+    await this._preflightOrThrow(url, "url-links");
     return this.extractUrlLinks(url, options);
   }
 
@@ -455,7 +471,7 @@ export class MinifetchClient {
     url: string,
     options?: { method?: HttpMethod },
   ): Promise<PaidEndpointResponse> {
-    await this._preflightOrThrow(url, true);
+    await this._preflightOrThrow(url, "url-preview");
     return this.extractUrlPreview(url, options);
   }
 
@@ -472,7 +488,7 @@ export class MinifetchClient {
     url: string,
     options?: { includeMediaUrls?: boolean; method?: HttpMethod },
   ): Promise<PaidEndpointResponse> {
-    await this._preflightOrThrow(url, true);
+    await this._preflightOrThrow(url, "url-content");
     return this.extractUrlContent(url, options);
   }
 
@@ -920,18 +936,19 @@ export class MinifetchClient {
    * InvalidUrlError when the domain itself is invalid or doesn't exist.
    *
    * @param url
-   * @param proxyTip - set `error.tip` to a pointer to the proxy methods on a
-   *   robots.txt block (extract methods only; the SEO page audit has no proxy
-   *   version). The message itself is never changed.
+   * @param proxySlug - the extract endpoint being checked (e.g. "url-metadata").
+   *   When given, a robots.txt block sets `error.tip` to the proxy methods for
+   *   that endpoint. Omit for the SEO page audit, which has no proxy version.
+   *   The message itself is never changed.
    */
-  private async _preflightOrThrow(url: string, proxyTip = false): Promise<void> {
+  private async _preflightOrThrow(url: string, proxySlug?: string): Promise<void> {
     const checkResponse = await this.preflightUrlCheck(url);
     const data = checkResponse.results[0]?.data;
     if (!data?.allowed) {
       const message = data?.message || "URL is blocked by robots.txt";
       // Not allowed, but not by robots.txt: the domain is invalid or doesn't exist.
-      if (!message.includes(PREFLIGHT_ROBOTS_BLOCKED)) throw new InvalidUrlError(url, message);
-      throw new RobotsBlockedError(url, message, proxyTip ? PROXY_TIP : undefined);
+      if (message.includes(PREFLIGHT_BAD_DOMAIN)) throw new InvalidUrlError(url, message);
+      throw new RobotsBlockedError(url, message, proxySlug ? proxyTipFor(proxySlug) : undefined);
     }
   }
 
@@ -1054,7 +1071,7 @@ export class MinifetchClient {
       const message = check?.message || "URL is blocked by robots.txt";
       // Only a robots.txt block is worth the external proxy. An invalid or
       // non-existent domain fails there too, so surface it like checkAndExtract* does.
-      if (!message.includes(PREFLIGHT_ROBOTS_BLOCKED)) throw new InvalidUrlError(url, message);
+      if (message.includes(PREFLIGHT_BAD_DOMAIN)) throw new InvalidUrlError(url, message);
       return this._extractVia("proxy", slug, label, url, endpointParams, options);
     }
 
