@@ -174,10 +174,9 @@ Minifetch offers two ways to fetch a page: the native Minifetch proxy or a rotat
 | Cached | Yes | No, every call is a fresh fetch |
 | Price | Cheapest | Native price plus a surcharge |
 
-- **No silent fallback.** A blocked native request returns an error and a tip. It is never retried through the external proxy on your behalf.
 - **Decide before you pay.** The free `preflightCheck` tells you whether the native Minifetch proxy is allowed to fetch a URL.
 - **Proof per request.** Every response carries a `proxy` block: which proxy fetched the page, the user agent sent and whether robots.txt was obeyed. For regulated use-cases where provenance matters, stay on the native Minifetch proxy.
-- **No charge** for blocked or errored pages on either.
+- **No charge** for blocked or errored pages.
 
 The methods in this client use the native Minifetch proxy. The external proxy routes are available on the API now, see [Proxy Routes](https://minifetch.com/docs/api#proxy-routes) in the API docs.
 

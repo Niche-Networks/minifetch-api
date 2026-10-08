@@ -25,12 +25,15 @@ export declare class InvalidUrlError extends MinifetchError {
  */
 export declare class RobotsBlockedError extends MinifetchError {
     readonly url: string;
+    /** What to try next, when there is something to try. Only set when it applies. */
+    readonly tip?: string;
     /**
      *
      * @param url
      * @param message
+     * @param tip - optional pointer to another way to fetch the url
      */
-    constructor(url: string, message?: string);
+    constructor(url: string, message?: string, tip?: string);
 }
 /**
  * Thrown when payment fails
@@ -73,16 +76,34 @@ export declare class ConfigurationError extends MinifetchError {
     constructor(message: string);
 }
 /**
+ * Structured details of a non-ok API response, attached to {@link NetworkError}.
+ */
+export interface NetworkErrorDetails {
+    /** HTTP status Minifetch returned (ex: 502) */
+    statusCode?: number;
+    /** The server's `results[0].error.message`, exact (ex: "upstream forbidden") */
+    serverMessage?: string;
+    /** The target's own HTTP status, when it answered (ex: 403) */
+    upstreamStatus?: number;
+}
+/**
  * Thrown when network/API communication fails
  */
 export declare class NetworkError extends MinifetchError {
     readonly originalError?: Error;
+    /** HTTP status Minifetch returned (ex: 502) */
+    readonly statusCode?: number;
+    /** The server's `results[0].error.message`, exact (ex: "upstream forbidden") */
+    readonly serverMessage?: string;
+    /** The target's own HTTP status, when it answered (ex: 403) */
+    readonly upstreamStatus?: number;
     /**
      *
      * @param message
      * @param originalError
+     * @param details - structured fields from a non-ok API response
      */
-    constructor(message: string, originalError?: Error);
+    constructor(message: string, originalError?: Error, details?: NetworkErrorDetails);
 }
 /**
  * Thrown when keyword-search query validation fails (empty, or over 50 chars).

@@ -38,11 +38,14 @@ export class RobotsBlockedError extends MinifetchError {
      *
      * @param url
      * @param message
+     * @param tip - optional pointer to another way to fetch the url
      */
-    constructor(url, message) {
+    constructor(url, message, tip) {
         super(message || `URL is blocked by robots.txt`);
         this.name = "RobotsBlockedError";
         this.url = url;
+        if (tip)
+            this.tip = tip;
         Object.setPrototypeOf(this, RobotsBlockedError.prototype);
     }
 }
@@ -112,11 +115,18 @@ export class NetworkError extends MinifetchError {
      *
      * @param message
      * @param originalError
+     * @param details - structured fields from a non-ok API response
      */
-    constructor(message, originalError) {
+    constructor(message, originalError, details) {
         super(message);
         this.name = "NetworkError";
         this.originalError = originalError;
+        if (details?.statusCode !== undefined)
+            this.statusCode = details.statusCode;
+        if (details?.serverMessage !== undefined)
+            this.serverMessage = details.serverMessage;
+        if (details?.upstreamStatus !== undefined)
+            this.upstreamStatus = details.upstreamStatus;
         Object.setPrototypeOf(this, NetworkError.prototype);
     }
 }
