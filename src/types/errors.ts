@@ -37,16 +37,20 @@ export class InvalidUrlError extends MinifetchError {
  */
 export class RobotsBlockedError extends MinifetchError {
   public readonly url: string;
+  /** What to try next, when there is something to try. Only set when it applies. */
+  public declare readonly tip?: string;
 
   /**
    *
    * @param url
    * @param message
+   * @param tip - optional pointer to another way to fetch the url
    */
-  constructor(url: string, message?: string) {
+  constructor(url: string, message?: string, tip?: string) {
     super(message || `URL is blocked by robots.txt`);
     this.name = "RobotsBlockedError";
     this.url = url;
+    if (tip) this.tip = tip;
     Object.setPrototypeOf(this, RobotsBlockedError.prototype);
   }
 }
@@ -114,20 +118,44 @@ export class ConfigurationError extends MinifetchError {
 }
 
 /**
+ * Structured details of a non-ok API response, attached to {@link NetworkError}.
+ */
+export interface NetworkErrorDetails {
+  /** HTTP status Minifetch returned (ex: 502) */
+  statusCode?: number;
+  /** The server's `results[0].error.message`, exact (ex: "upstream forbidden") */
+  serverMessage?: string;
+  /** The target's own HTTP status, when it answered (ex: 403) */
+  upstreamStatus?: number;
+}
+
+/**
  * Thrown when network/API communication fails
  */
 export class NetworkError extends MinifetchError {
   public readonly originalError?: Error;
+  // `declare`: these exist on the error only when the server supplied them, so
+  // an error without details looks exactly as it did before they were added.
+  /** HTTP status Minifetch returned (ex: 502) */
+  public declare readonly statusCode?: number;
+  /** The server's `results[0].error.message`, exact (ex: "upstream forbidden") */
+  public declare readonly serverMessage?: string;
+  /** The target's own HTTP status, when it answered (ex: 403) */
+  public declare readonly upstreamStatus?: number;
 
   /**
    *
    * @param message
    * @param originalError
+   * @param details - structured fields from a non-ok API response
    */
-  constructor(message: string, originalError?: Error) {
+  constructor(message: string, originalError?: Error, details?: NetworkErrorDetails) {
     super(message);
     this.name = "NetworkError";
     this.originalError = originalError;
+    if (details?.statusCode !== undefined) this.statusCode = details.statusCode;
+    if (details?.serverMessage !== undefined) this.serverMessage = details.serverMessage;
+    if (details?.upstreamStatus !== undefined) this.upstreamStatus = details.upstreamStatus;
     Object.setPrototypeOf(this, NetworkError.prototype);
   }
 }

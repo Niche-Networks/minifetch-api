@@ -14,6 +14,7 @@ import { PaymentFailedError, NetworkError } from "../types/errors.js";
  *
  * @param url
  * @param config
+ * @param init
  */
 export async function handlePayment(url, config, init) {
     try {
@@ -39,12 +40,14 @@ export async function handlePayment(url, config, init) {
         else {
             throw new PaymentFailedError(`Unsupported network: ${config.network}`);
         }
-        const fetchWithPayment = wrapFetchWithPayment(fetch, _x402Client);
+        // Network failures are tagged at the source (fetchOrNetworkError), so being
+        // offline never surfaces as "Payment failed" — no payment was attempted.
+        const fetchWithPayment = wrapFetchWithPayment(fetchOrNetworkError, _x402Client);
         // Default GET when no init passed; init carries method + JSON body for POST.
         const response = await fetchWithPayment(url, init ?? { method: "GET" });
         if (!response.ok) {
-            const serverMessage = await readServerErrorMessage(response);
-            throw new NetworkError(`Request failed: ${response.status} ${response.statusText}${serverMessage ? ` — ${serverMessage}` : ""}`);
+            const { serverMessage, upstreamStatus } = await readServerError(response);
+            throw new NetworkError(`Request failed: ${response.status} ${response.statusText}${serverMessage ? ` — ${serverMessage}` : ""}`, undefined, { statusCode: response.status, serverMessage, upstreamStatus });
         }
         const httpClient = new x402HTTPClient(_x402Client);
         const paymentResponse = httpClient.getPaymentSettleResponse(name => response.headers.get(name));
@@ -63,7 +66,11 @@ export async function handlePayment(url, config, init) {
         if (error instanceof PaymentFailedError || error instanceof NetworkError) {
             throw error;
         }
-        throw new PaymentFailedError(`Payment failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+        // The x402 wrapper may re-wrap what our fetch threw; dig it back out.
+        const networkError = findNetworkError(error);
+        if (networkError)
+            throw networkError;
+        throw new PaymentFailedError(`Payment failed: ${error instanceof Error ? error.message : "Unknown error"}`, config.network, error instanceof Error ? error : undefined);
     }
 }
 /**
@@ -72,9 +79,10 @@ export async function handlePayment(url, config, init) {
  *
  * @param url
  * @param config
+ * @param init
  */
 export async function handleApiKeyRequest(url, config, init) {
-    const response = await fetch(url, {
+    const response = await fetchOrNetworkError(url, {
         ...init,
         method: init?.method ?? "GET",
         headers: {
@@ -83,8 +91,8 @@ export async function handleApiKeyRequest(url, config, init) {
         },
     });
     if (!response.ok) {
-        const serverMessage = await readServerErrorMessage(response);
-        throw new NetworkError(`Request failed: ${response.status} ${response.statusText}${serverMessage ? ` — ${serverMessage}` : ""}`);
+        const { serverMessage, upstreamStatus } = await readServerError(response);
+        throw new NetworkError(`Request failed: ${response.status} ${response.statusText}${serverMessage ? ` — ${serverMessage}` : ""}`, undefined, { statusCode: response.status, serverMessage, upstreamStatus });
     }
     return { response };
 }
@@ -107,18 +115,63 @@ function getExplorerLink(config, txHash) {
     }
 }
 /**
- * Best-effort read of the rich server error message from a non-ok response.
- * Minifetch error bodies carry it at results[0].error.message.
+ * Best-effort read of the server's error from a non-ok response. Minifetch
+ * fetch-error bodies carry it at results[0].error: `message` is a fixed string
+ * (ex: "upstream forbidden") and `statusCode`, when present, is the TARGET's
+ * HTTP status. Other error shapes (auth, credits) yield nothing here.
  *
  * @param response - non-ok Response (body is consumed)
  */
-async function readServerErrorMessage(response) {
+async function readServerError(response) {
     try {
         const body = (await response.json());
         // TODO: revisit this approach when we scale up to multiple results per request
-        return body?.results?.[0]?.error?.message;
+        const error = body?.results?.[0]?.error;
+        const upstreamStatus = Number(error?.statusCode);
+        return {
+            serverMessage: typeof error?.message === "string" ? error.message : undefined,
+            upstreamStatus: Number.isFinite(upstreamStatus) && upstreamStatus > 0 ? upstreamStatus : undefined,
+        };
     }
     catch {
-        return undefined;
+        return {};
     }
+}
+/**
+ * `fetch`, but a failure to get any response at all (offline, DNS, connection
+ * refused or reset, TLS) is thrown as a NetworkError carrying the original
+ * error — never left to be mislabelled as an extraction or payment failure.
+ * HTTP error statuses are NOT thrown here; callers handle `response.ok`.
+ *
+ * @param input - request url (or Request)
+ * @param init - fetch init
+ * @throws {NetworkError} when no response was received
+ */
+const fetchOrNetworkError = async (input, init) => {
+    try {
+        return await fetch(input, init);
+    }
+    catch (error) {
+        const original = error instanceof Error ? error : undefined;
+        // Node's fetch reports every transport failure as "fetch failed"; the
+        // useful part (ex: ENOTFOUND, ECONNREFUSED) is the cause's code.
+        const code = original?.cause?.code;
+        const detail = `${original?.message ?? "Unknown error"}${typeof code === "string" ? ` (${code})` : ""}`;
+        throw new NetworkError(`Request failed: could not reach Minifetch — ${detail}`, original);
+    }
+};
+/**
+ * Find a NetworkError in an error's `cause` chain (bounded depth).
+ *
+ * @param error - the caught error
+ * @returns the NetworkError, or undefined when there is none
+ */
+function findNetworkError(error) {
+    let current = error;
+    for (let depth = 0; depth < 5 && current; depth++) {
+        if (current instanceof NetworkError)
+            return current;
+        current = current.cause;
+    }
+    return undefined;
 }
