@@ -261,7 +261,7 @@ Not currently available on either proxy: authenticated or logged-in content.
 ---
 
 ### Error Types
-You are never charged for errors: blocked pages, failed fetches and bad requests are all free. Every error has a `name` and a `message`; check `err.name` to tell them apart.
+You are never charged for errors: blocked pages, failed fetches and bad requests are all free. Every error has a `name` and a `message`. The error classes are exported, so you can optionally check `err instanceof NetworkError` (after you `import { NetworkError } from "minifetch-api"`) or simply check `err.name` like the example below:
 
 ```js
 try {
