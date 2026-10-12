@@ -261,20 +261,71 @@ Not currently available on either proxy: authenticated or logged-in content.
 ---
 
 ### Error Types
-When you wrap the functions above in a try/catch, here are some of the errors you may encounter. You are never charged for target URLs that are blocked or error.
+You are never charged for errors: blocked pages, failed fetches and bad requests are all free. Every error has a `name` and a `message`; check `err.name` to tell them apart.
 
-- **"InvalidURLError: Invalid url ${url}"**
-  - The URL is malformed in some way, correct it and try again.
-- **"RobotsBlockedError: URL is blocked by robots.txt"**
-  - Minifetch is explicitly blocked by the website's `robots.txt`, cannot be fetched. If this is your site, read our tutorial [How To Unblock Minifetch](https://minifetch.com/tutorials/unblock-minifetch)
-- **"Network Error: 402 Payment Required"**
-  - Check your wallet -- likely you ran out of USDC to pay!
-- **"Network Error: 429 Too Many Requests"**
-  - Back off and retry, max 5-10 requests per second.
-- **"Network Error: 502 Bad Gateway"**
-  - URLs that pass their robots.txt check but are blocked anyway via 403 or other tactics may error like this. No charge.
-- **"503 Service Temporarily Unavailable"**
-  - Likely encountering upstream timeout errors on the target URL.
+```js
+try {
+  const response = await client.extractUrlMetadata(url);
+} catch (err) {
+  if (err.name === "NetworkError" && err.serverMessage === "upstream forbidden") {
+    // the target URL blocked the native Minifetch proxy, try the external
+    // proxy method instead: client.proxyExtractUrlMetadata(url) ... or try
+    // client.extractUrlMetadataWithProxyFallback(url) - it will try both
+    // automatically, starting with the cheapest option (Minifetch proxy).
+  }
+  console.log(err.message); // "Request failed: 502 Bad Gateway — upstream forbidden"
+}
+```
+
+**NetworkError** — Minifetch answered with an error, or couldn't be reached. Most errors are this one. Fields:
+- `statusCode` - the HTTP status Minifetch returned, ex: `502`
+- `serverMessage` - why, exactly as the server sent it, ex: `"upstream forbidden"` (listed below)
+- `upstreamStatus` - the target page's own HTTP status, when it answered, ex: `403`
+
+Each field is only set when the server sent it. If Minifetch couldn't be reached at all (you're offline, DNS, timeout), none are set and the message starts with `Request failed: could not reach Minifetch`.
+
+`serverMessage` values when fetching a web page failed:
+
+| `serverMessage` | `statusCode` | What happened |
+|---|---|---|
+| `robots blocked` * | 502 | robots.txt disallows the `minifetch` user agent |
+| `upstream forbidden` * | 502 | The page returned 403 |
+| `upstream rate limited` * | 502 | The page returned 429 |
+| `upstream unavailable` * | 502 | The page returned 503 |
+| `upstream not found` | 502 | The page returned 404 |
+| `upstream bad request` | 502 | The page returned 400 |
+| `upstream unauthorized` | 502 | The page returned 401 |
+| `upstream payment required` | 502 | The page returned 402 (paywalled) |
+| `upstream error` | 502 | Any other error from the page, or the connection failed |
+| `upstream too many redirects` | 502 | Redirect chain too long |
+| `dns lookup failed` | 502 | The domain doesn't resolve |
+| `invalid url` | 400 | Missing, malformed or unsupported URL |
+| `queue timeout` | 503 | Timed out waiting on the site's crawl delay, retry later |
+| `fetch error` | 503 | The page timed out or the fetch failed, retry later |
+| `proxy provider error` | 503 | The external proxy provider failed (external proxy methods only), retry later |
+| `server error` | 500 | Unclassified failure |
+
+\* The page blocked the native Minifetch proxy. Retry with `proxyExtract<X>` or `proxyRenderExtract<X>`. The `extract<X>WithProxyFallback` methods do this automatically for you.
+
+Other `statusCode` values:
+- `400` - a bad option, ex: an invalid `country`, or `fields` that aren't available on the external proxy. `serverMessage` says which.
+- `401` - API key missing, invalid or revoked.
+- `402` - out of credits (API key) or out of USDC (x402). Top up and retry.
+- `429` - too many requests. Back off and retry, max 5-10 requests per second.
+
+**RobotsBlockedError** — thrown by the `checkAndExtract<X>` and `checkAndRunSeoPageAudit` methods when the free preflight check finds the URL blocked by robots.txt. Nothing was fetched or charged. On `checkAndExtract<X>`, `err.tip` names the external proxy methods that can fetch that page. If this is your site, read [How To Unblock Minifetch](https://minifetch.com/tutorials/unblock-minifetch).
+
+The preflight only checks the URL you pass in, not where it redirects. If a redirect leads to a blocked page, or you call `extract<X>` / `runSeoPageAudit` (no preflight), the server blocks it instead and you get a `NetworkError` with `serverMessage: "robots blocked"`. Handle both.
+
+**ExtractionFailedError** / **SearchFailedError** — an unexpected failure, ex: a response that isn't valid JSON. The message includes the cause.
+
+**InvalidUrlError** — the URL is malformed or too long. Correct it and try again. The `checkAndExtract<X>`, `checkAndRunSeoPageAudit` and `extract<X>WithProxyFallback` methods also throw it when the domain doesn't exist; `extract<X>` and `runSeoPageAudit` throw a `NetworkError` with `serverMessage: "dns lookup failed"` instead.
+
+**PaymentFailedError** — the x402 payment couldn't be made, ex: a wallet or signing problem. `err.network` says which network.
+
+**ConfigurationError** — the client was created with a missing or invalid API key, private key or network.
+
+**InvalidQueryError** — `searchByKeyword` was given an empty query or one over 50 characters.
 
 ---
 
