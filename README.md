@@ -89,7 +89,7 @@ Minifetch offers 4 extraction types, jump to the section below that suits your n
 - **preview**
 - **links**
 
-**Free Preflight Check:** (Optional) Run this before your extraction, it checks if the target URL's robots.txt allows the native Minifetch proxy to scrape it (cheapest) or if you should use the external rotating proxy instead. The `checkAndExtract` methods below run this check automatically for you. You are never charged for blocked or error pages.
+**Free Preflight Check:** (Optional) Run this before your extraction, it checks if the target URL's robots.txt allows the native Minifetch proxy to scrape it (cheapest) or if you should use the external rotating proxy instead. The `checkAndExtract` methods below run this check automatically for you.
 ```js
 const options = { fresh: true }
 // To bypass the 24hr robots.txt cache.
@@ -98,7 +98,7 @@ const options = { fresh: true }
 await client.preflightUrlCheck(url, options);
 ```
 
-**Extract Metadata:** response headers, performance, redirects, favicons, title, description, SEO meta tags, canonical, Open Graph and Twitter card tags, JSON-LD, image tags, headings and more. Performance and redirects not available when using the external rotating proxy.
+**Extract Metadata:** response headers, performance, redirects, favicons, title, description, SEO meta tags, canonical, Open Graph and Twitter card tags, JSON-LD, image tags, headings and more. Performance and redirects not available when using the external rotating proxy. You are never charged for blocked or errored pages.
 
 ```js
 const options = {
@@ -116,107 +116,118 @@ const options = {
 };
 
 await client.extractUrlMetadataWithProxyFallback(url, options);
-// $0.002, or $0.003 if it falls back to the external rotating proxy,
+// $0.002 tries with native Minifetch proxy first (obeys robots.txt),
+// or $0.003 if it falls back to the external rotating proxy,
 // or $0.004 with { render: true } option.
+// { country: 'mx' } option available - choose from 195 countries.
 
-// Or if you want more control, try the following:
+// If you want more control, try the following:
 
 await client.checkAndExtractUrlMetadata(url, options);
-// $0.002 · Native Minifetch proxy, checks robots.txt first. Cheapest.
+// $0.002 · Native Minifetch proxy, obeys robots.txt. Cheapest.
 
 await client.extractUrlMetadata(url, options);
-// $0.002 · Native Minifetch proxy. Cheapest.
+// $0.002 · Native Minifetch proxy, obeys robots.txt. Cheapest.
 
 await client.proxyExtractUrlMetadata(url, options);
 // $0.003 · External rotating proxy.
+// { country: 'mx' } option available - choose from 195 countries.
 
 await client.proxyRenderExtractUrlMetadata(url, options);
 // $0.004 · External rotating proxy + JavaScript render.
+// { country: 'mx' } option available - choose from 195 countries.
 ```
 
-**Extract Content:** returns clean content as markdown from the page after nav, ads and scripts are stripped.
+**Extract Content:** returns clean content as markdown from the page after nav, ads and scripts are stripped. You are never charged for blocked or errored pages.
 
 ```js
-cost options = {
+const options = {
   includeMediaUrls: true, // add the page's image URLs, defaults to false
-  country: 'de', // use with external proxy only
 }
 
 await client.extractUrlContentWithProxyFallback(url, options);
-// $0.002, or $0.003 if it falls back to the external proxy,
-// or $0.004 with { render: true }.
+// $0.002 tries with native Minifetch proxy first (obeys robots.txt),
+// or $0.003 if it falls back to the external rotating proxy,
+// or $0.004 with { render: true } option.
+// { country: 'mx' } option available - choose from 195 countries.
 
-// Or if you want more control, try the following:
+// If you want more control, try the following:
 
 await client.checkAndExtractUrlContent(url, options);
-// $0.002 · Native Minifetch proxy, checks robots.txt. Cheapest.
+// $0.002 · Native Minifetch proxy, obeys robots.txt. Cheapest.
 
 await client.extractUrlContent(url, options);
-// $0.002 · Native Minifetch proxy. Cheapest.
+// $0.002 · Native Minifetch proxy, obeys robots.txt. Cheapest.
 
 await client.proxyExtractUrlContent(url, options);
 // $0.003 · External rotating proxy.
+// { country: 'mx' } option available - choose from 195 countries.
 
 await client.proxyRenderExtractUrlContent(url, options);
-// $0.004 · External proxy + JavaScript. For pages whose text only
-// appears after scripts run.
+// $0.004 · External rotating proxy + JavaScript. For pages whose text
+// only appears after scripts run.
+// { country: 'mx' } option available - choose from 195 countries.
 ```
 
-**Extract Preview:** the fields used for a page's share previews, the lightweight cards that represent it on social platforms, chat apps and AI.
+**Extract Preview:** the fields used for a page's share previews, the lightweight cards that represent it on social platforms, chat apps and AI. You are never charged for blocked or errored pages.
 
 ```js
-const options = { country: 'de' } // use with external proxy only
-
 await client.extractUrlPreviewWithProxyFallback(url, options);
-// $0.001, or $0.002 if it falls back to the external rotating proxy,
-// or $0.003 with { render: true }.
+// $0.001 tries with native Minifetch proxy first (obeys robots.txt),
+// or $0.002 if it falls back to the external rotating proxy,
+// or $0.003 with { render: true } option.
+// { country: 'mx' } option available - choose from 195 countries.
 
-// Or if you want more control, try the following:
+// If you want more control, try the following:
 
 await client.checkAndExtractUrlPreview(url);
-// $0.001 · Native Minifetch proxy, checks robots.txt first. Cheapest.
+// $0.001 · Native Minifetch proxy, obeys robots.txt. Cheapest.
 
 await client.extractUrlPreview(url);
-// $0.001 · Native Minifetch proxy. Cheapest.
+// $0.001 · Native Minifetch proxy, obeys robots.txt. Cheapest.
 
 await client.proxyExtractUrlPreview(url, options);
 // $0.002 · External rotating proxy.
+// { country: 'mx' } option available - choose from 195 countries.
 
 await client.proxyRenderExtractUrlPreview(url, options);
-// $0.003 · External proxy + JavaScript.
+// $0.003 · External rotating proxy + JavaScript.
+// { country: 'mx' } option available - choose from 195 countries.
 ```
 
-**Extract Links:** every link on the page categorized as internal, external or anchor, with `rel` (nofollow, sponsored, ugc…), `title`, `target` and image detection. Summary stats include the most-linked internal pages (with their anchor text) and the top external domains.
+**Extract Links:** every link on the page categorized as internal, external or anchor, with `rel` (nofollow, sponsored, ugc…), `title`, `target` and image detection. Summary stats include the most-linked internal pages (with their anchor text) and the top external domains. You are never charged for blocked or errored pages.
 
 ```js
-const options = { country: 'de' } // use with external proxy only
-
 await client.extractUrlLinksWithProxyFallback(url, options);
-// $0.002, or $0.003 if it falls back to the external rotating proxy,
+// $0.002 tries with native Minifetch proxy first (obeys robots.txt),
+// or $0.003 if it falls back to the external rotating proxy,
 // or $0.004 with { render: true } option.
+// { country: 'mx' } option available - choose from 195 countries.
 
-// Or if you want more control, try the following:
+// If you want more control, try the following:
 
 await client.checkAndExtractUrlLinks(url);
-// $0.002 · Native Minifetch proxy, checks robots.txt first. Cheapest.
+// $0.002 · Native Minifetch proxy, obeys robots.txt. Cheapest.
 
 await client.extractUrlLinks(url);
-// $0.002 · Native Minifetch proxy. Cheapest.
+// $0.002 · Native Minifetch proxy, obeys robots.txt. Cheapest.
 
 await client.proxyExtractUrlLinks(url, options);
 // $0.003 · External rotating proxy.
+// { country: 'mx' } option available - choose from 195 countries.
 
 await client.proxyRenderExtractUrlLinks(url, options);
 // $0.004 · External rotating proxy + JavaScript. Catches links added by scripts.
+// { country: 'mx' } option available - choose from 195 countries.
 ```
 
-#### SEO page audit
+#### SEO Page Audit
 
-A full technical SEO audit: combines the extractions above and runs deterministic checks that each return PASS / WARN / FAIL. No black-box scoring, just signal you can act on or pipe into an agent. Audit rules: [SKILL.md](https://minifetch.com/skills/seo-page-audit/SKILL.md). Native Minifetch proxy only.
+A full technical SEO audit: combines the extractions above and runs deterministic checks that each return PASS / WARN / FAIL. No black-box scoring, just signal you can act on or pipe into an agent. Audit rules: [SKILL.md](https://minifetch.com/skills/seo-page-audit/SKILL.md). Native Minifetch proxy only. You are never charged for blocked or errored pages.
 
 ```js
 await client.checkAndRunSeoPageAudit(url);
-// $0.01 · Native Minifetch proxy, checks robots.txt first.
+// $0.01 · Native Minifetch proxy, obeys robots.txt.
 
 await client.runSeoPageAudit(url);
 // $0.01 · No preflight call.
@@ -227,7 +238,10 @@ await client.runSeoPageAudit(url);
 ### How We Fetch Web Pages
 Minifetch offers two ways to fetch a page: the native Minifetch proxy or an external rotating proxy. The native Minifetch proxy is identified with the `minifetch` user agent, respects robots.txt and is cheapest. The external rotating proxy reaches pages the native one can't. You choose per fetch, by choosing the best method for your use-case. Built to be orchestrated by agents and humans who want the best prices and maximal control.
 
+The native Minifetch proxy follows each site's crawl delay (defaults to 1 second between requests to the same domain), so 10 URLs on one site take at least 10 seconds. This is by design, so the native Minifetch proxy never slows a site down for its real users. For site owners: [How To Unblock Minifetch](https://minifetch.com/tutorials/unblock-minifetch).
+
 `extract<X>WithProxyFallback()` methods start on the native Minifetch proxy and move to the rotating external proxy only if the page blocks it. You only pay for the fetch that worked.
+
 
 | | Native Minifetch proxy | External proxy |
 |---|---|---|
@@ -239,14 +253,12 @@ Minifetch offers two ways to fetch a page: the native Minifetch proxy or an exte
 | Price | Cheapest | Native price plus a surcharge |
 
 - **Decide before you pay.** The free `preflightUrlCheck()` tells you whether the native Minifetch proxy is allowed to fetch a URL.
-- **Proof per request.** Every response carries a `proxy` block: which proxy fetched the page, the user agent sent and whether robots.txt was obeyed. For regulated use-cases where provenance matters, stay on the native Minifetch proxy.
+- **Proof per request.** Extraction results carry a `proxy` block: which proxy fetched the page, the user agent sent and whether robots.txt was obeyed. For regulated use-cases where provenance matters, stay on the native Minifetch proxy.
 - **No charge** for blocked or errored pages.
 
 Not currently available on either proxy: authenticated or logged-in content.
 
-The native Minifetch proxy follows each site's crawl delay (defaults to 1 second between requests to the same domain), so 10 URLs on one site take at least 10 seconds. This is by design, so the native Minifetch proxy never slows a site down for its real users. For site owners: [How To Unblock Minifetch](https://minifetch.com/tutorials/unblock-minifetch).
-
---
+---
 
 ### Error Types
 When you wrap the functions above in a try/catch, here are some of the errors you may encounter. You are never charged for target URLs that are blocked or error.
