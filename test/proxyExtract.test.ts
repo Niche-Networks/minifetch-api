@@ -222,7 +222,7 @@ describe.sequential("x402: proxy methods fail gracefully", { timeout: TIMEOUT },
     await expect(baseClient().proxyExtractUrlPreview(TEST_URL, { country: "xx" })).rejects.toMatchObject({
       name: "NetworkError",
       statusCode: 400,
-      serverMessage: expect.stringContaining("Invalid country param"),
+      message: expect.stringContaining("Invalid country param"),
     });
   });
 
@@ -232,7 +232,7 @@ describe.sequential("x402: proxy methods fail gracefully", { timeout: TIMEOUT },
     ).rejects.toMatchObject({
       name: "NetworkError",
       statusCode: 400,
-      serverMessage: expect.stringContaining("performance"),
+      message: expect.stringContaining("performance"),
     });
   });
 

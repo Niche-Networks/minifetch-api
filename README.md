@@ -267,7 +267,7 @@ You are never charged for errors: blocked pages, failed fetches, and bad request
 try {
   const response = await client.extractUrlMetadata(url);
 } catch (err) {
-  if (err.name === "NetworkError" && err.serverMessage === "upstream forbidden") {
+  if (err.name === "NetworkError" && err.message.includes("upstream forbidden")) {
     // the target URL blocked the native Minifetch proxy, try the external
     // proxy method instead: client.proxyExtractUrlMetadata(url) ... or try
     // client.extractUrlMetadataWithProxyFallback(url) - it will try both
@@ -277,16 +277,11 @@ try {
 }
 ```
 
-**NetworkError** — Minifetch answered with an error, or couldn't be reached. Most errors are this one. Fields:
-- `statusCode` - the HTTP status Minifetch returned, ex: `502`
-- `serverMessage` - why, exactly as the server sent it, ex: `"upstream forbidden"` (listed below)
-- `upstreamStatus` - the target page's own HTTP status, when it answered, ex: `403`
+**NetworkError** — Minifetch answered with an error, or couldn't be reached. Most errors are this one. `err.statusCode` is the HTTP status Minifetch returned, ex: `502`. When the server says why, its reason ends the message, ex: `Request failed: 502 Bad Gateway — upstream forbidden`, so match it with `err.message.includes(...)`. If Minifetch couldn't be reached at all (you're offline, DNS, timeout), there's no `statusCode` and the message starts with `Request failed: could not reach Minifetch`.
 
-Each field is only set when the server sent it. If Minifetch couldn't be reached at all (you're offline, DNS, timeout), none are set and the message starts with `Request failed: could not reach Minifetch`.
+Reasons when fetching a web page failed:
 
-`serverMessage` values when fetching a web page failed:
-
-| `serverMessage` | `statusCode` | What happened |
+| Reason in `message` | `statusCode` | What happened |
 |---|---|---|
 | `robots blocked` * | 502 | robots.txt disallows the `minifetch` user agent |
 | `upstream forbidden` * | 502 | The page returned 403 |
@@ -308,18 +303,18 @@ Each field is only set when the server sent it. If Minifetch couldn't be reached
 \* The page blocked the native Minifetch proxy. Retry with `proxyExtract<X>` or `proxyRenderExtract<X>`. The `extract<X>WithProxyFallback` methods do this automatically for you.
 
 Other `statusCode` values:
-- `400` - a bad option, ex: an invalid `country`, or `fields` that aren't available on the external proxy. `serverMessage` says which.
+- `400` - a bad option, ex: an invalid `country`, or `fields` that aren't available on the external proxy. The message says which.
 - `401` - API key missing, invalid or revoked.
 - `402` - out of credits (API key) or out of USDC (x402). Top up and retry.
 - `429` - too many requests. Back off and retry, max 5-10 requests per second.
 
 **RobotsBlockedError** — thrown by the `checkAndExtract<X>` and `checkAndRunSeoPageAudit` methods when the free preflight check finds the URL blocked by robots.txt. Nothing was fetched or charged. On `checkAndExtract<X>`, `err.tip` names the external proxy methods that can fetch that page. If this is your site, read [How To Unblock Minifetch](https://minifetch.com/tutorials/unblock-minifetch).
 
-The preflight only checks the URL you pass in, not where it redirects. If a redirect leads to a blocked page, or you call `extract<X>` / `runSeoPageAudit` (no preflight), the server blocks it instead and you get a `NetworkError` with `serverMessage: "robots blocked"`. Handle both.
+The preflight only checks the URL you pass in, not where it redirects. If a redirect leads to a blocked page, or you call `extract<X>` / `runSeoPageAudit` (no preflight), the server blocks it instead and you get a `NetworkError` whose message ends in `robots blocked`. Handle both.
 
 **ExtractionFailedError** / **SearchFailedError** — an unexpected failure, ex: a response that isn't valid JSON. The message includes the cause.
 
-**InvalidUrlError** — the URL is malformed or too long. Correct it and try again. The `checkAndExtract<X>`, `checkAndRunSeoPageAudit` and `extract<X>WithProxyFallback` methods also throw it when the domain doesn't exist; `extract<X>` and `runSeoPageAudit` throw a `NetworkError` with `serverMessage: "dns lookup failed"` instead.
+**InvalidUrlError** — the URL is malformed or too long. Correct it and try again. The `checkAndExtract<X>`, `checkAndRunSeoPageAudit` and `extract<X>WithProxyFallback` methods also throw it when the domain doesn't exist; `extract<X>` and `runSeoPageAudit` throw a `NetworkError` whose message ends in `dns lookup failed` instead.
 
 **PaymentFailedError** — the x402 payment couldn't be made, ex: a wallet or signing problem. `err.network` says which network.
 

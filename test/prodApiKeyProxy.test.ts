@@ -82,7 +82,7 @@ describe.sequential("apiKey: proxy methods fail gracefully (prod)", { timeout: T
     await expect(client().proxyExtractUrlLinks(TEST_URL, { country: "xx" })).rejects.toMatchObject({
       name: "NetworkError",
       statusCode: 400,
-      serverMessage: expect.stringContaining("Invalid country param"),
+      message: expect.stringContaining("Invalid country param"),
     });
   });
 

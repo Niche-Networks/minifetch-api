@@ -81,10 +81,6 @@ export declare class ConfigurationError extends MinifetchError {
 export interface NetworkErrorDetails {
     /** HTTP status Minifetch returned (ex: 502) */
     statusCode?: number;
-    /** The server's `results[0].error.message`, exact (ex: "upstream forbidden") */
-    serverMessage?: string;
-    /** The target's own HTTP status, when it answered (ex: 403) */
-    upstreamStatus?: number;
 }
 /**
  * Thrown when network/API communication fails
@@ -93,10 +89,6 @@ export declare class NetworkError extends MinifetchError {
     readonly originalError?: Error;
     /** HTTP status Minifetch returned (ex: 502) */
     readonly statusCode?: number;
-    /** The server's `results[0].error.message`, exact (ex: "upstream forbidden") */
-    readonly serverMessage?: string;
-    /** The target's own HTTP status, when it answered (ex: 403) */
-    readonly upstreamStatus?: number;
     /**
      *
      * @param message

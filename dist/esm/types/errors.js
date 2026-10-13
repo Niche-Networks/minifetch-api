@@ -123,10 +123,6 @@ export class NetworkError extends MinifetchError {
         this.originalError = originalError;
         if (details?.statusCode !== undefined)
             this.statusCode = details.statusCode;
-        if (details?.serverMessage !== undefined)
-            this.serverMessage = details.serverMessage;
-        if (details?.upstreamStatus !== undefined)
-            this.upstreamStatus = details.upstreamStatus;
         Object.setPrototypeOf(this, NetworkError.prototype);
     }
 }

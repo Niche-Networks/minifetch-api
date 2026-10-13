@@ -123,10 +123,6 @@ export class ConfigurationError extends MinifetchError {
 export interface NetworkErrorDetails {
   /** HTTP status Minifetch returned (ex: 502) */
   statusCode?: number;
-  /** The server's `results[0].error.message`, exact (ex: "upstream forbidden") */
-  serverMessage?: string;
-  /** The target's own HTTP status, when it answered (ex: 403) */
-  upstreamStatus?: number;
 }
 
 /**
@@ -134,14 +130,10 @@ export interface NetworkErrorDetails {
  */
 export class NetworkError extends MinifetchError {
   public readonly originalError?: Error;
-  // `declare`: these exist on the error only when the server supplied them, so
-  // an error without details looks exactly as it did before they were added.
+  // `declare`: exists on the error only when Minifetch answered with a status,
+  // so an error without one looks exactly as it did before it was added.
   /** HTTP status Minifetch returned (ex: 502) */
   public declare readonly statusCode?: number;
-  /** The server's `results[0].error.message`, exact (ex: "upstream forbidden") */
-  public declare readonly serverMessage?: string;
-  /** The target's own HTTP status, when it answered (ex: 403) */
-  public declare readonly upstreamStatus?: number;
 
   /**
    *
@@ -154,8 +146,6 @@ export class NetworkError extends MinifetchError {
     this.name = "NetworkError";
     this.originalError = originalError;
     if (details?.statusCode !== undefined) this.statusCode = details.statusCode;
-    if (details?.serverMessage !== undefined) this.serverMessage = details.serverMessage;
-    if (details?.upstreamStatus !== undefined) this.upstreamStatus = details.upstreamStatus;
     Object.setPrototypeOf(this, NetworkError.prototype);
   }
 }

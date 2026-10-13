@@ -1028,8 +1028,8 @@ export class MinifetchClient {
     return (
       error instanceof NetworkError &&
       error.statusCode === 502 &&
-      typeof error.serverMessage === "string" &&
-      BLOCKED_SERVER_MESSAGES.has(error.serverMessage)
+      // payment.ts appends the server's message as " — <message>"
+      [...BLOCKED_SERVER_MESSAGES].some(message => error.message.endsWith(` — ${message}`))
     );
   }
 

@@ -253,7 +253,7 @@ describe("extract*WithProxyFallback unit tests", () => {
       await expect(client().extractUrlMetadataWithProxyFallback(TARGET)).rejects.toMatchObject({
         name: "NetworkError",
         statusCode: 502,
-        serverMessage: message,
+        message: `Request failed: 502 Bad Gateway — ${message}`,
       });
       expect(paths(calls)).toEqual([PREFLIGHT, NATIVE]);
     },
@@ -267,7 +267,7 @@ describe("extract*WithProxyFallback unit tests", () => {
     });
     await expect(client().extractUrlMetadataWithProxyFallback(TARGET)).rejects.toMatchObject({
       name: "NetworkError",
-      upstreamStatus: 403,
+      message: "Request failed: 502 Bad Gateway — upstream forbidden",
     });
     expect(paths(calls)).toEqual([PREFLIGHT, NATIVE, PROXY]);
   });
@@ -299,18 +299,16 @@ describe("extract*WithProxyFallback unit tests", () => {
 // ─────────────────────────────────────────────────────────────
 
 describe("NetworkError details from server error response unit tests", () => {
-  it("carries statusCode, the exact serverMessage and the target's upstreamStatus; message format unchanged", async () => {
+  it("carries statusCode; the message ends with the server's exact error message", async () => {
     stubFetch({ "/extract/url-metadata": fetchError("upstream forbidden", 403) });
     await expect(client().extractUrlMetadata(TARGET)).rejects.toMatchObject({
       name: "NetworkError",
       message: "Request failed: 502 Bad Gateway — upstream forbidden",
       statusCode: 502,
-      serverMessage: "upstream forbidden",
-      upstreamStatus: 403,
     });
   });
 
-  it("a non-fetch-error body (credits, 402) keeps the bare message and adds no serverMessage", async () => {
+  it("a non-fetch-error body (credits, 402) keeps the bare message", async () => {
     stubFetch({
       "/extract/url-metadata": () =>
         json(402, { success: false, error: "insufficient_credits", message: "No credits remaining." }, "Payment Required"),
@@ -320,8 +318,6 @@ describe("NetworkError details from server error response unit tests", () => {
     expect(error.name).toBe("NetworkError");
     expect(error.message).toBe("Request failed: 402 Payment Required");
     expect(error.statusCode).toBe(402);
-    expect("serverMessage" in error).toBe(false);
-    expect("upstreamStatus" in error).toBe(false);
   });
 });
 

@@ -46,8 +46,8 @@ export async function handlePayment(url, config, init) {
         // Default GET when no init passed; init carries method + JSON body for POST.
         const response = await fetchWithPayment(url, init ?? { method: "GET" });
         if (!response.ok) {
-            const { serverMessage, upstreamStatus } = await readServerError(response);
-            throw new NetworkError(`Request failed: ${response.status} ${response.statusText}${serverMessage ? ` — ${serverMessage}` : ""}`, undefined, { statusCode: response.status, serverMessage, upstreamStatus });
+            const serverMessage = await readServerMessage(response);
+            throw new NetworkError(`Request failed: ${response.status} ${response.statusText}${serverMessage ? ` — ${serverMessage}` : ""}`, undefined, { statusCode: response.status });
         }
         const httpClient = new x402HTTPClient(_x402Client);
         const paymentResponse = httpClient.getPaymentSettleResponse(name => response.headers.get(name));
@@ -91,8 +91,8 @@ export async function handleApiKeyRequest(url, config, init) {
         },
     });
     if (!response.ok) {
-        const { serverMessage, upstreamStatus } = await readServerError(response);
-        throw new NetworkError(`Request failed: ${response.status} ${response.statusText}${serverMessage ? ` — ${serverMessage}` : ""}`, undefined, { statusCode: response.status, serverMessage, upstreamStatus });
+        const serverMessage = await readServerMessage(response);
+        throw new NetworkError(`Request failed: ${response.status} ${response.statusText}${serverMessage ? ` — ${serverMessage}` : ""}`, undefined, { statusCode: response.status });
     }
     return { response };
 }
@@ -115,26 +115,22 @@ function getExplorerLink(config, txHash) {
     }
 }
 /**
- * Best-effort read of the server's error from a non-ok response. Minifetch
- * fetch-error bodies carry it at results[0].error: `message` is a fixed string
- * (ex: "upstream forbidden") and `statusCode`, when present, is the TARGET's
- * HTTP status. Other error shapes (auth, credits) yield nothing here.
+ * Best-effort read of the server's error message from a non-ok response, to
+ * append to the NetworkError message. Minifetch fetch-error bodies carry it at
+ * results[0].error.message, a fixed string (ex: "upstream forbidden"). Other
+ * error shapes (auth, credits) yield nothing here.
  *
  * @param response - non-ok Response (body is consumed)
  */
-async function readServerError(response) {
+async function readServerMessage(response) {
     try {
         const body = (await response.json());
         // TODO: revisit this approach when we scale up to multiple results per request
-        const error = body?.results?.[0]?.error;
-        const upstreamStatus = Number(error?.statusCode);
-        return {
-            serverMessage: typeof error?.message === "string" ? error.message : undefined,
-            upstreamStatus: Number.isFinite(upstreamStatus) && upstreamStatus > 0 ? upstreamStatus : undefined,
-        };
+        const message = body?.results?.[0]?.error?.message;
+        return typeof message === "string" ? message : undefined;
     }
     catch {
-        return {};
+        return undefined;
     }
 }
 /**
