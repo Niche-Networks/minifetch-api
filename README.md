@@ -98,7 +98,7 @@ const options = { fresh: true }
 await client.preflightUrlCheck(url, options);
 ```
 
-**Extract Metadata:** response headers, performance, redirects, favicons, title, description, SEO meta tags, canonical, Open Graph and Twitter card tags, JSON-LD, image tags, headings and more. Performance and redirects not available when using the external rotating proxy. You are never charged for blocked or errored pages.
+**Extract Metadata:** response headers, performance, redirects, favicons, title, description, SEO meta tags, canonical, Open Graph and Twitter Card tags, JSON-LD, image tags, headings and more. Performance and redirects not available when using the external rotating proxy. You are never charged for blocked or errored pages.
 
 ```js
 const options = {
@@ -300,7 +300,7 @@ Reasons when fetching a web page failed:
 | `proxy provider error` | 503 | The external proxy provider failed (external proxy methods only), retry later |
 | `server error` | 500 | Unclassified failure |
 
-\* The page blocked the native Minifetch proxy. Retry with `proxyExtract<X>` or `proxyRenderExtract<X>`. The `extract<X>WithProxyFallback` methods do this automatically for you.
+\* The page blocked native Minifetch. Retry with an external rotating proxy by using `proxyExtract<X>` or `proxyRenderExtract<X>`. The `extract<X>WithProxyFallback` methods do this automatically for you (tries cheaper native Minifetch first, then external proxy).
 
 Other `statusCode` values:
 - `400` - a bad option, ex: an invalid `country`, or `fields` that aren't available on the external proxy. The message says which.
@@ -308,7 +308,7 @@ Other `statusCode` values:
 - `402` - out of credits (API key) or out of USDC (x402). Top up and retry.
 - `429` - too many requests. Back off and retry, max 5-10 requests per second.
 
-**RobotsBlockedError** — thrown by the `checkAndExtract<X>` and `checkAndRunSeoPageAudit` methods when the free preflight check finds the URL blocked by robots.txt. Nothing was fetched or charged. On `checkAndExtract<X>`, `err.tip` names the external proxy methods that can fetch that page. If this is your site, read [How To Unblock Minifetch](https://minifetch.com/tutorials/unblock-minifetch).
+**RobotsBlockedError** — thrown by the `checkAndExtract<X>` and `checkAndRunSeoPageAudit` methods when the free preflight check finds the URL blocked to Minifetch native proxy by robots.txt. Nothing was fetched or charged. On `checkAndExtract<X>`, `err.tip` names the external proxy methods that can fetch that page instead. If this is your site, read [How To Unblock Minifetch](https://minifetch.com/tutorials/unblock-minifetch).
 
 The preflight only checks the URL you pass in, not where it redirects. If a redirect leads to a blocked page, or you call `extract<X>` / `runSeoPageAudit` (no preflight), the server blocks it instead and you get a `NetworkError` whose message ends in `robots blocked`. Handle both.
 
