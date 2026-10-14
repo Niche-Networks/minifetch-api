@@ -267,13 +267,13 @@ You are never charged for errors: blocked pages, failed fetches, and bad request
 try {
   const response = await client.extractUrlMetadata(url);
 } catch (err) {
+  console.log(err.message); // "Request failed: 502 Bad Gateway — upstream forbidden"
   if (err.name === "NetworkError" && err.message.includes("upstream forbidden")) {
     // the target URL blocked the native Minifetch proxy, try the external
-    // proxy method instead: client.proxyExtractUrlMetadata(url) ... or try
+    // proxy method instead: client.proxyExtractUrlMetadata(url) ... or use
     // client.extractUrlMetadataWithProxyFallback(url) - it will try both
     // automatically, starting with the cheapest option (Minifetch proxy).
   }
-  console.log(err.message); // "Request failed: 502 Bad Gateway — upstream forbidden"
 }
 ```
 
