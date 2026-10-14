@@ -37,16 +37,20 @@ export class InvalidUrlError extends MinifetchError {
  */
 export class RobotsBlockedError extends MinifetchError {
   public readonly url: string;
+  /** What to try next, when there is something to try. Only set when it applies. */
+  public declare readonly tip?: string;
 
   /**
    *
    * @param url
    * @param message
+   * @param tip - optional pointer to another way to fetch the url
    */
-  constructor(url: string, message?: string) {
+  constructor(url: string, message?: string, tip?: string) {
     super(message || `URL is blocked by robots.txt`);
     this.name = "RobotsBlockedError";
     this.url = url;
+    if (tip) this.tip = tip;
     Object.setPrototypeOf(this, RobotsBlockedError.prototype);
   }
 }
@@ -114,20 +118,34 @@ export class ConfigurationError extends MinifetchError {
 }
 
 /**
+ * Structured details of a non-ok API response, attached to {@link NetworkError}.
+ */
+export interface NetworkErrorDetails {
+  /** HTTP status Minifetch returned (ex: 502) */
+  statusCode?: number;
+}
+
+/**
  * Thrown when network/API communication fails
  */
 export class NetworkError extends MinifetchError {
   public readonly originalError?: Error;
+  // `declare`: exists on the error only when Minifetch answered with a status,
+  // so an error without one looks exactly as it did before it was added.
+  /** HTTP status Minifetch returned (ex: 502) */
+  public declare readonly statusCode?: number;
 
   /**
    *
    * @param message
    * @param originalError
+   * @param details - structured fields from a non-ok API response
    */
-  constructor(message: string, originalError?: Error) {
+  constructor(message: string, originalError?: Error, details?: NetworkErrorDetails) {
     super(message);
     this.name = "NetworkError";
     this.originalError = originalError;
+    if (details?.statusCode !== undefined) this.statusCode = details.statusCode;
     Object.setPrototypeOf(this, NetworkError.prototype);
   }
 }

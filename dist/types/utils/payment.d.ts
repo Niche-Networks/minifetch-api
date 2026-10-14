@@ -9,6 +9,7 @@ import type { PaymentInfo } from "../types/responses.js";
  *
  * @param url
  * @param config
+ * @param init
  */
 export declare function handlePayment(url: string, config: InitializedConfig, init?: RequestInit): Promise<{
     response: Response;
@@ -20,6 +21,7 @@ export declare function handlePayment(url: string, config: InitializedConfig, in
  *
  * @param url
  * @param config
+ * @param init
  */
 export declare function handleApiKeyRequest(url: string, config: InitializedConfig, init?: RequestInit): Promise<{
     response: Response;

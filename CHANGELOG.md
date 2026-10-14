@@ -1,5 +1,15 @@
 # CHANGELOG
 
+1.8.0
+- add `extract<X>WithProxyFallback()`: tries the native Minifetch proxy first, falls back to the external proxy if the page blocks it; `{ render: true, country: 'xx' }` options
+- add external proxy methods, for pages that block the native Minifetch proxy: `proxyExtract<X>()` and `proxyRenderExtract<X>()` (with JavaScript rendering) for metadata, links, preview & content; `{ country: 'xx' }` option
+- `NetworkError` now carries `statusCode`, and its message ends with the server's reason, ex: `Request failed: 502 Bad Gateway — upstream forbidden`
+- `RobotsBlockedError` from `checkAndExtract<X>()` methods has a `tip` recommending the proxy methods for that URL
+- error classes are now exported: `import { NetworkError } from "minifetch-api"`
+- behavior changes:
+  - a failure to reach Minifetch (offline, DNS, timeout) is now a `NetworkError`; it was (mistakenly) a `PaymentFailedError` (x402) or `ExtractionFailedError` / `SearchFailedError` (API key)
+  - `checkAndExtract<X>()` / `checkAndRunSeoPageAudit()` on a non-existent domain now throw `InvalidUrlError`; it was (mistakenly) a `RobotsBlockedError`
+
 1.7.1
 - README changes only; add search by keyword options
 
