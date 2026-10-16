@@ -1,5 +1,8 @@
 # CHANGELOG
 
+1.8.1
+- improve README Quick Start, add keywords to package.json
+
 1.8.0
 - add `extract<X>WithProxyFallback()`: tries the native Minifetch proxy first, falls back to the external proxy if the page blocks it; `{ render: true, country: 'xx' }` options
 - add external proxy methods, for pages that block the native Minifetch proxy: `proxyExtract<X>()` and `proxyRenderExtract<X>()` (with JavaScript rendering) for metadata, links, preview & content; `{ country: 'xx' }` option

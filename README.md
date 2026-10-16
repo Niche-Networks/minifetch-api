@@ -47,21 +47,23 @@ const client = new Minifetch({
 });
 
 // 2. x402 Payments:
-//   - Network options: "base" or "solana"
-//   - Private key from wallet that has a small amt of USDC
+//  - Network options: "base" or "solana"
+//  - Private key from wallet that has a small amt of USDC
 const client = new Minifetch({
   network: "base",
   privateKey: process.env.BASE_PRIVATE_KEY,
 });
 
-// Now you're ready to call the API methods, always wrap in a try/ catch:
-try {
-  const url = "example.com";
-  const response = await client.extractUrlMetadataWithProxyFallback(url);
-  console.log(response); // 200 "ok" responses:
-} catch (err) {
-  console.log(err); // No charge for errors or 403 blocked urls!
+// Now you're ready to call the API methods, always wrap in try/ catch:
+async function getMetadata(url) {
+  try {
+    const response = await client.extractUrlMetadataWithProxyFallback(url);
+    console.log(response); // 200 "ok" responses:
+  } catch (err) {
+    console.log(err); // No charge for errors or 403 blocked urls!
+  }
 }
+const metadata = await getMetadata("https://example.com");
 ```
 
 ### API Methods
