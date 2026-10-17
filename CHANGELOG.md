@@ -1,5 +1,10 @@
 # CHANGELOG
 
+1.9.0
+- handle /preflight/url-check SSRF bugfixes
+- handle robots unreachable error for robots.txt 403s
+- add CHANGELOG to package.json publish manifest
+
 1.8.1
 - improve README Quick Start, add keywords to package.json
 
