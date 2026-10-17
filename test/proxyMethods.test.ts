@@ -309,6 +309,33 @@ describe("NetworkError details from server error response unit tests", () => {
     });
   });
 
+  it("preflightUrlCheck: a 502 'ssrf blocked' is an InvalidUrlError", async () => {
+    stubFetch({ [PREFLIGHT]: fetchError("ssrf blocked", 463) });
+    await expect(client().preflightUrlCheck("http://0.0.0.0")).rejects.toMatchObject({
+      name: "InvalidUrlError",
+      message: "ssrf blocked",
+      url: "http://0.0.0.0",
+    });
+  });
+
+  it("checkAnd* / fallback: 'ssrf blocked' preflight throws InvalidUrlError, never tries native or proxy", async () => {
+    for (const method of ["checkAndExtractUrlMetadata", "extractUrlMetadataWithProxyFallback"]) {
+      const calls = stubFetch({ [PREFLIGHT]: fetchError("ssrf blocked", 463) });
+      await expect((client() as any)[method]("http://0.0.0.0")).rejects.toMatchObject({ name: "InvalidUrlError" });
+      expect(paths(calls), method).toEqual([PREFLIGHT]);
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("preflightUrlCheck: any other non-ok keeps the server's message on a NetworkError", async () => {
+    stubFetch({ [PREFLIGHT]: fetchError("server error") });
+    await expect(client().preflightUrlCheck(TARGET)).rejects.toMatchObject({
+      name: "NetworkError",
+      message: "Preflight check failed: 502 Bad Gateway — server error",
+      statusCode: 502,
+    });
+  });
+
   it("a non-fetch-error body (credits, 402) keeps the bare message", async () => {
     stubFetch({
       "/extract/url-metadata": () =>

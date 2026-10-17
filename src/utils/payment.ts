@@ -151,7 +151,7 @@ function getExplorerLink(config: InitializedConfig, txHash: string): string {
  *
  * @param response - non-ok Response (body is consumed)
  */
-async function readServerMessage(response: Response): Promise<string | undefined> {
+export async function readServerMessage(response: Response): Promise<string | undefined> {
   try {
     const body = (await response.json()) as {
       results?: Array<{ error?: { message?: string } }>;

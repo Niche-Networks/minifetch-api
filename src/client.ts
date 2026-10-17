@@ -1,6 +1,6 @@
 import { initConfig } from "./init.js";
 import { validateAndNormalizeUrl, validateAndNormalizeQuery } from "./utils/validation.js";
-import { handlePayment, handleApiKeyRequest } from "./utils/payment.js";
+import { handlePayment, handleApiKeyRequest, readServerMessage } from "./utils/payment.js";
 import type { ClientConfig, InitializedConfig, HttpMethod } from "./types/config.js";
 import type {
   PreflightCheckResponse,
@@ -69,6 +69,9 @@ const BLOCKED_SERVER_MESSAGES: ReadonlySet<string> = new Set([
  * (including one the server adds later) is treated as a robots.txt block.
  */
 const PREFLIGHT_BAD_DOMAIN = "non-existent domain";
+
+/** Server error message when the SSRF guard refuses a non-public target address. */
+const PREFLIGHT_SSRF_BLOCKED = "ssrf blocked";
 
 /**
  * `tip` for a RobotsBlockedError from a checkAndExtract* method: names the two
@@ -156,7 +159,7 @@ export class MinifetchClient {
    * @param options
    * @param options.fresh
    * @param options.method - "GET" or "POST" (default POST)
-   * @throws {InvalidUrlError} if URL is invalid
+   * @throws {InvalidUrlError} if URL is invalid, or targets a private / reserved address ("ssrf blocked")
    * @throws {NetworkError} if request fails
    */
   async preflightUrlCheck(
@@ -177,8 +180,13 @@ export class MinifetchClient {
       const response = await fetch(requestUrl, init);
 
       if (!response.ok) {
+        const serverMessage = await readServerMessage(response);
+        // Private / loopback / reserved target: the url itself is unusable, not a
+        // network failure (same treatment as a non-existent domain)
+        if (serverMessage === PREFLIGHT_SSRF_BLOCKED) throw new InvalidUrlError(url, serverMessage);
+        // Otherwise append the server's message, same as the paid methods
         throw new NetworkError(
-          `Preflight check failed: ${response.status} ${response.statusText}`,
+          `Preflight check failed: ${response.status} ${response.statusText}${serverMessage ? ` — ${serverMessage}` : ""}`,
           undefined,
           { statusCode: response.status },
         );
