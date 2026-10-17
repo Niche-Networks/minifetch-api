@@ -57,6 +57,7 @@ const TIER_PREFIX: Record<FetchTier, string> = {
  */
 const BLOCKED_SERVER_MESSAGES: ReadonlySet<string> = new Set([
   "robots blocked",
+  "robots unreachable", // robots.txt 5xx / network from our IP: treated as disallow (RFC 9309)
   "upstream forbidden",
   "upstream rate limited",
   "upstream unavailable",
