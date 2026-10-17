@@ -249,7 +249,9 @@ describe.sequential(
 
       await expect(client.checkAndExtractUrlMetadata(blockedUrl)).rejects.toMatchObject({
         name: "RobotsBlockedError",
-        message: expect.stringContaining("URL is blocked by robots.txt"),
+        // "robots.txt fetch refused (403)..." once the server change is deployed
+        // (npm 403s our robots.txt fetch); matches the old message too until then
+        message: expect.stringContaining("robots.txt"),
         url: blockedUrl,
       });
     });

@@ -97,6 +97,7 @@ const paths = (calls: Array<{ path: string }>) => calls.map(c => c.path);
 const PREFLIGHT = "/free/preflight/url-check";
 const BLOCKED_MESSAGES: Array<[string, number | undefined]> = [
   ["robots blocked", undefined],
+  ["robots unreachable", undefined],
   ["upstream forbidden", 403],
   ["upstream rate limited", 429],
   ["upstream unavailable", 503],

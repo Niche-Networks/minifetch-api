@@ -83,7 +83,8 @@ describe.sequential("x402: checkAndRunSeoPageAudit() fails gracefully", { timeou
 
     await expect(client.checkAndRunSeoPageAudit(blockedUrl)).rejects.toMatchObject({
       name: "RobotsBlockedError",
-      message: expect.stringContaining("URL is blocked by robots.txt"),
+      // npm 403s our robots.txt fetch (Cloudflare), so the preflight says "refused"
+      message: expect.stringContaining("robots.txt fetch refused"),
       url: blockedUrl,
     });
   });

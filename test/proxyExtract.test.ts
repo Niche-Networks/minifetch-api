@@ -248,7 +248,8 @@ describe.sequential("x402: proxy methods fail gracefully", { timeout: TIMEOUT },
   it("checkAndExtract*: robots.txt block keeps its message and names the proxy methods in tip", async () => {
     await expect(baseClient().checkAndExtractUrlMetadata(BLOCKED_URL)).rejects.toMatchObject({
       name: "RobotsBlockedError",
-      message: expect.stringContaining("URL is blocked by robots.txt"),
+      // npm 403s our robots.txt fetch (Cloudflare), so the preflight says "refused"
+      message: expect.stringContaining("robots.txt fetch refused"),
       tip: expect.stringContaining("proxyExtractUrlMetadata or extractUrlMetadataWithProxyFallback"),
     });
   });
