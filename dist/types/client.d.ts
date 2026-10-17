@@ -67,7 +67,7 @@ export declare class MinifetchClient {
      * @param options
      * @param options.fresh
      * @param options.method - "GET" or "POST" (default POST)
-     * @throws {InvalidUrlError} if URL is invalid
+     * @throws {InvalidUrlError} if URL is invalid, or targets a private / reserved address ("ssrf blocked")
      * @throws {NetworkError} if request fails
      */
     preflightUrlCheck(url: string, options?: {

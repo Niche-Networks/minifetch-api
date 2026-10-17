@@ -122,7 +122,7 @@ function getExplorerLink(config, txHash) {
  *
  * @param response - non-ok Response (body is consumed)
  */
-async function readServerMessage(response) {
+export async function readServerMessage(response) {
     try {
         const body = (await response.json());
         // TODO: revisit this approach when we scale up to multiple results per request

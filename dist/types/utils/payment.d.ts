@@ -26,3 +26,12 @@ export declare function handlePayment(url: string, config: InitializedConfig, in
 export declare function handleApiKeyRequest(url: string, config: InitializedConfig, init?: RequestInit): Promise<{
     response: Response;
 }>;
+/**
+ * Best-effort read of the server's error message from a non-ok response, to
+ * append to the NetworkError message. Minifetch fetch-error bodies carry it at
+ * results[0].error.message, a fixed string (ex: "upstream forbidden"). Other
+ * error shapes (auth, credits) yield nothing here.
+ *
+ * @param response - non-ok Response (body is consumed)
+ */
+export declare function readServerMessage(response: Response): Promise<string | undefined>;

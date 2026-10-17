@@ -1,6 +1,6 @@
 import { initConfig } from "./init.js";
 import { validateAndNormalizeUrl, validateAndNormalizeQuery } from "./utils/validation.js";
-import { handlePayment, handleApiKeyRequest } from "./utils/payment.js";
+import { handlePayment, handleApiKeyRequest, readServerMessage } from "./utils/payment.js";
 import { InvalidUrlError, InvalidQueryError, RobotsBlockedError, PaymentFailedError, ExtractionFailedError, SearchFailedError, NetworkError, ConfigurationError, } from "./types/errors.js";
 /** Every endpoint accepts GET (query string) or POST (JSON body). POST is the default. */
 const DEFAULT_METHOD = "POST";
@@ -16,6 +16,7 @@ const TIER_PREFIX = {
  */
 const BLOCKED_SERVER_MESSAGES = new Set([
     "robots blocked",
+    "robots unreachable", // robots.txt 5xx / network from our IP: treated as disallow (RFC 9309)
     "upstream forbidden",
     "upstream rate limited",
     "upstream unavailable",
@@ -26,6 +27,8 @@ const BLOCKED_SERVER_MESSAGES = new Set([
  * (including one the server adds later) is treated as a robots.txt block.
  */
 const PREFLIGHT_BAD_DOMAIN = "non-existent domain";
+/** Server error message when the SSRF guard refuses a non-public target address. */
+const PREFLIGHT_SSRF_BLOCKED = "ssrf blocked";
 /**
  * `tip` for a RobotsBlockedError from a checkAndExtract* method: names the two
  * methods that can fetch that same endpoint through the external proxy.
@@ -101,7 +104,7 @@ export class MinifetchClient {
      * @param options
      * @param options.fresh
      * @param options.method - "GET" or "POST" (default POST)
-     * @throws {InvalidUrlError} if URL is invalid
+     * @throws {InvalidUrlError} if URL is invalid, or targets a private / reserved address ("ssrf blocked")
      * @throws {NetworkError} if request fails
      */
     async preflightUrlCheck(url, options) {
@@ -113,7 +116,13 @@ export class MinifetchClient {
             const { url: requestUrl, init } = this._buildRequest("/api/v1/free/preflight/url-check", params, options?.method ?? DEFAULT_METHOD);
             const response = await fetch(requestUrl, init);
             if (!response.ok) {
-                throw new NetworkError(`Preflight check failed: ${response.status} ${response.statusText}`, undefined, { statusCode: response.status });
+                const serverMessage = await readServerMessage(response);
+                // Private / loopback / reserved target: the url itself is unusable, not a
+                // network failure (same treatment as a non-existent domain)
+                if (serverMessage === PREFLIGHT_SSRF_BLOCKED)
+                    throw new InvalidUrlError(url, serverMessage);
+                // Otherwise append the server's message, same as the paid methods
+                throw new NetworkError(`Preflight check failed: ${response.status} ${response.statusText}${serverMessage ? ` — ${serverMessage}` : ""}`, undefined, { statusCode: response.status });
             }
             return (await response.json());
         }
