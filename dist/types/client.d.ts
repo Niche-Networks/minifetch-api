@@ -515,7 +515,8 @@ export declare class MinifetchClient {
      */
     private _extractWithProxyFallback;
     /**
-     * Re-throw known error types, wrapping unknowns in ExtractionFailedError
+     * Re-throw known error types, wrapping unknowns in ExtractionFailedError.
+     * An "ssrf blocked" NetworkError becomes an InvalidUrlError.
      *
      * @param error
      * @param url

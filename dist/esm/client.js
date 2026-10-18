@@ -27,7 +27,7 @@ const BLOCKED_SERVER_MESSAGES = new Set([
  * (including one the server adds later) is treated as a robots.txt block.
  */
 const PREFLIGHT_BAD_DOMAIN = "non-existent domain";
-/** Server error message when the SSRF guard refuses a non-public target address. */
+/** Server error message when the SSRF guard refuses a non-public target address (every route). */
 const PREFLIGHT_SSRF_BLOCKED = "ssrf blocked";
 /**
  * `tip` for a RobotsBlockedError from a checkAndExtract* method: names the two
@@ -801,13 +801,19 @@ export class MinifetchClient {
         }
     }
     /**
-     * Re-throw known error types, wrapping unknowns in ExtractionFailedError
+     * Re-throw known error types, wrapping unknowns in ExtractionFailedError.
+     * An "ssrf blocked" NetworkError becomes an InvalidUrlError.
      *
      * @param error
      * @param url
      * @param label
      */
     _rethrowError(error, url, label) {
+        // SSRF refusal (private / loopback / reserved target): the url itself is
+        // unusable, same as preflightUrlCheck. payment.ts appends " — <message>".
+        if (error instanceof NetworkError && error.message.endsWith(` — ${PREFLIGHT_SSRF_BLOCKED}`)) {
+            throw new InvalidUrlError(url, PREFLIGHT_SSRF_BLOCKED);
+        }
         if (error instanceof InvalidUrlError ||
             error instanceof ExtractionFailedError ||
             error instanceof PaymentFailedError ||

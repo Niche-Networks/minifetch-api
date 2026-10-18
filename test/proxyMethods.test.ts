@@ -327,6 +327,31 @@ describe("NetworkError details from server error response unit tests", () => {
     }
   });
 
+  it.each([
+    ["extractUrlMetadata", "/extract/url-metadata"],
+    ["runSeoPageAudit", "/run/seo-page-audit"],
+    ["proxyExtractUrlLinks", "/proxy/extract/url-links"],
+    ["proxyRenderExtractUrlContent", "/proxy/render/extract/url-content"],
+  ])("%s: a 502 'ssrf blocked' is an InvalidUrlError", async (method, path) => {
+    stubFetch({ [path]: fetchError("ssrf blocked", 463) });
+    await expect((client() as any)[method]("http://0.0.0.0")).rejects.toMatchObject({
+      name: "InvalidUrlError",
+      message: "ssrf blocked",
+      url: "http://0.0.0.0",
+    });
+  });
+
+  it("fallback: native 'ssrf blocked' is an InvalidUrlError, never retried via the proxy", async () => {
+    const calls = stubFetch({
+      [PREFLIGHT]: preflight(true),
+      "/extract/url-metadata": fetchError("ssrf blocked", 463),
+    });
+    await expect(client().extractUrlMetadataWithProxyFallback(TARGET)).rejects.toMatchObject({
+      name: "InvalidUrlError",
+    });
+    expect(paths(calls)).toEqual([PREFLIGHT, "/extract/url-metadata"]);
+  });
+
   it("preflightUrlCheck: any other non-ok keeps the server's message on a NetworkError", async () => {
     stubFetch({ [PREFLIGHT]: fetchError("server error") });
     await expect(client().preflightUrlCheck(TARGET)).rejects.toMatchObject({

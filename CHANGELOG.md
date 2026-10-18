@@ -1,8 +1,12 @@
 # CHANGELOG
 
+1.9.1
+- "ssrf blocked" (a private, loopback or reserved target address, ex: `http://127.0.0.1`) now throws `InvalidUrlError` from every method, matching `preflightUrlCheck()` in 1.9.0. Previously the extract, proxy and SEO audit methods threw `NetworkError: Request failed: 502 Bad Gateway — ssrf blocked`. `extract<X>WithProxyFallback()` does not retry these via the external proxy
+
 1.9.0
-- handle /preflight/url-check SSRF bugfixes
-- handle robots unreachable error for robots.txt 403s
+- `preflightUrlCheck()`: a private, loopback or reserved target address throws `InvalidUrlError` (`ssrf blocked`); other errors now end with the server's reason, ex: `Preflight check failed: 502 Bad Gateway — server error`
+- `extract<X>WithProxyFallback()` also falls back to the external proxy on `robots unreachable` (the site's robots.txt returned a 5xx or couldn't be reached, treated as a disallow)
+- `RobotsBlockedError.message` passes through the server's reason, ex: `robots.txt fetch refused (403), defaulting to disallowed`; check the error type, not the message text
 - add CHANGELOG to package.json publish manifest
 
 1.8.1
