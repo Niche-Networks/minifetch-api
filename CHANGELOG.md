@@ -1,5 +1,8 @@
 # CHANGELOG
 
+1.9.2
+- README: misc changes, incl dropped prices on /url-content and /search/keyword endpoints
+
 1.9.1
 - "ssrf blocked" (a private, loopback or reserved target address, ex: `http://127.0.0.1`) now throws `InvalidUrlError` from every method, matching `preflightUrlCheck()` in 1.9.0. Previously the extract, proxy and SEO audit methods threw `NetworkError: Request failed: 502 Bad Gateway — ssrf blocked`. `extract<X>WithProxyFallback()` does not retry these via the external proxy
 

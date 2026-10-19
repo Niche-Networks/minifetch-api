@@ -5,10 +5,11 @@
   </a>
 </div>
 
-**Search, scrape, extract & SEO audit web pages. [Minifetch](https://minifetch.com)** is a hosted toolkit for web developers and AI agents. Pay per fetch, no subscription.
+**Search, scrape, extract & SEO audit web pages. [Minifetch](https://minifetch.com)** is a hosted toolkit for web developers and the AI agents who work for them. Pay per fetch, no subscription.
 
 - ✅ **Always pay-per-fetch at competitive prices.**
-- ✅ [Sign up](https://minifetch.com/dashboard) for an account & get free starter credits. 🎉🎉
+- ✍️ [Sign up](https://minifetch.com/dashboard) for an account & get free starter credits. 🎉🎉
+- 🐕 Scrape & extract are live, not indexed. Fetches the URL now. No stale snapshots.
 - ⛔ No charge for blocked pages (403 errors).
 
 ---
@@ -54,11 +55,12 @@ const client = new Minifetch({
   privateKey: process.env.BASE_PRIVATE_KEY,
 });
 
-// Now you're ready to call the API methods, always wrap in try/ catch:
+// Now you're ready to call the API methods.
+// Always wrap them in try/ catch:
 async function getMetadata(url) {
   try {
     const response = await client.extractUrlMetadataWithProxyFallback(url);
-    console.log(response); // 200 "ok" responses:
+    console.log(response); // 200 "ok" responses
   } catch (err) {
     console.log(err); // No charge for errors or 403 blocked urls!
   }
@@ -66,11 +68,11 @@ async function getMetadata(url) {
 const metadata = await getMetadata("https://example.com");
 ```
 
-### API Methods
+## API Methods
 
 **Wrap** every method below in a **try/catch** like the Quick Start. All methods send POST by default; pass `{ method: 'GET' }` in options to send GET. More [code examples](https://github.com/Niche-Networks/minifetch-api/) are in the /example- directories on Github.
 
-#### Search
+### Search
 
 ```js
 const options = {
@@ -79,11 +81,11 @@ const options = {
 };
 
 await client.searchByKeyword("green tea", options);
-// $0.002 · Keyword web search by Ceramic.ai. Returns ranked results as
+// $0.001 · Keyword web search by Ceramic.ai. Returns ranked results as
 // structured JSON: a title, URL, and text snippet per result.
 ```
 
-#### Scrape & Extract from Web Pages
+### Scrape & Extract from Web Pages
 
 Minifetch offers 4 extraction types, jump to the section below that suits your needs:
 - **metadata**
@@ -91,7 +93,9 @@ Minifetch offers 4 extraction types, jump to the section below that suits your n
 - **preview**
 - **links**
 
-**Free Preflight Check:** (Optional) Run this before your extraction, it checks if the target URL's robots.txt allows the native Minifetch proxy to scrape it (cheapest) or if you should use the external rotating proxy instead. The `checkAndExtract` methods below run this check automatically for you.
+Fetches go over the wire live (not from a stale index) and each page is cached with a 2 minute max TTL. You are never charged for blocked or errored pages.
+
+**Try the Free Preflight Check First (Optional):** Run this before your extraction, it checks if the target URL's robots.txt allows the native Minifetch proxy to scrape it (cheapest) or if you should use the external rotating proxy instead. The `checkAndExtract` methods below run this check automatically for you.
 ```js
 const options = { fresh: true }
 // To bypass the 24hr robots.txt cache.
@@ -100,7 +104,7 @@ const options = { fresh: true }
 await client.preflightUrlCheck(url, options);
 ```
 
-**Extract Metadata:** response headers, performance, redirects, favicons, title, description, SEO meta tags, canonical, Open Graph and Twitter Card tags, JSON-LD, image tags, headings and more. Performance and redirects not available when using the external rotating proxy. You are never charged for blocked or errored pages.
+**Extract Metadata:** response headers, performance, redirects, favicons, title, description, SEO meta tags, canonical, Open Graph and Twitter Card tags, JSON-LD, image tags, headings and more. Performance and redirects not available when using the external rotating proxy.
 
 ```js
 const options = {
@@ -140,7 +144,7 @@ await client.proxyRenderExtractUrlMetadata(url, options);
 // { country: 'mx' } option available - choose from 195 countries.
 ```
 
-**Extract Content:** returns clean content as markdown from the page after nav, ads and scripts are stripped. You are never charged for blocked or errored pages.
+**Extract Content:** extracts clean content as markdown from the page after nav, ads and scripts are stripped. Can also be used by site owners auditing AI readability: See what survives for AEO, GEO and AI search.
 
 ```js
 const options = {
@@ -148,30 +152,30 @@ const options = {
 }
 
 await client.extractUrlContentWithProxyFallback(url, options);
-// $0.002 tries with native Minifetch proxy first (obeys robots.txt),
-// or $0.003 if it falls back to the external rotating proxy,
-// or $0.004 with { render: true } option.
+// $0.001 tries with native Minifetch proxy first (obeys robots.txt),
+// or $0.002 if it falls back to the external rotating proxy,
+// or $0.003 with { render: true } option.
 // { country: 'mx' } option available - choose from 195 countries.
 
 // If you want more control, try the following:
 
 await client.checkAndExtractUrlContent(url, options);
-// $0.002 · Native Minifetch proxy, obeys robots.txt. Cheapest.
+// $0.001 · Native Minifetch proxy, obeys robots.txt. Cheapest.
 
 await client.extractUrlContent(url, options);
-// $0.002 · Native Minifetch proxy, obeys robots.txt. Cheapest.
+// $0.001 · Native Minifetch proxy, obeys robots.txt. Cheapest.
 
 await client.proxyExtractUrlContent(url, options);
-// $0.003 · External rotating proxy.
+// $0.002 · External rotating proxy.
 // { country: 'mx' } option available - choose from 195 countries.
 
 await client.proxyRenderExtractUrlContent(url, options);
-// $0.004 · External rotating proxy + JavaScript. For pages whose text
+// $0.003 · External rotating proxy + JavaScript. For pages whose text
 // only appears after scripts run.
 // { country: 'mx' } option available - choose from 195 countries.
 ```
 
-**Extract Preview:** the fields used for a page's share previews, the lightweight cards that represent it on social platforms, chat apps and AI. You are never charged for blocked or errored pages.
+**Extract Preview:** the fields used for a page's share previews, the lightweight cards that represent it on social platforms, chat apps and AI.
 
 ```js
 await client.extractUrlPreviewWithProxyFallback(url, options);
@@ -197,7 +201,7 @@ await client.proxyRenderExtractUrlPreview(url, options);
 // { country: 'mx' } option available - choose from 195 countries.
 ```
 
-**Extract Links:** every link on the page categorized as internal, external or anchor, with `rel` (nofollow, sponsored, ugc…), `title`, `target` and image detection. Summary stats include the most-linked internal pages (with their anchor text) and the top external domains. You are never charged for blocked or errored pages.
+**Extract Links:** every link on the page categorized as internal, external or anchor, with `rel` (nofollow, sponsored, ugc…), `title`, `target` and image detection. Summary stats include the most-linked internal pages (with their anchor text) and the top external domains.
 
 ```js
 await client.extractUrlLinksWithProxyFallback(url, options);
@@ -223,9 +227,9 @@ await client.proxyRenderExtractUrlLinks(url, options);
 // { country: 'mx' } option available - choose from 195 countries.
 ```
 
-#### SEO Page Audit
+### SEO Page Audit
 
-A full technical SEO audit: combines the extractions above and runs deterministic checks that each return PASS / WARN / FAIL. No black-box scoring, just signal you can act on or pipe into an agent. Audit rules: [SKILL.md](https://minifetch.com/skills/seo-page-audit/SKILL.md). Native Minifetch proxy only. You are never charged for blocked or errored pages.
+A full technical SEO audit: combines the extractions above and runs deterministic checks that each return PASS / WARN / FAIL. No black-box scoring, just signal you can act on or pipe into an agent. Audit rules: [SKILL.md](https://minifetch.com/skills/seo-page-audit/SKILL.md). Native Minifetch proxy only.
 
 ```js
 await client.checkAndRunSeoPageAudit(url);
@@ -237,7 +241,7 @@ await client.runSeoPageAudit(url);
 
 ---
 
-### How We Fetch Web Pages
+## How We Fetch Web Pages
 Minifetch offers two ways to fetch a page: the native Minifetch proxy or an external rotating proxy. The native Minifetch proxy is identified with the `minifetch` user agent, respects robots.txt and is cheapest. The external rotating proxy reaches pages the native one can't. You choose per fetch, by choosing the best method for your use-case. Built to be orchestrated by agents and humans who want the best prices and maximal control.
 
 The native Minifetch proxy follows each site's crawl delay (defaults to 1 second between requests to the same domain), so 10 URLs on one site take at least 10 seconds. This is by design, so the native Minifetch proxy never slows a site down for its real users. For site owners: [How To Unblock Minifetch](https://minifetch.com/tutorials/unblock-minifetch).
@@ -251,8 +255,8 @@ The native Minifetch proxy follows each site's crawl delay (defaults to 1 second
 | Fetches as | Identified `minifetch` user agent from a fixed IP | External rotating proxy (webscrapingapi.com), optional `country` |
 | robots.txt | Respected, including crawl-delay | Not checked |
 | JavaScript | Not executed | Executed by `proxyRenderExtract<X>` |
-| Cached | Yes | No, every call is a fresh fetch |
-| Price | Cheapest | Native price plus a surcharge |
+| Cached | Yes, cached after the first live fetch with 2 minute max TTL | No, every call is a fresh fetch |
+| Price | Cheapest | Native price plus a small surcharge |
 
 - **Decide before you pay.** The free `preflightUrlCheck()` tells you whether the native Minifetch proxy is allowed to fetch a URL.
 - **Proof per request.** Extraction results carry a `proxy` block: which proxy fetched the page, the user agent sent and whether robots.txt was obeyed. For regulated use-cases where provenance matters, stay on the native Minifetch proxy.
@@ -262,7 +266,7 @@ Not currently available on either proxy: authenticated or logged-in content.
 
 ---
 
-### Error Types
+## Error Types
 You are never charged for errors: blocked pages, failed fetches, and bad requests are all free. Every error has a `name` and a `message`. Every error extends `MinifetchError`, so `err instanceof MinifetchError` catches them all. The error classes are exported, so you can optionally check `err instanceof NetworkError` (after you `import { NetworkError } from "minifetch-api"`) or simply check `err.name` like the example below:
 
 ```js
@@ -326,7 +330,7 @@ The preflight only checks the URL you pass in, not where it redirects. If a redi
 
 ---
 
-### USDC Best Practices
+## USDC Best Practices
 - Uses the [x402 Protocol](https://www.x402.org/). No "gas token" (ETH or SOL) required, just load your wallet with USDC on Base or Solana network.
 - LLMs & Agents should *never* have direct access to your private key. They *will* expose it!
 - Only keep a small amount of USDC in the wallet whose private key you use.
