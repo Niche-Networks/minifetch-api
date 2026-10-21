@@ -1,5 +1,8 @@
 # CHANGELOG
 
+1.10.0
+- package.json: dropped support for Node.js v18 engines. Now: "node": "^20.19.0 || >=22.12.0".
+
 1.9.2
 - README: misc changes, incl dropped prices on /url-content and /search/keyword endpoints
 
