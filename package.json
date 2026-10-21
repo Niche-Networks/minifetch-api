@@ -3,6 +3,7 @@
   "version": "1.9.2",
   "description": "Minifetch.com API Client. Search, scrape, extract and SEO audit web pages. Pay per fetch, no subscription.",
   "type": "module",
+  "packageManager": "pnpm@10.10.0",
   "main": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
   "exports": {
