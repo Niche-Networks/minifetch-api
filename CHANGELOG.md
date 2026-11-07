@@ -1,5 +1,11 @@
 # CHANGELOG
 
+1.10.1
+- bump depdendencies
+- bump devDependencies
+- update tests
+- modify eslint config
+
 1.10.0
 - package.json: dropped support for Node.js v18 engines. Now: "node": "^20.19.0 || >=22.12.0".
 

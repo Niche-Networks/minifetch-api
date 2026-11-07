@@ -1,6 +1,6 @@
 {
   "name": "minifetch-api",
-  "version": "1.10.0",
+  "version": "1.10.1",
   "description": "Minifetch.com API Client. Search, scrape, extract and SEO audit web pages. Pay per fetch, no subscription.",
   "type": "module",
   "packageManager": "pnpm@10.10.0",
