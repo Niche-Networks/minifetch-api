@@ -90,10 +90,10 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@solana/kit": "^5.4.0",
+    "@solana/kit": "^8.6.0",
     "@x402/evm": "^2.2.0",
     "@x402/fetch": "^2.2.0",
-    "@x402/svm": "^2.2.0",
+    "@x402/svm": "^2.30.0",
     "bs58": "^6.0.0",
     "viem": "^2.23.1"
   },
