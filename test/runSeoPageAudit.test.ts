@@ -10,7 +10,7 @@ beforeEach(async () => {
   await new Promise(r => setTimeout(r, 1000));
 });
 
-describe.sequential("x402: runSeoPageAudit() e2e", { timeout: 30000 }, () => {
+describe("x402: runSeoPageAudit() e2e", { timeout: 30000, concurrent: false }, () => {
   it("base-sepolia success", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
@@ -58,7 +58,7 @@ describe.sequential("x402: runSeoPageAudit() e2e", { timeout: 30000 }, () => {
   });
 });
 
-describe.sequential("x402: runSeoPageAudit() fails gracefully", { timeout: 30000 }, () => {
+describe("x402: runSeoPageAudit() fails gracefully", { timeout: 30000, concurrent: false }, () => {
   it("throws w bad private key", async () => {
     const failClient = new MinifetchClient({
       network: "base-sepolia",

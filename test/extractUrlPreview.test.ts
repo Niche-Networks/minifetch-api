@@ -10,7 +10,7 @@ beforeEach(async () => {
   await new Promise(r => setTimeout(r, 1000));
 });
 
-describe.sequential("x402: extractUrlPreview() e2e", { timeout: 30000 }, () => {
+describe("x402: extractUrlPreview() e2e", { timeout: 30000, concurrent: false }, () => {
   it("base-sepolia testnet success", async () => {
     const client = new MinifetchClient({
       network: "base-sepolia",
@@ -56,58 +56,62 @@ describe.sequential("x402: extractUrlPreview() e2e", { timeout: 30000 }, () => {
   });
 });
 
-describe.sequential("x402: extractUrlPreview() fails gracefully", { timeout: 30000 }, () => {
-  it("throws w bad private key", async () => {
-    const failClient = new MinifetchClient({
-      network: "base-sepolia",
-      privateKey: "0xDEADBEEF00000000000000000000000000000000000000000000000000FACADE" as any,
+describe(
+  "x402: extractUrlPreview() fails gracefully",
+  { timeout: 30000, concurrent: false },
+  () => {
+    it("throws w bad private key", async () => {
+      const failClient = new MinifetchClient({
+        network: "base-sepolia",
+        privateKey: "0xDEADBEEF00000000000000000000000000000000000000000000000000FACADE" as any,
+      });
+
+      await expect(failClient.extractUrlPreview("https://anthropic.com")).rejects.toMatchObject({
+        name: "NetworkError",
+        message: "Request failed: 402 Payment Required",
+      });
     });
 
-    await expect(failClient.extractUrlPreview("https://anthropic.com")).rejects.toMatchObject({
-      name: "NetworkError",
-      message: "Request failed: 402 Payment Required",
-    });
-  });
+    it("throws on robots.txt check = blocked URL", async () => {
+      const client = new MinifetchClient({
+        network: "base-sepolia",
+        privateKey: process.env.BASE_PRIVATE_KEY as any,
+      });
 
-  it("throws on robots.txt check = blocked URL", async () => {
-    const client = new MinifetchClient({
-      network: "base-sepolia",
-      privateKey: process.env.BASE_PRIVATE_KEY as any,
-    });
+      const blockedUrl = "https://www.npmjs.com/package/url-metadata/v/5.4.3";
 
-    const blockedUrl = "https://www.npmjs.com/package/url-metadata/v/5.4.3";
-
-    await expect(client.extractUrlPreview(blockedUrl)).rejects.toThrow(NetworkError);
-  });
-
-  it("throws on DNS lookup error", async () => {
-    const client = new MinifetchClient({
-      network: "base-sepolia",
-      privateKey: process.env.BASE_PRIVATE_KEY as any,
+      await expect(client.extractUrlPreview(blockedUrl)).rejects.toThrow(NetworkError);
     });
 
-    const dnsErrUrl = "https://mydns2.errrrrr";
+    it("throws on DNS lookup error", async () => {
+      const client = new MinifetchClient({
+        network: "base-sepolia",
+        privateKey: process.env.BASE_PRIVATE_KEY as any,
+      });
 
-    await expect(client.extractUrlPreview(dnsErrUrl)).rejects.toThrow(NetworkError);
-  });
+      const dnsErrUrl = "https://mydns2.errrrrr";
 
-  it("throws on malformed URL", async () => {
-    const client = new MinifetchClient({
-      network: "base-sepolia",
-      privateKey: process.env.BASE_PRIVATE_KEY as any,
+      await expect(client.extractUrlPreview(dnsErrUrl)).rejects.toThrow(NetworkError);
     });
 
-    await expect(client.extractUrlPreview("vvv")).rejects.toThrow(InvalidUrlError);
-  });
+    it("throws on malformed URL", async () => {
+      const client = new MinifetchClient({
+        network: "base-sepolia",
+        privateKey: process.env.BASE_PRIVATE_KEY as any,
+      });
 
-  it("throws on URL w unsupported file extension", async () => {
-    const client = new MinifetchClient({
-      network: "base-sepolia",
-      privateKey: process.env.BASE_PRIVATE_KEY as any,
+      await expect(client.extractUrlPreview("vvv")).rejects.toThrow(InvalidUrlError);
     });
 
-    await expect(client.extractUrlPreview("http://foo.bar/baz.pdf")).rejects.toThrow(
-      InvalidUrlError,
-    );
-  });
-});
+    it("throws on URL w unsupported file extension", async () => {
+      const client = new MinifetchClient({
+        network: "base-sepolia",
+        privateKey: process.env.BASE_PRIVATE_KEY as any,
+      });
+
+      await expect(client.extractUrlPreview("http://foo.bar/baz.pdf")).rejects.toThrow(
+        InvalidUrlError,
+      );
+    });
+  },
+);

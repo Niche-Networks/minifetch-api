@@ -7,7 +7,7 @@ import { MinifetchClient } from "../src/index.js";
 import { ConfigurationError } from "../src/types/errors.js";
 config({ path: ".env-dev" });
 
-describe.sequential("package exports from index.js", { timeout: 30000 }, () => {
+describe("package exports from index.js", { timeout: 30000, concurrent: false }, () => {
   it("default export -> x402 initialized MinifetchClient", () => {
     const client1 = new Minifetch({
       network: "base-sepolia",

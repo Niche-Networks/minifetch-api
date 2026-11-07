@@ -23,7 +23,13 @@ const TARGET = "https://example.com";
 
 // ── Response builders ──
 
-/** JSON response with a status line. */
+/**
+ * JSON response with a status line.
+ *
+ * @param status
+ * @param body
+ * @param statusText
+ */
 const json = (status: number, body: unknown, statusText = "OK") =>
   new Response(JSON.stringify(body), {
     status,
@@ -31,11 +37,20 @@ const json = (status: number, body: unknown, statusText = "OK") =>
     headers: { "content-type": "application/json" },
   });
 
-/** 200 success, tagged with which proxy served it. */
+/**
+ * 200 success, tagged with which proxy served it.
+ *
+ * @param proxyType
+ */
 const ok = (proxyType: "minifetch" | "managed") => () =>
   json(200, { success: true, results: [{ data: { url: TARGET, proxy: { proxyType } } }] });
 
-/** 502 fetch error in the server's shared error shape. */
+/**
+ * 502 fetch error in the server's shared error shape.
+ *
+ * @param message
+ * @param upstreamStatus
+ */
 const fetchError = (message: string, upstreamStatus?: number) => () =>
   json(
     502,
@@ -51,9 +66,17 @@ const fetchError = (message: string, upstreamStatus?: number) => () =>
     "Bad Gateway",
   );
 
-/** Free preflight answer. */
+/**
+ * Free preflight answer.
+ *
+ * @param allowed
+ * @param message
+ */
 const preflight = (allowed: boolean, message?: string) => () =>
-  json(200, { success: true, results: [{ data: { url: TARGET, allowed, ...(message && { message }) } }] });
+  json(200, {
+    success: true,
+    results: [{ data: { url: TARGET, allowed, ...(message && { message }) } }],
+  });
 
 /** What Node's fetch throws when there is no response at all. */
 const offline = () => {
@@ -69,13 +92,17 @@ type Route = () => Response;
 /**
  * Replace global fetch. `routes` maps an API path (after /api/v1) to its
  * answer; an unplanned path fails the test. Returns the recorded calls.
+ *
+ * @param routes
  */
 function stubFetch(routes: Record<string, Route>) {
   const calls: Array<{ path: string; method: string; query: URLSearchParams; body: any }> = [];
   vi.stubGlobal(
     "fetch",
     vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
-      const url = new URL(typeof input === "string" ? input : input instanceof URL ? input.href : input.url);
+      const url = new URL(
+        typeof input === "string" ? input : input instanceof URL ? input.href : input.url,
+      );
       const path = url.pathname.replace("/api/v1", "");
       calls.push({
         path,
@@ -162,7 +189,11 @@ describe("proxy mirror methods unit tests", () => {
       omitEmpty: true,
       includeResponseBody: true,
     });
-    expect(calls[0].body).toMatchObject({ fields: "title", omitEmpty: true, includeResponseBody: true });
+    expect(calls[0].body).toMatchObject({
+      fields: "title",
+      omitEmpty: true,
+      includeResponseBody: true,
+    });
   });
 
   it("content methods pass includeMediaUrls through", async () => {
@@ -173,7 +204,9 @@ describe("proxy mirror methods unit tests", () => {
 
   it("an invalid url is rejected before any request", async () => {
     const calls = stubFetch({});
-    await expect(client().proxyExtractUrlLinks("vvv")).rejects.toMatchObject({ name: "InvalidUrlError" });
+    await expect(client().proxyExtractUrlLinks("vvv")).rejects.toMatchObject({
+      name: "InvalidUrlError",
+    });
     expect(calls).toHaveLength(0);
   });
 });
@@ -201,7 +234,10 @@ describe("extract*WithProxyFallback unit tests", () => {
   });
 
   it("allowed by preflight + native succeeds: native only, never the proxy", async () => {
-    const calls = stubFetch({ [PREFLIGHT]: preflight(true, "Access allowed by robots.txt"), [NATIVE]: ok("minifetch") });
+    const calls = stubFetch({
+      [PREFLIGHT]: preflight(true, "Access allowed by robots.txt"),
+      [NATIVE]: ok("minifetch"),
+    });
     const response = await client().extractUrlMetadataWithProxyFallback(TARGET);
 
     expect(paths(calls)).toEqual([PREFLIGHT, NATIVE]);
@@ -209,7 +245,10 @@ describe("extract*WithProxyFallback unit tests", () => {
   });
 
   it("robots.txt block at preflight: straight to /proxy, skips native", async () => {
-    const calls = stubFetch({ [PREFLIGHT]: preflight(false, "URL is blocked by robots.txt"), [PROXY]: ok("managed") });
+    const calls = stubFetch({
+      [PREFLIGHT]: preflight(false, "URL is blocked by robots.txt"),
+      [PROXY]: ok("managed"),
+    });
     const response = await client().extractUrlMetadataWithProxyFallback(TARGET);
 
     expect(paths(calls)).toEqual([PREFLIGHT, PROXY]);
@@ -217,7 +256,10 @@ describe("extract*WithProxyFallback unit tests", () => {
   });
 
   it("an unrecognised not-allowed preflight message is treated as a robots block", async () => {
-    const calls = stubFetch({ [PREFLIGHT]: preflight(false, "Some future reason"), [PROXY]: ok("managed") });
+    const calls = stubFetch({
+      [PREFLIGHT]: preflight(false, "Some future reason"),
+      [PROXY]: ok("managed"),
+    });
     await client().extractUrlMetadataWithProxyFallback(TARGET);
     expect(paths(calls)).toEqual([PREFLIGHT, PROXY]);
   });
@@ -231,17 +273,20 @@ describe("extract*WithProxyFallback unit tests", () => {
     expect(paths(calls)).toEqual([PREFLIGHT]);
   });
 
-  it.each(BLOCKED_MESSAGES)("native blocked (%s): falls back to /proxy", async (message, upstreamStatus) => {
-    const calls = stubFetch({
-      [PREFLIGHT]: preflight(true),
-      [NATIVE]: fetchError(message, upstreamStatus),
-      [PROXY]: ok("managed"),
-    });
-    const response = await client().extractUrlMetadataWithProxyFallback(TARGET);
+  it.each(BLOCKED_MESSAGES)(
+    "native blocked (%s): falls back to /proxy",
+    async (message, upstreamStatus) => {
+      const calls = stubFetch({
+        [PREFLIGHT]: preflight(true),
+        [NATIVE]: fetchError(message, upstreamStatus),
+        [PROXY]: ok("managed"),
+      });
+      const response = await client().extractUrlMetadataWithProxyFallback(TARGET);
 
-    expect(paths(calls)).toEqual([PREFLIGHT, NATIVE, PROXY]);
-    expect(response.results[0].data.proxy.proxyType).toBe("managed");
-  });
+      expect(paths(calls)).toEqual([PREFLIGHT, NATIVE, PROXY]);
+      expect(response.results[0].data.proxy.proxyType).toBe("managed");
+    },
+  );
 
   it.each([
     ["upstream not found", 404],
@@ -250,7 +295,10 @@ describe("extract*WithProxyFallback unit tests", () => {
   ] as Array<[string, number | undefined]>)(
     "native fails for another reason (%s): rethrown, proxy never called",
     async (message, upstreamStatus) => {
-      const calls = stubFetch({ [PREFLIGHT]: preflight(true), [NATIVE]: fetchError(message, upstreamStatus) });
+      const calls = stubFetch({
+        [PREFLIGHT]: preflight(true),
+        [NATIVE]: fetchError(message, upstreamStatus),
+      });
       await expect(client().extractUrlMetadataWithProxyFallback(TARGET)).rejects.toMatchObject({
         name: "NetworkError",
         statusCode: 502,
@@ -321,7 +369,9 @@ describe("NetworkError details from server error response unit tests", () => {
   it("checkAnd* / fallback: 'ssrf blocked' preflight throws InvalidUrlError, never tries native or proxy", async () => {
     for (const method of ["checkAndExtractUrlMetadata", "extractUrlMetadataWithProxyFallback"]) {
       const calls = stubFetch({ [PREFLIGHT]: fetchError("ssrf blocked", 463) });
-      await expect((client() as any)[method]("http://0.0.0.0")).rejects.toMatchObject({ name: "InvalidUrlError" });
+      await expect((client() as any)[method]("http://0.0.0.0")).rejects.toMatchObject({
+        name: "InvalidUrlError",
+      });
       expect(paths(calls), method).toEqual([PREFLIGHT]);
       vi.unstubAllGlobals();
     }
@@ -364,9 +414,15 @@ describe("NetworkError details from server error response unit tests", () => {
   it("a non-fetch-error body (credits, 402) keeps the bare message", async () => {
     stubFetch({
       "/extract/url-metadata": () =>
-        json(402, { success: false, error: "insufficient_credits", message: "No credits remaining." }, "Payment Required"),
+        json(
+          402,
+          { success: false, error: "insufficient_credits", message: "No credits remaining." },
+          "Payment Required",
+        ),
     });
-    const error = await client().extractUrlMetadata(TARGET).catch(e => e);
+    const error = await client()
+      .extractUrlMetadata(TARGET)
+      .catch(e => e);
 
     expect(error.name).toBe("NetworkError");
     expect(error.message).toBe("Request failed: 402 Payment Required");
@@ -380,19 +436,24 @@ describe("checkAnd* preflight errors unit tests", () => {
     ["checkAndExtractUrlLinks", "UrlLinks"],
     ["checkAndExtractUrlPreview", "UrlPreview"],
     ["checkAndExtractUrlContent", "UrlContent"],
-  ])("%s: robots block keeps its message, tip names the proxy methods for that endpoint", async (method, name) => {
-    const calls = stubFetch({ [PREFLIGHT]: preflight(false, "URL is blocked by robots.txt") });
-    const error = await (client() as any)[method](TARGET).catch((e: any) => e);
+  ])(
+    "%s: robots block keeps its message, tip names the proxy methods for that endpoint",
+    async (method, name) => {
+      const calls = stubFetch({ [PREFLIGHT]: preflight(false, "URL is blocked by robots.txt") });
+      const error = await (client() as any)[method](TARGET).catch((e: any) => e);
 
-    expect(error.name).toBe("RobotsBlockedError");
-    expect(error.message).toBe("URL is blocked by robots.txt");
-    expect(error.tip).toContain(`proxyExtract${name} or extract${name}WithProxyFallback`);
-    expect(paths(calls)).toEqual([PREFLIGHT]);
-  });
+      expect(error.name).toBe("RobotsBlockedError");
+      expect(error.message).toBe("URL is blocked by robots.txt");
+      expect(error.tip).toContain(`proxyExtract${name} or extract${name}WithProxyFallback`);
+      expect(paths(calls)).toEqual([PREFLIGHT]);
+    },
+  );
 
   it("checkAndRunSeoPageAudit: robots block has no tip (the audit has no proxy version)", async () => {
     stubFetch({ [PREFLIGHT]: preflight(false, "URL is blocked by robots.txt") });
-    const error = await client().checkAndRunSeoPageAudit(TARGET).catch(e => e);
+    const error = await client()
+      .checkAndRunSeoPageAudit(TARGET)
+      .catch(e => e);
 
     expect(error.name).toBe("RobotsBlockedError");
     expect("tip" in error).toBe(false);
@@ -418,7 +479,9 @@ describe("checkAnd* preflight errors unit tests", () => {
 describe("client cannot reach Minifetch (offline, DNS, connection refused) unit tests", () => {
   const isUnreachable = (error: any) => {
     expect(error.name).toBe("NetworkError");
-    expect(error.message).toBe("Request failed: could not reach Minifetch — fetch failed (ENOTFOUND)");
+    expect(error.message).toBe(
+      "Request failed: could not reach Minifetch — fetch failed (ENOTFOUND)",
+    );
     expect(error.originalError).toBeInstanceOf(TypeError);
     expect("statusCode" in error).toBe(false);
   };
@@ -436,7 +499,9 @@ describe("client cannot reach Minifetch (offline, DNS, connection refused) unit 
 
   it("preflightUrlCheck keeps its existing message, now with originalError", async () => {
     vi.stubGlobal("fetch", vi.fn(offline));
-    const error = await client().preflightUrlCheck(TARGET).catch(e => e);
+    const error = await client()
+      .preflightUrlCheck(TARGET)
+      .catch(e => e);
 
     expect(error.name).toBe("NetworkError");
     expect(error.message).toBe("Preflight check failed: fetch failed");
@@ -446,12 +511,20 @@ describe("client cannot reach Minifetch (offline, DNS, connection refused) unit 
   it("x402: NetworkError, not PaymentFailedError (runs the real x402 wrapper)", async () => {
     vi.stubGlobal("fetch", vi.fn(offline));
     // A throwaway, well-formed key: no request ever leaves this process.
-    const x402Client = new MinifetchClient({ network: "base-sepolia", privateKey: `0x${"11".repeat(32)}` });
+    const x402Client = new MinifetchClient({
+      network: "base-sepolia",
+      privateKey: `0x${"11".repeat(32)}`,
+    });
     isUnreachable(await x402Client.extractUrlMetadata(TARGET).catch(e => e));
   });
 
   it("a 200 that isn't JSON stays ExtractionFailedError (a response-handling failure)", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => new Response("<html>oops</html>", { status: 200 })));
-    await expect(client().extractUrlMetadata(TARGET)).rejects.toMatchObject({ name: "ExtractionFailedError" });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("<html>oops</html>", { status: 200 })),
+    );
+    await expect(client().extractUrlMetadata(TARGET)).rejects.toMatchObject({
+      name: "ExtractionFailedError",
+    });
   });
 });
