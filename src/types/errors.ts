@@ -38,7 +38,7 @@ export class InvalidUrlError extends MinifetchError {
 export class RobotsBlockedError extends MinifetchError {
   public readonly url: string;
   /** What to try next, when there is something to try. Only set when it applies. */
-  public declare readonly tip?: string;
+  declare public readonly tip?: string;
 
   /**
    *
@@ -133,7 +133,7 @@ export class NetworkError extends MinifetchError {
   // `declare`: exists on the error only when Minifetch answered with a status,
   // so an error without one looks exactly as it did before it was added.
   /** HTTP status Minifetch returned (ex: 502) */
-  public declare readonly statusCode?: number;
+  declare public readonly statusCode?: number;
 
   /**
    *

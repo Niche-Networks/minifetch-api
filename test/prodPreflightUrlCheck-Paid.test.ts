@@ -10,7 +10,7 @@ beforeEach(async () => {
   await new Promise(r => setTimeout(r, 2500)); // floor on ?fresh option = 2s
 });
 
-describe.sequential("x402: _exercisePaidUrlCheck() e2e", { timeout: 30000 }, () => {
+describe("x402: _exercisePaidUrlCheck() e2e", { timeout: 30000, concurrent: false }, () => {
   it("base paid /url-check settles (POST default)", async () => {
     const client = new MinifetchClient({
       network: "base",

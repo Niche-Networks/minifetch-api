@@ -31,7 +31,12 @@ const client = () =>
     apiKey: process.env.MINIFETCH_API_KEY as string,
   });
 
-/** Every external proxy response carries the managed proxy block and no cache hit. */
+/**
+ * Every external proxy response carries the managed proxy block and no cache hit.
+ *
+ * @param data
+ * @param render
+ */
 const expectManaged = (data: any, render: boolean) => {
   expect(data.proxy.proxyType).toBe("managed");
   expect(data.proxy.provider).toBe("webscrapingapi.com");
@@ -40,7 +45,7 @@ const expectManaged = (data: any, render: boolean) => {
   expect(data.minifetchCache).toEqual({ hit: false });
 };
 
-describe.sequential("apiKey: proxy methods e2e (prod)", { timeout: TIMEOUT }, () => {
+describe("apiKey: proxy methods e2e (prod)", { timeout: TIMEOUT, concurrent: false }, () => {
   it("proxyExtractUrlPreview success", async () => {
     const response = await client().proxyExtractUrlPreview(TEST_URL);
 
@@ -77,7 +82,7 @@ describe.sequential("apiKey: proxy methods e2e (prod)", { timeout: TIMEOUT }, ()
   });
 });
 
-describe.sequential("apiKey: proxy methods fail gracefully (prod)", { timeout: TIMEOUT }, () => {
+describe("apiKey: proxy methods fail gracefully (prod)", { timeout: TIMEOUT, concurrent: false }, () => {
   it("invalid country: 400 from the server, no charge", async () => {
     await expect(client().proxyExtractUrlLinks(TEST_URL, { country: "xx" })).rejects.toMatchObject({
       name: "NetworkError",

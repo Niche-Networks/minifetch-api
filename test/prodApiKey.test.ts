@@ -18,7 +18,7 @@ beforeEach(async () => {
   await new Promise(r => setTimeout(r, 1000));
 });
 
-describe.sequential("apiKey: preflightUrlCheck() e2e (prod)", { timeout: 30000 }, () => {
+describe("apiKey: preflightUrlCheck() e2e (prod)", { timeout: 30000, concurrent: false }, () => {
   it("preflight success w allowed URL", async () => {
     const client = new MinifetchClient({
       apiKey: process.env.MINIFETCH_API_KEY as string,
@@ -45,7 +45,7 @@ describe.sequential("apiKey: preflightUrlCheck() e2e (prod)", { timeout: 30000 }
   });
 });
 
-describe.sequential("apiKey: preflightUrlCheck() fails gracefully", { timeout: 30000 }, () => {
+describe("apiKey: preflightUrlCheck() fails gracefully", { timeout: 30000, concurrent: false }, () => {
   it("handles DNS lookup error", async () => {
     const client = new MinifetchClient({
       apiKey: process.env.MINIFETCH_API_KEY as string,
@@ -79,7 +79,7 @@ describe.sequential("apiKey: preflightUrlCheck() fails gracefully", { timeout: 3
   });
 });
 
-describe.sequential("apiKey: extractUrlPreview() e2e (prod)", { timeout: 30000 }, () => {
+describe("apiKey: extractUrlPreview() e2e (prod)", { timeout: 30000, concurrent: false }, () => {
   it("returns preview for allowed URL", async () => {
     const client = new MinifetchClient({
       apiKey: process.env.MINIFETCH_API_KEY as string,
@@ -91,9 +91,9 @@ describe.sequential("apiKey: extractUrlPreview() e2e (prod)", { timeout: 30000 }
   });
 });
 
-describe.sequential(
+describe(
   "apiKey: extractUrlPreview() fails gracefully (prod)",
-  { timeout: 30000 },
+  { timeout: 30000, concurrent: false },
   () => {
     it("throws on robots.txt check = blocked URL", async () => {
       const client = new MinifetchClient({
@@ -142,7 +142,7 @@ describe.sequential(
   },
 );
 
-describe.sequential("apiKey: extractUrlContent() e2e (prod)", { timeout: 30000 }, () => {
+describe("apiKey: extractUrlContent() e2e (prod)", { timeout: 30000, concurrent: false }, () => {
   it("returns content for allowed URL", async () => {
     const client = new MinifetchClient({
       apiKey: process.env.MINIFETCH_API_KEY as string,
@@ -154,7 +154,7 @@ describe.sequential("apiKey: extractUrlContent() e2e (prod)", { timeout: 30000 }
   });
 });
 
-describe.sequential("apiKey: checkAndExtractUrlContent() e2e (prod)", { timeout: 30000 }, () => {
+describe("apiKey: checkAndExtractUrlContent() e2e (prod)", { timeout: 30000, concurrent: false }, () => {
   it("success w ?includeMediaUrls=true", async () => {
     const client = new MinifetchClient({
       apiKey: process.env.MINIFETCH_API_KEY as string,
@@ -173,7 +173,7 @@ describe.sequential("apiKey: checkAndExtractUrlContent() e2e (prod)", { timeout:
   });
 });
 
-describe.sequential("apiKey: extractUrlLinks() e2e (prod)", { timeout: 30000 }, () => {
+describe("apiKey: extractUrlLinks() e2e (prod)", { timeout: 30000, concurrent: false }, () => {
   it("returns links for allowed URL", async () => {
     const client = new MinifetchClient({
       apiKey: process.env.MINIFETCH_API_KEY as string,
@@ -185,7 +185,7 @@ describe.sequential("apiKey: extractUrlLinks() e2e (prod)", { timeout: 30000 }, 
   });
 });
 
-describe.sequential("apiKey: extractUrlMetadata() e2e (prod)", { timeout: 30000 }, () => {
+describe("apiKey: extractUrlMetadata() e2e (prod)", { timeout: 30000, concurrent: false }, () => {
   it("returns metadata for allowed URL", async () => {
     const client = new MinifetchClient({
       apiKey: process.env.MINIFETCH_API_KEY as string,
@@ -199,7 +199,7 @@ describe.sequential("apiKey: extractUrlMetadata() e2e (prod)", { timeout: 30000 
   });
 });
 
-describe.sequential("apiKey: checkAndExtractUrlMetadata() e2e (prod)", { timeout: 30000 }, () => {
+describe("apiKey: checkAndExtractUrlMetadata() e2e (prod)", { timeout: 30000, concurrent: false }, () => {
   it("preflight + extract metadata (default) in one call", async () => {
     const client = new MinifetchClient({
       apiKey: process.env.MINIFETCH_API_KEY as string,
@@ -236,9 +236,9 @@ describe.sequential("apiKey: checkAndExtractUrlMetadata() e2e (prod)", { timeout
   });
 });
 
-describe.sequential(
+describe(
   "apiKey: checkAndExtractUrlMetadata() fails gracefully (prod)",
-  { timeout: 30000 },
+  { timeout: 30000, concurrent: false },
   () => {
     it("throws when robots.txt check fails", async () => {
       const client = new MinifetchClient({

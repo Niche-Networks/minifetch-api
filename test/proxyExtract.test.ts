@@ -30,7 +30,12 @@ beforeEach(async () => {
   await new Promise(r => setTimeout(r, 1000));
 });
 
-/** Every external proxy response carries the managed proxy block and no cache hit. */
+/**
+ * Every external proxy response carries the managed proxy block and no cache hit.
+ *
+ * @param data
+ * @param render
+ */
 const expectManaged = (data: any, render: boolean) => {
   expect(data.proxy.proxyType).toBe("managed");
   expect(data.proxy.provider).toBe("webscrapingapi.com");
@@ -39,7 +44,11 @@ const expectManaged = (data: any, render: boolean) => {
   expect(data.minifetchCache).toEqual({ hit: false });
 };
 
-/** x402 receipt, as in the native e2e tests. */
+/**
+ * x402 receipt, as in the native e2e tests.
+ *
+ * @param payment
+ */
 const expectBasePayment = (payment: any) => {
   expect(payment.success).toBe(true);
   expect(payment.payer).toContain("0x");
@@ -64,7 +73,7 @@ const solanaClient = () =>
 // proxyExtract* — external proxy, no rendering
 // ─────────────────────────────────────────────────────────────
 
-describe.sequential("x402: proxyExtract*() e2e", { timeout: TIMEOUT }, () => {
+describe("x402: proxyExtract*() e2e", { timeout: TIMEOUT, concurrent: false }, () => {
   it("proxyExtractUrlMetadata: base-sepolia success w ?fields, no performance/redirects", async () => {
     const response = await baseClient().proxyExtractUrlMetadata(TEST_URL, {
       fields: ["title", "description"],
@@ -104,7 +113,9 @@ describe.sequential("x402: proxyExtract*() e2e", { timeout: TIMEOUT }, () => {
   });
 
   it("proxyExtractUrlContent: base-sepolia success w ?includeMediaUrls=true", async () => {
-    const response = await baseClient().proxyExtractUrlContent(TEST_URL, { includeMediaUrls: true });
+    const response = await baseClient().proxyExtractUrlContent(TEST_URL, {
+      includeMediaUrls: true,
+    });
 
     expect(response.success).toBe(true);
     const data = response.results[0].data;
@@ -119,7 +130,7 @@ describe.sequential("x402: proxyExtract*() e2e", { timeout: TIMEOUT }, () => {
 // proxyRenderExtract* — external proxy with JavaScript rendering
 // ─────────────────────────────────────────────────────────────
 
-describe.sequential("x402: proxyRenderExtract*() e2e", { timeout: TIMEOUT }, () => {
+describe("x402: proxyRenderExtract*() e2e", { timeout: TIMEOUT, concurrent: false }, () => {
   it("proxyRenderExtractUrlContent: base-sepolia success, content only exists after JS runs", async () => {
     const response = await baseClient().proxyRenderExtractUrlContent(JS_URL);
 
@@ -141,7 +152,9 @@ describe.sequential("x402: proxyRenderExtract*() e2e", { timeout: TIMEOUT }, () 
   });
 
   it("proxyRenderExtractUrlMetadata: base-sepolia success", async () => {
-    const response = await baseClient().proxyRenderExtractUrlMetadata(TEST_URL, { omitEmpty: true });
+    const response = await baseClient().proxyRenderExtractUrlMetadata(TEST_URL, {
+      omitEmpty: true,
+    });
 
     expect(response.success).toBe(true);
     const data = response.results[0].data;
@@ -165,7 +178,7 @@ describe.sequential("x402: proxyRenderExtract*() e2e", { timeout: TIMEOUT }, () 
 // extract*WithProxyFallback
 // ─────────────────────────────────────────────────────────────
 
-describe.sequential("x402: extract*WithProxyFallback() e2e", { timeout: TIMEOUT }, () => {
+describe("x402: extract*WithProxyFallback() e2e", { timeout: TIMEOUT, concurrent: false }, () => {
   it("allowed URL: stays on the native Minifetch proxy", async () => {
     const response = await baseClient().extractUrlPreviewWithProxyFallback(TEST_URL);
 
@@ -185,7 +198,9 @@ describe.sequential("x402: extract*WithProxyFallback() e2e", { timeout: TIMEOUT 
   });
 
   it("render: true goes straight to the external proxy with rendering", async () => {
-    const response = await solanaClient().extractUrlContentWithProxyFallback(JS_URL, { render: true });
+    const response = await solanaClient().extractUrlContentWithProxyFallback(JS_URL, {
+      render: true,
+    });
 
     expect(response.success).toBe(true);
     expect(response.results[0].data.summary).toContain("Albert Einstein");
@@ -193,7 +208,9 @@ describe.sequential("x402: extract*WithProxyFallback() e2e", { timeout: TIMEOUT 
   });
 
   it("country goes straight to the external proxy", async () => {
-    const response = await baseClient().extractUrlLinksWithProxyFallback(TEST_URL, { country: "fr" });
+    const response = await baseClient().extractUrlLinksWithProxyFallback(TEST_URL, {
+      country: "fr",
+    });
 
     expect(response.success).toBe(true);
     expectManaged(response.results[0].data, false);
@@ -205,7 +222,7 @@ describe.sequential("x402: extract*WithProxyFallback() e2e", { timeout: TIMEOUT 
 // Fails gracefully (no charge for any of these)
 // ─────────────────────────────────────────────────────────────
 
-describe.sequential("x402: proxy methods fail gracefully", { timeout: TIMEOUT }, () => {
+describe("x402: proxy methods fail gracefully", { timeout: TIMEOUT, concurrent: false }, () => {
   it("throws w bad private key", async () => {
     const failClient = new MinifetchClient({
       network: "base-sepolia",
@@ -219,7 +236,9 @@ describe.sequential("x402: proxy methods fail gracefully", { timeout: TIMEOUT },
   });
 
   it("invalid country: 400 from the server, before any fetch", async () => {
-    await expect(baseClient().proxyExtractUrlPreview(TEST_URL, { country: "xx" })).rejects.toMatchObject({
+    await expect(
+      baseClient().proxyExtractUrlPreview(TEST_URL, { country: "xx" }),
+    ).rejects.toMatchObject({
       name: "NetworkError",
       statusCode: 400,
       message: expect.stringContaining("Invalid country param"),
@@ -250,7 +269,9 @@ describe.sequential("x402: proxy methods fail gracefully", { timeout: TIMEOUT },
       name: "RobotsBlockedError",
       // npm 403s our robots.txt fetch (Cloudflare), so the preflight says "refused"
       message: expect.stringContaining("robots.txt fetch refused"),
-      tip: expect.stringContaining("proxyExtractUrlMetadata or extractUrlMetadataWithProxyFallback"),
+      tip: expect.stringContaining(
+        "proxyExtractUrlMetadata or extractUrlMetadataWithProxyFallback",
+      ),
     });
   });
 });

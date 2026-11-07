@@ -91,30 +91,34 @@
   },
   "dependencies": {
     "@solana/kit": "^8.6.0",
-    "@x402/evm": "^2.2.0",
-    "@x402/fetch": "^2.2.0",
+    "@x402/evm": "^2.30.0",
+    "@x402/fetch": "^2.30.0",
     "@x402/svm": "^2.30.0",
     "bs58": "^6.0.0",
     "viem": "^2.23.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.24.0",
-    "@types/node": "^25.2.0",
-    "@typescript-eslint/eslint-plugin": "^8.29.1",
-    "@typescript-eslint/parser": "^8.29.1",
-    "@vitest/coverage-v8": "^3.0.0",
+    "@eslint/js": "^9.39.5",
+    "@types/node": "^26.6.6",
+    "@typescript-eslint/eslint-plugin": "^8.72.1",
+    "@typescript-eslint/parser": "^8.72.1",
+    "@vitest/coverage-v8": "^5.1.0",
     "dotenv": "^16.4.7",
-    "eslint": "^9.24.0",
-    "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-jsdoc": "^50.6.9",
-    "eslint-plugin-prettier": "^5.2.6",
-    "prettier": "3.5.2",
-    "tsx": "^4.7.0",
-    "typescript": "^5.3.0",
-    "vitest": "^3.0.0"
+    "eslint": "^9.39.4",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jsdoc": "^65.4.5",
+    "eslint-plugin-prettier": "^5.5.7",
+    "prettier": "3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "vitest": "^5.1.0"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"],
+    "ignoredBuiltDependencies": ["bufferutil", "utf-8-validate"]
   },
   "license": "MIT"
 }
