@@ -132,35 +132,41 @@ describe("apiKey: preflightUrlCheck() init", { timeout: 30000, concurrent: false
 // the internal _exercisePaidUrlCheck() — the public preflightUrlCheck() only
 // hits the FREE endpoint, so this is the one path that generates paid traffic
 // against the x402 url-check for Bazaar ranking / listing refresh.
-describe("x402: _exercisePaidUrlCheck() e2e (paid twin)", { timeout: 30000, concurrent: false }, () => {
-  it("base-sepolia paid /url-check settles (POST default)", async () => {
-    const client = new MinifetchClient({
-      network: "base-sepolia",
-      privateKey: process.env.BASE_PRIVATE_KEY as any,
+describe(
+  "x402: _exercisePaidUrlCheck() e2e (paid twin)",
+  { timeout: 30000, concurrent: false },
+  () => {
+    it("base-sepolia paid /url-check settles (POST default)", async () => {
+      const client = new MinifetchClient({
+        network: "base-sepolia",
+        privateKey: process.env.BASE_PRIVATE_KEY as any,
+      });
+
+      const response = await client._exercisePaidUrlCheck("https://minifetch.com");
+
+      expect(response.success).toBe(true);
+      expect(response.results[0].data.url).toBe("https://minifetch.com");
+      expect(response.results[0].data.allowed).toBe(true);
+      expect(response.payment.success).toBe(true);
+      expect(response.payment.payer).toContain("0x");
+      expect(response.payment.network).toBe("base-sepolia");
+      expect(response.payment.txHash).toContain("0x");
     });
 
-    const response = await client._exercisePaidUrlCheck("https://minifetch.com");
+    it("base-sepolia paid /url-check settles (GET)", async () => {
+      const client = new MinifetchClient({
+        network: "base-sepolia",
+        privateKey: process.env.BASE_PRIVATE_KEY as any,
+      });
 
-    expect(response.success).toBe(true);
-    expect(response.results[0].data.url).toBe("https://minifetch.com");
-    expect(response.results[0].data.allowed).toBe(true);
-    expect(response.payment.success).toBe(true);
-    expect(response.payment.payer).toContain("0x");
-    expect(response.payment.network).toBe("base-sepolia");
-    expect(response.payment.txHash).toContain("0x");
-  });
+      const response = await client._exercisePaidUrlCheck("https://minifetch.com", {
+        method: "GET",
+      });
 
-  it("base-sepolia paid /url-check settles (GET)", async () => {
-    const client = new MinifetchClient({
-      network: "base-sepolia",
-      privateKey: process.env.BASE_PRIVATE_KEY as any,
+      expect(response.success).toBe(true);
+      expect(response.results[0].data.allowed).toBe(true);
+      expect(response.payment.success).toBe(true);
+      expect(response.payment.network).toBe("base-sepolia");
     });
-
-    const response = await client._exercisePaidUrlCheck("https://minifetch.com", { method: "GET" });
-
-    expect(response.success).toBe(true);
-    expect(response.results[0].data.allowed).toBe(true);
-    expect(response.payment.success).toBe(true);
-    expect(response.payment.network).toBe("base-sepolia");
-  });
-});
+  },
+);

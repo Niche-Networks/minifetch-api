@@ -82,29 +82,35 @@ describe("apiKey: proxy methods e2e (prod)", { timeout: TIMEOUT, concurrent: fal
   });
 });
 
-describe("apiKey: proxy methods fail gracefully (prod)", { timeout: TIMEOUT, concurrent: false }, () => {
-  it("invalid country: 400 from the server, no charge", async () => {
-    await expect(client().proxyExtractUrlLinks(TEST_URL, { country: "xx" })).rejects.toMatchObject({
-      name: "NetworkError",
-      statusCode: 400,
-      message: expect.stringContaining("Invalid country param"),
+describe(
+  "apiKey: proxy methods fail gracefully (prod)",
+  { timeout: TIMEOUT, concurrent: false },
+  () => {
+    it("invalid country: 400 from the server, no charge", async () => {
+      await expect(
+        client().proxyExtractUrlLinks(TEST_URL, { country: "xx" }),
+      ).rejects.toMatchObject({
+        name: "NetworkError",
+        statusCode: 400,
+        message: expect.stringContaining("Invalid country param"),
+      });
     });
-  });
 
-  it("bad api key (correct prefix): 401", async () => {
-    const badClient = new MinifetchClient({ apiKey: "mf_prod_badkeynowork" });
-    await expect(badClient.proxyExtractUrlPreview(TEST_URL)).rejects.toMatchObject({
-      name: "NetworkError",
-      statusCode: 401,
+    it("bad api key (correct prefix): 401", async () => {
+      const badClient = new MinifetchClient({ apiKey: "mf_prod_badkeynowork" });
+      await expect(badClient.proxyExtractUrlPreview(TEST_URL)).rejects.toMatchObject({
+        name: "NetworkError",
+        statusCode: 401,
+      });
     });
-  });
 
-  it("fallback: non-existent domain throws InvalidUrlError", async () => {
-    await expect(
-      client().extractUrlContentWithProxyFallback("https://mydns4.errrrrr"),
-    ).rejects.toMatchObject({
-      name: "InvalidUrlError",
-      message: expect.stringContaining("non-existent domain"),
+    it("fallback: non-existent domain throws InvalidUrlError", async () => {
+      await expect(
+        client().extractUrlContentWithProxyFallback("https://mydns4.errrrrr"),
+      ).rejects.toMatchObject({
+        name: "InvalidUrlError",
+        message: expect.stringContaining("non-existent domain"),
+      });
     });
-  });
-});
+  },
+);
