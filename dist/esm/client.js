@@ -588,13 +588,24 @@ export class MinifetchClient {
             const qs = new URLSearchParams();
             for (const [key, value] of Object.entries(params))
                 qs.set(key, String(value));
-            return { url: `${this.baseUrl}${path}?${qs.toString()}`, init: { method: "GET" } };
+            return {
+                url: `${this.baseUrl}${path}?${qs.toString()}`,
+                init: {
+                    method: "GET",
+                    headers: {
+                        "User-Agent": "minifetch-api (+https://www.npmjs.com/package/minifetch-api)"
+                    }
+                }
+            };
         }
         return {
             url: `${this.baseUrl}${path}`,
             init: {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "User-Agent": "minifetch-api (+https://www.npmjs.com/package/minifetch-api)"
+                },
                 body: JSON.stringify(params),
             },
         };
