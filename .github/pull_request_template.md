@@ -17,22 +17,23 @@ ___
 - [ ] `pnpm lint`
 
 ### Maintainers checklist:
-- [ ] `pnpm test` and `pnpm lint` on the new PR branch
+- [ ] on branch: `pnpm test` and `pnpm lint`
 - [ ] `squash and merge` PR to main
 - [ ] switch to main, `git pull origin main` then `pnpm test`
 - [ ] optional: test both /example-* dirs against packed local .tgz file
   - [ ] `pnpm pack`
   - [ ] `cd /example-typescript` then `pnpm install ../url-metadata-<version>.tgz`
-  - [ ] build & start, ensure no errors
-- [ ] update README (if applicable)
-- [ ] update CHANGELOG (if applicable)
+  - [ ] build & start examples, ensure no errors
+- [ ] update README
+- [ ] update CHANGELOG
 - [ ] package.json: ensure engines.node version(s) still correct
     - [ ] test against older engine versions
     - [ ] ensure any new deps work too: `$ npm view <new package> engines`
-- [ ] package.json: bump version, push commit to main
+- [ ] package.json: bump version
+- [ ] `pnpm dist:clean`
+- [ ] `pnpm build`
+- [ ] `git push origin main`
 - [ ] git tag new version of main
-        `$ git pull origin main`
-        `$ pnpm run test`
         `$ git tag 1.0`
         `$ git push origin 1.0`
 - [ ] `npm publish ./`
