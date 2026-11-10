@@ -24,15 +24,15 @@ ___
   - [ ] `pnpm pack`
   - [ ] `cd /example-typescript` then `pnpm install ../url-metadata-<version>.tgz`
   - [ ] build & start examples, ensure no errors
-- [ ] update README
-- [ ] update CHANGELOG
 - [ ] package.json: ensure engines.node version(s) still correct
     - [ ] test against older engine versions
     - [ ] ensure any new deps work too: `$ npm view <new package> engines`
 - [ ] package.json: bump version
+- [ ] update README
+- [ ] update CHANGELOG
 - [ ] `pnpm dist:clean`
 - [ ] `pnpm build`
-- [ ] `git push origin main`
+- [ ] commit and push to origin main
 - [ ] git tag new version of main
         `$ git tag 1.0`
         `$ git push origin 1.0`
