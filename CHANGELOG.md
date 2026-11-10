@@ -1,5 +1,8 @@
 # CHANGELOG
 
+1.10.2
+- client.ts: send User-Agent minifetch-api on all fetches
+
 1.10.1
 - bump depdendencies
 - bump devDependencies

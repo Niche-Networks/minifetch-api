@@ -108,7 +108,6 @@ await client.preflightUrlCheck(url, options);
 
 ```js
 const options = {
-
   fields: ['title', 'canonical', 'og:url'],
   // Return only these fields; also takes the groups: 'network', 'meta',
   // 'og', 'twitter' and 'meta:<name>'.
@@ -276,7 +275,7 @@ try {
   console.log(err.message); // "Request failed: 502 Bad Gateway — upstream forbidden"
   if (err.name === "NetworkError" && err.message.includes("upstream forbidden")) {
     // the target URL blocked the native Minifetch proxy, try the external
-    // proxy method instead: client.proxyExtractUrlMetadata(url) ... or use
+    // proxy method instead: client.proxyExtractUrlMetadata(url) ...or use
     // client.extractUrlMetadataWithProxyFallback(url) - it will try both
     // automatically, starting with the cheapest option (Minifetch proxy).
   }
