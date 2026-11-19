@@ -5,7 +5,7 @@
   </a>
 </div>
 
-**Search, scrape, extract & SEO audit web pages. [Minifetch](https://minifetch.com)** is a hosted toolkit for web developers and the AI agents who work for them. Pay per fetch, no subscription.
+**Search, scrape, extract & SEO audit web pages. [Minifetch](https://minifetch.com)** is a hosted toolkit for developers and the AI agents who work for them. Skip the infrastructure hassle, just get the data you need. Pay per fetch, no subscription.
 
 - ✅ **Always pay-per-fetch at competitive prices.**
 - ✍️ [Sign up](https://minifetch.com/dashboard) for an account & get free starter credits. 🎉🎉
@@ -326,6 +326,20 @@ The preflight only checks the URL you pass in, not where it redirects. If a redi
 **ConfigurationError** — the client was created with a missing or invalid API key, private key or network.
 
 **InvalidQueryError** — `searchByKeyword` was given an empty query or one over 50 characters.
+
+---
+
+## Security
+
+### Untrusted Content
+Minifetch does not sanitize the content it returns. Every field, including titles, descriptions, links, and /url-content bodies, is authored by the remote page and must be treated as untrusted. Output sanitization is the caller's responsibility. The content is inert data and does not execute on its own, but you must sanitize it before use:
+
+- Sanitize before rendering as HTML to prevent XSS. Removing script tags is not enough. Use a sanitizer such as DOMPurify.
+- In LLM or agent contexts, treat output as data not instructions. Output may contain prompt injection attempts.
+- Escape it before writing to CSV or spreadsheets to prevent formula injection.
+
+### SSRF Protection
+Minifetch is protected against server-side request forgery. It fetches only public `http` and `https` URLs. Requests to private, internal, loopback, link-local, reserved, and cloud metadata addresses are refused, including DNS rebinding attempts. localhost and private-network URLs will not fetch.
 
 ---
 
