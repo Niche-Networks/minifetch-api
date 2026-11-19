@@ -20,7 +20,7 @@
 
 ## Prerequisites
 
-- Node.js v18+ & NPM
+- Node.js v20+ & NPM
 - A valid API key from our [dashboard](https://minifetch.com/dashboard)
 - ***Or*** an Ethereum or Solana private key for making USDC payments on Base or Solana networks.
 

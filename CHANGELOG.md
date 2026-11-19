@@ -1,5 +1,9 @@
 # CHANGELOG
 
+1.10.3
+- README: add security section, bump Node.js version requirement to match package.json engines
+- bump pnpm version for package.json
+
 1.10.2
 - client.ts: send User-Agent minifetch-api on all fetches
 
